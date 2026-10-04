@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MultiAI — Asisten AI untuk chat, kode, dan dokumen</title>
+<meta name="description" content="Chat dengan AI, minta dibuatkan file HTML, PDF, PPTX, DOCX, dan lanjutkan percakapanmu dari perangkat mana pun.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%201024%201024%22%3E%3Crect%20width%3D%221024%22%20height%3D%221024%22%20rx%3D%22220%22%20fill%3D%22%23000%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2256%22%3E%3Cg%20transform%3D%22translate%28512%20512%29%20scale%28.8%29%22%3E%3Cellipse%20rx%3D%22490%22%20ry%3D%2268%22/%3E%3Cellipse%20rx%3D%22435%22%20ry%3D%2262%22%20transform%3D%22rotate%2890%29%22/%3E%3Cellipse%20rx%3D%22445%22%20ry%3D%2262%22%20transform%3D%22rotate%28-46%29%22/%3E%3Cellipse%20rx%3D%22375%22%20ry%3D%2262%22%20transform%3D%22rotate%2852%29%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E">
+<style>
+:root{--bg:#101113;--panel:#17181b;--panel2:#1f2125;--line:#2b2d32;--tx:#e8eaed;--mut:#8e939c;--ac:#2f6fed;--al:#7aa7ff}
+@media(prefers-color-scheme:light){:root{--bg:#f5f6f8;--panel:#fff;--panel2:#eceef2;--line:#dfe2e7;--tx:#16181d;--mut:#667085;--ac:#2563eb;--al:#1d4ed8}}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--tx);font:16px/1.6 Roboto,system-ui,"Segoe UI",sans-serif;-webkit-text-size-adjust:100%}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:960px;margin:0 auto;padding:0 20px}
+.nav{display:flex;align-items:center;justify-content:space-between;padding-top:18px;padding-bottom:18px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;letter-spacing:-.2px}
+.logo{width:30px;height:30px;border-radius:8px;background:#000;border:1px solid var(--line);display:grid;place-items:center;padding:4px}
+.logo svg{width:100%;height:100%;stroke:#fff;fill:none;stroke-width:56}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:9px 18px;border-radius:10px;font-weight:600;font-size:15px;background:var(--panel2);border:1px solid var(--line)}
+.btn.p{background:var(--ac);border-color:var(--ac);color:#fff}.btn.lg{padding:13px 26px;font-size:16px}
+.btn:active{opacity:.7}
+.hero{padding-top:52px;padding-bottom:36px}
+h1{font-size:clamp(32px,6vw,52px);line-height:1.1;letter-spacing:-1.2px;font-weight:800;max-width:14em}
+.sub{margin-top:16px;color:var(--mut);font-size:18px;max-width:34em}
+.cta{margin-top:28px;display:flex;gap:12px;flex-wrap:wrap}
+.demo{margin-top:44px;border:1px solid var(--line);background:var(--panel);border-radius:16px;padding:20px;max-width:640px}
+.m{margin-bottom:14px;font-size:15px}.m:last-child{margin-bottom:0}
+.u{margin-left:auto;width:fit-content;max-width:86%;background:var(--panel2);padding:9px 14px;border-radius:14px 14px 4px 14px}
+.a p{margin:6px 0 10px}.th{display:inline-block;font-size:13px;color:var(--mut);border:1px solid var(--line);border-radius:9px;padding:4px 10px}
+.fc{display:flex;gap:12px;align-items:center;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:10px;max-width:340px}
+.fi{width:40px;height:46px;border-radius:8px;background:#e0793a;color:#fff;display:grid;place-items:center;font-weight:700;font-size:12px}
+.fc b{display:block;font-size:15px}.fc small{color:var(--mut);font-size:12px}
+h2{font-size:26px;letter-spacing:-.5px;margin-bottom:20px}
+.feats{padding-top:44px;padding-bottom:36px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.f{border:1px solid var(--line);border-radius:14px;padding:18px;background:var(--panel)}
+.f h3{font-size:16px;margin-bottom:6px}.f p{color:var(--mut);font-size:14.5px}
+.end{padding-top:20px;padding-bottom:56px}
+.end div{border:1px solid var(--line);border-radius:16px;padding:28px;background:var(--panel);display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.end p{font-size:20px;font-weight:700;letter-spacing:-.3px}
+footer{border-top:1px solid var(--line);padding:22px 0;color:var(--mut);font-size:13px}
+footer .wrap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+@media(max-width:560px){.sub{font-size:16px}.hero{padding-top:30px}}
+</style>
+</head>
+<body>
+<header class="wrap nav">
+  <a class="brand" href="/"><span class="logo"><svg viewBox="0 0 1024 1024"><g transform="translate(512 512) scale(.93)"><ellipse rx="490" ry="68"/><ellipse rx="435" ry="62" transform="rotate(90)"/><ellipse rx="445" ry="62" transform="rotate(-46)"/><ellipse rx="375" ry="62" transform="rotate(52)"/></g></svg></span>MultiAI</a>
+  <a class="btn p go" href="/chat/?masuk">Masuk</a>
+</header>
+<main>
+  <section class="wrap hero">
+    <h1>Asisten AI untuk chat, kode, dan dokumen.</h1>
+    <p class="sub">Tanya apa saja, minta dibuatkan file, lalu lanjutkan percakapanmu dari HP atau komputer. Semua chat tersimpan di akunmu.</p>
+    <div class="cta"><a class="btn p lg go" href="/chat/?masuk">Mulai chat</a><a class="btn lg" href="#fitur">Lihat fitur</a></div>
+    <div class="demo" aria-hidden="true">
+      <div class="m u">Buatkan landing page kopi dalam satu file HTML</div>
+      <div class="m a"><span class="th">Berpikir 5 detik · 3 langkah</span><p>Siap, ini filenya. Tap kartu untuk melihat preview-nya.</p>
+        <div class="fc"><div class="fi">&lt;/&gt;</div><div><b>kopi.html</b><small>Kode · HTML</small></div></div></div>
+    </div>
+  </section>
+  <section class="wrap feats" id="fitur">
+    <h2>Yang bisa kamu lakukan</h2>
+    <div class="grid">
+      <div class="f"><h3>Riwayat tersimpan</h3><p>Chat, memori, dan pengaturanmu ikut akun, jadi bisa dibuka dari perangkat mana pun.</p></div>
+      <div class="f"><h3>Buat file langsung</h3><p>Minta HTML, PDF, PPTX, DOCX, XLSX, atau kode. Lihat preview-nya, lalu salin atau unduh.</p></div>
+      <div class="f"><h3>Pencarian web</h3><p>Jawaban dengan sumber dan link yang bisa diklik, termasuk video YouTube.</p></div>
+      <div class="f"><h3>Berpikir bertahap</h3><p>Atur seberapa dalam AI berpikir, dari Low sampai Max, dan baca langkah-langkahnya.</p></div>
+      <div class="f"><h3>Memori</h3><p>Simpan prompt dan file yang selalu diingat AI di setiap percakapan.</p></div>
+      <div class="f"><h3>Bagikan chat</h3><p>Kirim satu percakapan lewat link pendek yang bisa dibuka siapa saja.</p></div>
+    </div>
+  </section>
+  <section class="wrap end"><div><p>Siap mulai?</p><a class="btn p lg go" href="/chat/?masuk">Masuk atau daftar</a></div></section>
+</main>
+<footer><div class="wrap"><span>© MultiAI</span><span>Ditenagai Google Gemini. Jawaban AI bisa keliru, cek hal penting.</span></div></footer>
+<script>
+try{if(Object.keys(localStorage).some(function(k){return /^sb-.+-auth-token/.test(k)})){document.querySelectorAll('.go').forEach(function(a){a.href='/chat/';a.textContent=a.classList.contains('lg')?'Buka chat':'Buka chat'})}}catch(e){}
+</script>
+</body>
+</html>
