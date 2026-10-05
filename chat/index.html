@@ -73,6 +73,7 @@ textarea{flex:1;background:none;border:0;color:var(--tx);font:inherit;resize:non
 #pb pre{position:absolute;inset:0;overflow:auto;padding:14px;font:12.5px/1.5 ui-monospace,Menlo,Consolas,monospace;background:var(--cbg);color:var(--tx)}
 #panel.full{position:fixed;inset:0;width:100%!important;z-index:45;border-left:0}
 .imgv{position:absolute;inset:0;display:grid;place-items:center;background:var(--cbg);padding:12px;overflow:auto}.imgv img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;background:repeating-conic-gradient(#8884 0 25%,transparent 0 50%) 50%/16px 16px}
+.kr{display:flex;align-items:center;gap:10px;margin-bottom:8px}.kr span{width:78px;font-size:13px;color:var(--mut);flex-shrink:0}.kr input{flex:1}
 .pdfh{position:absolute;inset:0;overflow:auto;background:#525659;padding:12px;display:flex;flex-direction:column;align-items:center;gap:12px}.pdfh canvas{background:#fff;box-shadow:0 2px 10px #0006;max-width:100%}.pl{padding:20px;color:var(--mut)}
 .modal{position:fixed;inset:0;background:var(--ov);display:none;place-items:center;z-index:50;padding:16px}.modal.on{display:grid;grid-template-columns:minmax(0,1fr)}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;width:min(560px,100%);max-height:90vh;display:flex;flex-direction:column;justify-self:center}
@@ -194,7 +195,9 @@ let S={chats:[],cur:null,set:{key:'',model:'gemini-2.5-flash',temp:0.7,ctx:20,me
 try{const r=JSON.parse(localStorage.getItem('chatbotai')||'null');if(r)S=Object.assign(S,r)}catch(e){}
 S.set=Object.assign({alias:{},web:true,persona:true,effort:'medium'},S.set);if(!S.set.webv){S.set.web=true;S.set.webv=1}
 if(!S.set.cat){S.set.cat=JSON.parse(JSON.stringify(DEF_CAT));S.set.model='Claude|Claude Opus 5.5';delete S.set.slots}
-S.set.real=S.set.real||'gemini-3.6-flash';S.mems=S.mems||[];
+S.set.keys=S.set.keys||{};S.set.map=S.set.map||{};S.set.bases=S.set.bases||{};S.mems=S.mems||[];
+S.set.real=S.set.real||'gemini:gemini-3.6-flash';if(!/^[a-z]+:/.test(S.set.real))S.set.real='gemini:'+S.set.real;
+S.set.reals=S.set.reals||[S.set.real];
 const persist=()=>{try{localStorage.setItem('chatbotai',JSON.stringify(S,(k,v)=>k==='data'&&typeof v==='string'&&v.length>2e5?undefined:v))}catch(e){}};
 const save=()=>{persist();queuePush()};
 const uid=()=>Math.random().toString(36).slice(2,10);
@@ -479,38 +482,114 @@ function memText(){let o='',n=0;const on=S.mems.filter(m=>m.on);
  const ps=on.filter(m=>m.t==='prompt');if(ps.length)o+='\n\nPrompt memori (selalu ikuti):\n'+ps.map(m=>'- '+m.txt).join('\n');
  on.filter(m=>m.t==='file'&&m.txt!=null).forEach(m=>{if(n<MEMCAP){const x=m.txt.slice(0,MEMCAP-n);n+=x.length;o+='\n\n[Berkas memori: '+m.name+']\n'+x}});
  return o}
-function sysPrompt(){return `${S.set.persona?`Kamu adalah ${mname(mdl())}, asisten AI di aplikasi MultiAI. Perkenalkan dirimu dengan nama itu.`:`Kamu adalah asisten AI di aplikasi MultiAI, dijalankan oleh model ${mname(mdl())} dari Google.`}${['ultra','max'].includes(S.set.effort)?' Pikirkan dengan sangat teliti dan periksa ulang jawabanmu sebelum menjawab.':''}${S.set.web?' Kamu punya akses pencarian web; pakai untuk info terbaru.':''} Jika pengguna meminta link, video, artikel, atau sumber: cari lewat web, lalu tulis tiap hasil sebagai link Markdown [judul](url) dengan URL asli dari hasil pencarian dan jangan mengarang URL. Jika tidak menemukan link langsung, beri link pencarian, misalnya https://www.youtube.com/results?search_query=kata+kunci untuk video YouTube. Jawab dalam bahasa yang dipakai pengguna. Kamu bisa MEMBUAT FILE. Tulis tiap file sebagai satu blok kode dengan format \`\`\`bahasa namafile.ext; aplikasi akan mengubahnya jadi file yang bisa dilihat, diunduh, dan disalin. Jangan pernah bilang kamu tidak bisa membuat file. Jika isi file sendiri mengandung tanda tiga backtick, bungkus file itu dengan empat backtick. Pembuka dan penutup blok kode harus berada di barisnya sendiri. Format: html = satu file lengkap dengan CSS dan JS inline (langsung jalan di preview tanpa hosting); pptx = Markdown, tiap slide dipisah baris ---, slide pertama berisi "# Judul" dan "## Subjudul", slide lain "# Judul slide" lalu poin "- ..."; pdf dan docx = Markdown (#, ##, ###, daftar -, 1., **tebal**, tabel | a | b |); xlsx = isi CSV; py, js, css, json, md, txt, csv dan lainnya = isi file apa adanya. png, jpg, webp = gambar: kalau isi blok adalah kode SVG lengkap, aplikasi mengubahnya jadi gambar; kalau isinya deskripsi gambar (bahasa Inggris, rinci), aplikasi membuat gambarnya dengan model gambar. svg = kode SVG. zip, mcpack, mcaddon, mcworld, mctemplate = paket berisi banyak file: tulis tiap file diawali satu baris '=== path/nama-file' (contoh '=== BP/manifest.json') lalu isinya; untuk file biner tulis kata base64 setelah path lalu isi base64; jangan pakai baris yang diawali === di dalam isi file. Untuk Minecraft Bedrock: mcpack = satu pack dengan manifest.json di akar paket; mcaddon = beberapa pack dalam folder terpisah (misalnya BP/ dan RP/) yang masing-masing punya manifest.json; format_version 2, header.uuid dan uuid tiap module harus UUID acak berbeda satu sama lain, version berupa [1,0,0], min_engine_version sesuai versi game, dan hubungkan RP dengan BP lewat dependencies. Jenis file lain yang isinya teks boleh dibuat langsung dengan nama file berekstensi itu. Blok kode hanya untuk file atau kode panjang; jawaban biasa tetap teks.`+memText()+(S.set.mem.trim()?`\n\nCatatan memori dari pengguna:\n${S.set.mem}`:'')}
+function sysPrompt(){return `${S.set.persona?`Kamu adalah ${mname(mdl())}, asisten AI di aplikasi MultiAI. Perkenalkan dirimu dengan nama itu.`:`Kamu adalah asisten AI di aplikasi MultiAI, dijalankan oleh model ${mname(mdl())} dari Google.`}${['ultra','max'].includes(S.set.effort)?' Pikirkan dengan sangat teliti dan periksa ulang jawabanmu sebelum menjawab.':''}${S.set.web&&webOK()?' Kamu punya akses pencarian web; pakai untuk info terbaru.':''} Jika pengguna meminta link, video, artikel, atau sumber: cari lewat web, lalu tulis tiap hasil sebagai link Markdown [judul](url) dengan URL asli dari hasil pencarian dan jangan mengarang URL. Jika tidak menemukan link langsung, beri link pencarian, misalnya https://www.youtube.com/results?search_query=kata+kunci untuk video YouTube. Jawab dalam bahasa yang dipakai pengguna. Kamu bisa MEMBUAT FILE. Tulis tiap file sebagai satu blok kode dengan format \`\`\`bahasa namafile.ext; aplikasi akan mengubahnya jadi file yang bisa dilihat, diunduh, dan disalin. Jangan pernah bilang kamu tidak bisa membuat file. Jika isi file sendiri mengandung tanda tiga backtick, bungkus file itu dengan empat backtick. Pembuka dan penutup blok kode harus berada di barisnya sendiri. Format: html = satu file lengkap dengan CSS dan JS inline (langsung jalan di preview tanpa hosting); pptx = Markdown, tiap slide dipisah baris ---, slide pertama berisi "# Judul" dan "## Subjudul", slide lain "# Judul slide" lalu poin "- ..."; pdf dan docx = Markdown (#, ##, ###, daftar -, 1., **tebal**, tabel | a | b |); xlsx = isi CSV; py, js, css, json, md, txt, csv dan lainnya = isi file apa adanya. png, jpg, webp = gambar: kalau isi blok adalah kode SVG lengkap, aplikasi mengubahnya jadi gambar; kalau isinya deskripsi gambar (bahasa Inggris, rinci), aplikasi membuat gambarnya dengan model gambar. svg = kode SVG. zip, mcpack, mcaddon, mcworld, mctemplate = paket berisi banyak file: tulis tiap file diawali satu baris '=== path/nama-file' (contoh '=== BP/manifest.json') lalu isinya; untuk file biner tulis kata base64 setelah path lalu isi base64; jangan pakai baris yang diawali === di dalam isi file. Untuk Minecraft Bedrock: mcpack = satu pack dengan manifest.json di akar paket; mcaddon = beberapa pack dalam folder terpisah (misalnya BP/ dan RP/) yang masing-masing punya manifest.json; format_version 2, header.uuid dan uuid tiap module harus UUID acak berbeda satu sama lain, version berupa [1,0,0], min_engine_version sesuai versi game, dan hubungkan RP dengan BP lewat dependencies. Jenis file lain yang isinya teks boleh dibuat langsung dengan nama file berekstensi itu. Blok kode hanya untuk file atau kode panjang; jawaban biasa tetap teks.`+memText()+(S.set.mem.trim()?`\n\nCatatan memori dari pengguna:\n${S.set.mem}`:'')}
+/* ---------- multi-penyedia ---------- */
+const PNAME={gemini:'Gemini',openai:'OpenAI',anthropic:'Anthropic',deepseek:'DeepSeek',kimi:'Kimi'};
+const PRESETS={gemini:['gemini-3.8-flash','gemini-3.7-flash','gemini-3.6-flash','gemini-3.5-flash-lite','gemini-3.1-pro-preview','gemini-3-flash-preview','gemini-2.5-pro','gemini-2.5-flash'],
+ openai:['gpt-6-astra','gpt-5.6-sol','gpt-5.6-terra','gpt-5.6-luna','gpt-5.5','gpt-5.4','gpt-5.4-mini','gpt-5.4-nano'],
+ anthropic:['claude-fable-5-1','claude-opus-5-5','claude-sonnet-5-5','claude-haiku-4-5-20251001'],
+ deepseek:['deepseek-v4-pro','deepseek-v4-flash'],kimi:['kimi-k2.6','kimi-k2.5','kimi-k2.7-code','moonshot-v1-128k']};
+const EXMP={gemini:'gemini-3.6-flash',openai:'gpt-6.1-sol',anthropic:'claude-opus-5-5',deepseek:'deepseek-v4-pro',kimi:'kimi-k2.6'};
+const REALMAP={'Claude Fable 5.1':'anthropic:claude-fable-5-1','Claude Opus 5.5':'anthropic:claude-opus-5-5','Claude Sonnet 5.5':'anthropic:claude-sonnet-5-5','Claude Haiku 4.5':'anthropic:claude-haiku-4-5-20251001',
+ 'GPT-6.1 Sol':'openai:gpt-6.1-sol','GPT-6 Astra':'openai:gpt-6-astra','GPT-6 Sol':'openai:gpt-5.6-sol','GPT-6 Luna':'openai:gpt-5.6-luna','GPT-5.6':'openai:gpt-5.6','GPT-5.6 Sol':'openai:gpt-5.6-sol','GPT-5.6 Terra':'openai:gpt-5.6-terra','GPT-5.6 Luna':'openai:gpt-5.6-luna','GPT-5.5':'openai:gpt-5.5','GPT-5.4':'openai:gpt-5.4',
+ 'DeepSeek V4 Pro':'deepseek:deepseek-v4-pro','DeepSeek V4 Flash':'deepseek:deepseek-v4-flash','Kimi K2.6':'kimi:kimi-k2.6','Kimi K2.5':'kimi:kimi-k2.5',
+ 'Gemini 3.8 Flash':'gemini:gemini-3.8-flash','Gemini 3.7 Flash':'gemini:gemini-3.7-flash','Gemini 3.6 Flash':'gemini:gemini-3.6-flash','Gemini 3.1 Pro':'gemini:gemini-3.1-pro-preview','Gemini 2.5 Pro':'gemini:gemini-2.5-pro'};
+const keyOf=pv=>pv==='gemini'?(S.set.key||''):((S.set.keys||{})[pv]||'');
+const parseRef=r=>{r=String(r||'');const i=r.indexOf(':');return(i>0&&PNAME[r.slice(0,i)])?{p:r.slice(0,i),m:r.slice(i+1)}:{p:'gemini',m:r}};
+const refLabel=r=>{const x=parseRef(r);return PNAME[x.p]+' · '+x.m};
+const realFor=id=>(S.set.map&&S.set.map[id])||S.set.real;
+function normRef(r){r=(r||'').trim();if(!r)return '';const i=r.indexOf(':');if(i>0&&PNAME[r.slice(0,i)])return r;
+ const pv=/^gemini/i.test(r)?'gemini':/^(gpt|o\d|chatgpt)/i.test(r)?'openai':/^claude/i.test(r)?'anthropic':/^deepseek/i.test(r)?'deepseek':/^(kimi|moonshot)/i.test(r)?'kimi':'';return pv?pv+':'+r:''}
+const webOK=()=>['gemini','openai'].includes(parseRef(realFor(cur()?cur().model:S.set.model)).p);
+function needKey(){const id=cur()?cur().model:S.set.model,x=parseRef(realFor(id));if(keyOf(x.p))return false;openSettings('gen');note('Isi API key '+PNAME[x.p]+' dulu di tab Umum.');return true}
+function got(ai){if(!ai.tms)ai.tms=Math.max(1,Math.round((Date.now()-ai.t0)/1000))}
+async function pfetch(url,o){try{return await fetch(url,o)}catch(e){
+  if(!/^https?:/.test(location.protocol))throw e;
+  const r=await fetch('/api/llm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,headers:o.headers,body:o.body})});
+  if(r.status===404)throw e;return r}}
+async function errText(r,rid,c){let e='';try{const j=await r.json();e=(j.error&&(j.error.message||j.error))||j.message||''}catch(_){}
+ return 'Error '+r.status+': '+String(e||'permintaan gagal').split(rid).join(mname(c.model))}
+async function readSSE(r,onData,draw){
+ if(r.body&&r.body.getReader){const rd=r.body.getReader(),dec=new TextDecoder();let buf='';
+  for(;;){if(ctrl.stop){rd.cancel();break}const {done,value}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});const ls=buf.split('\n');buf=ls.pop();ls.forEach(l=>{if(l.startsWith('data:'))onData(l.slice(5).trim())});draw()}}
+ else{(await r.text()).split('\n').forEach(l=>{if(l.startsWith('data:'))onData(l.slice(5).trim())});draw()}}
+async function callGemini(ref,c,ai,hist,draw){let uin=0,uout=0;const rid=ref.m;
+ const post=(gc,wt=true)=>pfetch('https://generativelanguage.googleapis.com/v1beta/models/'+rid+':streamGenerateContent?alt=sse',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':keyOf('gemini')},body:JSON.stringify({systemInstruction:{parts:[{text:sysPrompt()}]},contents:hist,generationConfig:gc,...(S.set.web&&wt?{tools:[{google_search:{}}]}:{})})});
+ const gc=genCfg(rid);let r=await post(gc);
+ if(r.status===400&&gc.thinkingConfig){delete gc.thinkingConfig;r=await post(gc)}
+ if(r.status===400&&Object.keys(gc).length){r=await post({})}
+ if(r.status===400&&S.set.web){r=await post({},false)}
+ if(!r.ok)throw new Error(await errText(r,rid,c));
+ await readSSE(r,d=>{let j;try{j=JSON.parse(d)}catch(_){return}const cd=j.candidates&&j.candidates[0];
+  ((cd&&cd.content&&cd.content.parts)||[]).forEach(q=>{if(!q.text)return;if(q.thought)ai.think=(ai.think||'')+q.text;else{ai.text+=q.text;got(ai)}});
+  ai.src=ai.src||[];((cd&&cd.groundingMetadata&&cd.groundingMetadata.groundingChunks)||[]).forEach(g=>{if(g.web&&!ai.src.some(x=>x.u===g.web.uri))ai.src.push({u:g.web.uri,t:g.web.title||g.web.uri})});
+  if(j.usageMetadata){uin=j.usageMetadata.promptTokenCount||uin;uout=((j.usageMetadata.candidatesTokenCount||0)+(j.usageMetadata.thoughtsTokenCount||0))||uout}},draw);
+ return{in:uin,out:uout}}
+async function callOpenAI(ref,c,ai,hist,draw){let uin=0,uout=0;const rid=ref.m,em={low:'low',medium:'medium',high:'high',ultra:'high',max:'max'}[S.set.effort]||'medium';
+ const input=hist.map(h=>({role:h.role==='model'?'assistant':'user',content:h.parts.map(q=>{if(q.text!=null)return{type:h.role==='model'?'output_text':'input_text',text:q.text};
+  const mt=q.inlineData.mimeType,d=q.inlineData.data;if(/^image\//.test(mt))return{type:'input_image',image_url:'data:'+mt+';base64,'+d};if(mt==='application/pdf')return{type:'input_file',filename:'dokumen.pdf',file_data:'data:'+mt+';base64,'+d};return null}).filter(Boolean)})).filter(m=>m.content.length);
+ const post=(eff,web)=>pfetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+keyOf('openai')},body:JSON.stringify({model:rid,instructions:sysPrompt(),input,stream:true,store:false,...(eff?{reasoning:{effort:eff,summary:'auto'}}:{}),...(web?{tools:[{type:'web_search'}]}:{})})});
+ let r=await post(em,S.set.web);
+ if(r.status===400&&S.set.web)r=await post(em,false);
+ if(r.status===400&&em!=='high')r=await post('high',false);
+ if(r.status===400)r=await post('',false);
+ if(!r.ok)throw new Error(await errText(r,rid,c));
+ await readSSE(r,d=>{if(d==='[DONE]')return;let j;try{j=JSON.parse(d)}catch(_){return}const t=j.type||'';
+  if(t==='response.output_text.delta'){ai.text+=j.delta||'';got(ai)}
+  else if(t==='response.reasoning_summary_text.delta')ai.think=(ai.think||'')+(j.delta||'');
+  else if(t==='response.reasoning_summary_part.added'&&ai.think)ai.think+='\n\n';
+  else if(t==='response.output_text.annotation.added'&&j.annotation&&j.annotation.url){ai.src=ai.src||[];if(!ai.src.some(x=>x.u===j.annotation.url))ai.src.push({u:j.annotation.url,t:j.annotation.title||j.annotation.url})}
+  else if(t==='response.completed'){const u=(j.response&&j.response.usage)||{};uin=u.input_tokens||0;uout=u.output_tokens||0}
+  else if(t==='response.failed'||t==='error')throw new Error((j.response&&j.response.error&&j.response.error.message)||j.message||'OpenAI gagal')},draw);
+ return{in:uin,out:uout}}
+async function callAnthropic(ref,c,ai,hist,draw){let uin=0,uout=0;const rid=ref.m,bud={low:1024,medium:4096,high:10000,ultra:20000,max:32000}[S.set.effort]||4096,msgs=[];
+ hist.forEach(h=>{const role=h.role==='model'?'assistant':'user',bl=h.parts.map(q=>{if(q.text!=null)return q.text.trim()?{type:'text',text:q.text}:null;const mt=q.inlineData.mimeType;
+  if(/^image\//.test(mt))return{type:'image',source:{type:'base64',media_type:mt,data:q.inlineData.data}};if(mt==='application/pdf')return{type:'document',source:{type:'base64',media_type:mt,data:q.inlineData.data}};return null}).filter(Boolean);
+  if(!bl.length)return;const l=msgs[msgs.length-1];if(l&&l.role===role)l.content=l.content.concat(bl);else msgs.push({role,content:bl})});
+ const post=th=>pfetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':keyOf('anthropic'),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:rid,max_tokens:th?bud+8192:8192,system:sysPrompt(),messages:msgs,stream:true,...(th?{thinking:{type:'enabled',budget_tokens:bud}}:{})})});
+ let r=await post(true);if(r.status===400)r=await post(false);
+ if(!r.ok)throw new Error(await errText(r,rid,c));
+ await readSSE(r,d=>{let j;try{j=JSON.parse(d)}catch(_){return}const t=j.type;
+  if(t==='content_block_delta'&&j.delta){if(j.delta.type==='text_delta'){ai.text+=j.delta.text||'';got(ai)}else if(j.delta.type==='thinking_delta')ai.think=(ai.think||'')+(j.delta.thinking||'')}
+  else if(t==='message_start'&&j.message&&j.message.usage)uin=j.message.usage.input_tokens||0;
+  else if(t==='message_delta'&&j.usage)uout=j.usage.output_tokens||0;
+  else if(t==='error')throw new Error((j.error&&j.error.message)||'Anthropic gagal')},draw);
+ return{in:uin,out:uout}}
+async function callChat(ref,c,ai,hist,draw){let uin=0,uout=0;const pv=ref.p,rid=ref.m,eff=S.set.effort;
+ const url=pv==='deepseek'?'https://api.deepseek.com/chat/completions':((S.set.bases&&S.set.bases.kimi)||'https://api.moonshot.ai/v1').replace(/\/+$/,'')+'/chat/completions';
+ const msgs=[{role:'system',content:sysPrompt()}];
+ hist.forEach(h=>{const role=h.role==='model'?'assistant':'user',tx=h.parts.filter(q=>q.text!=null).map(q=>q.text).join('\n'),
+  imgs=(pv==='kimi'&&role==='user')?h.parts.filter(q=>q.inlineData&&/^image\//.test(q.inlineData.mimeType)):[],
+  skip=h.parts.filter(q=>q.inlineData).length-imgs.length,text=tx+((skip&&role==='user')?'\n\n[Lampiran biner tidak didukung model ini dan diabaikan]':'');
+  msgs.push({role,content:imgs.length?[{type:'text',text}].concat(imgs.map(q=>({type:'image_url',image_url:{url:'data:'+q.inlineData.mimeType+';base64,'+q.inlineData.data}}))):text})});
+ const extra=eff==='low'?{thinking:{type:'disabled'}}:(pv==='deepseek'?{thinking:{type:'enabled'},reasoning_effort:(eff==='ultra'||eff==='max')?'max':'high'}:{});
+ const post=ex=>pfetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+keyOf(pv)},body:JSON.stringify({model:rid,messages:msgs,stream:true,stream_options:{include_usage:true},...ex})});
+ let r=await post(extra);if(r.status===400&&Object.keys(extra).length)r=await post({});
+ if(!r.ok)throw new Error(await errText(r,rid,c));
+ await readSSE(r,d=>{if(d==='[DONE]')return;let j;try{j=JSON.parse(d)}catch(_){return}const ch=j.choices&&j.choices[0],dl=ch&&ch.delta;
+  if(dl){if(dl.reasoning_content)ai.think=(ai.think||'')+dl.reasoning_content;if(dl.content){ai.text+=dl.content;got(ai)}}
+  if(j.usage){uin=j.usage.prompt_tokens||uin;uout=j.usage.completion_tokens||uout}},draw);
+ return{in:uin,out:uout}}
+const PROV={gemini:callGemini,openai:callOpenAI,anthropic:callAnthropic,deepseek:callChat,kimi:callChat};
 function toParts(m){const p=[];let t=m.text;
  (m.att||[]).forEach(a=>{if(a.kind==='text')t+=`\n\n[File: ${a.name}]\n${a.data}`;else if(a.data)p.push({inlineData:{mimeType:a.mime,data:a.data}})});
  p.unshift({text:t});return p}
 async function send(){if(busy){if(ctrl)ctrl.stop=true;return}
  const txt=$('#inp').value.trim();if(!txt&&!pending.length)return;
- if(!user){openAuth();return}if(!S.set.key){openSettings('gen');return}
+ if(!user){openAuth();return}if(needKey())return;
  let c=cur();if(!c){c={id:uid(),title:(txt||pending[0].name).slice(0,40),t:Date.now(),model:S.set.model,msgs:[]};S.chats.push(c);S.cur=c.id}
  c.msgs.push({role:'user',text:txt||'(file terlampir)',att:pending});pending=[];renderPF();$('#inp').value='';grow();
  await gen(c)}
-async function gen(c){if(busy)return;if(!user){openAuth();return}if(!S.set.key){openSettings('gen');return}
+async function gen(c){if(busy)return;if(!user){openAuth();return}if(needKey())return;
  const ai={role:'model',text:'',model:c.model,t0:Date.now()};c.msgs.push(ai);c.t=Date.now();renderSide();renderChat();
  const body=document.querySelector('#wrap .msg:last-child .body');body.innerHTML='<span class="dots">Berpikir</span>';
  busy=true;$('#send').innerHTML=ic('stop',16);ctrl={stop:false};
  let hs=c.msgs.slice(0,-1).filter(m=>!m.err).slice(-Math.max(1,S.set.ctx));while(hs.length>1&&hs[0].role==='model')hs.shift();const hist=hs.map(m=>({role:m.role,parts:toParts(m)}));const mb=S.mems.filter(m=>m.on&&m.t==='file'&&m.b64);if(mb.length&&hist.length)hist[0].parts=[{text:'Berkas memori (selalu jadikan konteks):'}].concat(mb.map(m=>({inlineData:{mimeType:m.mime,data:m.b64}})),hist[0].parts);
- let uin=0,uout=0;const rid=realId(c.model);
- try{const post=(gc,wt=true)=>fetch(`https://generativelanguage.googleapis.com/v1beta/models/${rid}:streamGenerateContent?alt=sse`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':S.set.key},body:JSON.stringify({systemInstruction:{parts:[{text:sysPrompt()}]},contents:hist,generationConfig:gc,...(S.set.web&&wt?{tools:[{google_search:{}}]}:{})})});
-  const gc=genCfg(rid);let r=await post(gc);
-  if(r.status===400&&gc.thinkingConfig){delete gc.thinkingConfig;r=await post(gc)}
-  if(r.status===400&&Object.keys(gc).length){r=await post({})}
-  if(r.status===400&&S.set.web){r=await post({},false)}
-  if(!r.ok){let e='';try{e=(await r.json()).error.message}catch(_){}throw new Error(`Error ${r.status}: ${(e||'permintaan gagal').split(rid).join(mname(c.model))}`)}
-  const proc=l=>{if(!l.startsWith('data:'))return;try{const j=JSON.parse(l.slice(5));const cd=j.candidates&&j.candidates[0];
-    ((cd&&cd.content&&cd.content.parts)||[]).forEach(p=>{if(!p.text)return;if(p.thought)ai.think=(ai.think||'')+p.text;else{ai.text+=p.text;if(!ai.tms)ai.tms=Math.max(1,Math.round((Date.now()-ai.t0)/1000))}});
-    ai.src=ai.src||[];((cd&&cd.groundingMetadata&&cd.groundingMetadata.groundingChunks)||[]).forEach(g=>{if(g.web&&!ai.src.some(s=>s.u===g.web.uri))ai.src.push({u:g.web.uri,t:g.web.title||g.web.uri})});
-    if(j.usageMetadata){uin=j.usageMetadata.promptTokenCount||uin;uout=((j.usageMetadata.candidatesTokenCount||0)+(j.usageMetadata.thoughtsTokenCount||0))||uout}}catch(_){}};
-  const draw=()=>{store=[];body.innerHTML=thinkHtml(ai,!ai.text)+(md(ai.text)||(ai.think?'':'<span class="dots">Berpikir</span>'));scrollEnd()};
-  if(r.body&&r.body.getReader){const rd=r.body.getReader(),dec=new TextDecoder();let buf='';
-   for(;;){if(ctrl.stop){rd.cancel();break}const {done,value}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});const ls=buf.split('\n');buf=ls.pop();ls.forEach(proc);draw()}}
-  else{(await r.text()).split('\n').forEach(proc);draw()}
-  if(!ai.text){ai.text='Model tidak mengirim jawaban (mungkin diblokir filter keamanan). Coba ubah pertanyaan.';ai.err=1}
- }catch(e){if(e.name==='AbortError'){ai.text=ai.text||'(dihentikan)'}else{ai.err=1;ai.text=e.message+(/40[13]|API key/i.test(e.message)?' — Periksa API key di Pengaturan > Umum.':/fetch|network/i.test(e.message)?' — Koneksi ke Google diblokir. Unduh file ini lalu buka langsung di Chrome (jangan lewat preview), dan pastikan internet aktif.':/429/.test(e.message)?' — Kuota habis, tunggu sebentar atau ganti model.':'')}}
+ let uin=0,uout=0;const ref=parseRef(realFor(c.model));
+ const draw=()=>{store=[];body.innerHTML=thinkHtml(ai,!ai.text)+(md(ai.text)||(ai.think?'':'<span class="dots">Berpikir</span>'));scrollEnd()};
+ try{const u=await PROV[ref.p](ref,c,ai,hist,draw);uin=u.in||0;uout=u.out||0;
+  if(!ai.text){if(ctrl.stop)ai.text='(dihentikan)';else{ai.text='Model tidak mengirim jawaban (mungkin diblokir filter keamanan). Coba ubah pertanyaan.';ai.err=1}}
+ }catch(e){ai.err=1;ai.text=e.message+(/40[13]|api key|invalid|unauthor/i.test(e.message)?' — Periksa API key '+PNAME[ref.p]+' di Pengaturan > Umum.':/fetch|network|load failed/i.test(e.message)?' — Koneksi ke '+PNAME[ref.p]+' gagal. Pastikan internet aktif'+(/^https?:/.test(location.protocol)?' dan server proxy (/api/llm) sudah terpasang.':'.'):/429/.test(e.message)?' — Kuota habis atau terlalu cepat, tunggu sebentar atau ganti model.':'')}
  S.use.req++;S.use.inp+=uin;S.use.out+=uout;const b=S.use.by[c.model]=S.use.by[c.model]||{req:0,inp:0,out:0};b.req++;b.inp+=uin;b.out+=uout;
  busy=false;ctrl=null;$('#send').innerHTML=ic('arrow',18);save();renderSide();renderChat()}
 $('#send').onclick=send;
@@ -538,7 +617,8 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
   <label>Jendela konteks model: ${used.toLocaleString('id')} token terpakai dari ±${lim.toLocaleString('id')} per permintaan</label>
   <table><tr><th>Model</th><th>Req</th><th>Masuk</th><th>Keluar</th></tr>${Object.keys(S.use.by).map(k=>`<tr><td>${mname(k)}</td><td>${S.use.by[k].req}</td><td>${S.use.by[k].inp}</td><td>${S.use.by[k].out}</td></tr>`).join('')||'<tr><td colspan=4>Belum ada data</td></tr>'}</table>
   <p class="note">Sisa kuota harian/menit ada di akun Google AI Studio kamu; di sini hanya terhitung pemakaian lewat aplikasi ini.</p>`}
- else if(tab==='gen'){c.innerHTML=`<label style="margin-top:0">Tema</label><div class="seg" id="sth"><button data-t="dark" class="${themeOf()==='dark'?'on':''}">Gelap</button><button data-t="light" class="${themeOf()==='light'?'on':''}">Terang</button></div><label>Gemini API key</label><input type="password" id="skey" value="${esc(S.set.key)}" placeholder="Tempel API key di sini" autocomplete="off"><p class="note">Key disimpan hanya di browser kamu (localStorage) dan dikirim langsung ke Google.</p>
+ else if(tab==='gen'){c.innerHTML=`<label style="margin-top:0">Tema</label><div class="seg" id="sth"><button data-t="dark" class="${themeOf()==='dark'?'on':''}">Gelap</button><button data-t="light" class="${themeOf()==='light'?'on':''}">Terang</button></div><label>API key</label>${Object.keys(PNAME).map(pv=>`<div class="kr"><span>${PNAME[pv]}</span><input type="password" id="k_${pv}" value="${esc(keyOf(pv))}" placeholder="API key ${PNAME[pv]}" autocomplete="off"></div>`).join('')}<p class="note">Isi hanya penyedia yang kamu pakai. Key dikirim langsung dari browser ke penyedianya. Kalau kamu login, key ikut tersimpan di akunmu supaya bisa dipakai di perangkat lain.</p>
+  <label>Alamat API Kimi (opsional)</label><input type="text" id="kbase" value="${esc((S.set.bases&&S.set.bases.kimi)||'')}" placeholder="https://api.moonshot.ai/v1">
   <label>Model bawaan chat baru</label><button class="sel" id="smod" data-v="${esc(S.set.model)}"><span>${esc(mname(S.set.model))}</span>${ic('chev',16)}</button>
   <label>Kreativitas (temperature): <span id="tv">${S.set.temp}</span></label><input type="range" id="stemp" min="0" max="2" step="0.1" value="${S.set.temp}" style="width:100%"><p class="note">Tidak dikirim untuk Gemini 3.6 ke atas karena Google sudah menghapus parameter ini.</p>
   <label>Batas memori (pesan terakhir yang dikirim): <span id="cv">${S.set.ctx}</span></label><input type="range" id="sctx" min="2" max="60" step="2" value="${S.set.ctx}" style="width:100%">
@@ -547,13 +627,26 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
   $('#stemp').oninput=e=>$('#tv').textContent=e.target.value;$('#sctx').oninput=e=>$('#cv').textContent=e.target.value;
   $('#sth').onclick=e=>{const b=e.target.closest('button');if(b){collect();setTheme(b.dataset.t);drawTab()}};
   $('#smod').onclick=async()=>{const b=$('#smod'),v=await pick({title:'Model bawaan chat baru',value:b.dataset.v,groups:S.set.cat.map(g=>({g:g.g,o:g.m.map(n=>({v:g.g+'|'+n,l:n}))}))});if(v!=null){b.dataset.v=v;b.firstChild.textContent=mname(v)}}}
- else if(tab==='mdl'){const k=KNOWN.some(x=>x[0]===S.set.real);
-  c.innerHTML=`<label style="margin-top:0">Model asli untuk semua nama (tidak tampil di aplikasi)</label><button class="sel" id="sreal" data-v="${k?S.set.real:'__c'}"><span>${k?esc((KNOWN.find(x=>x[0]===S.set.real)||[0,''])[1]):'Kustom…'}</span>${ic('chev',16)}</button><input type="text" id="srealc" value="${k?'':esc(S.set.real)}" placeholder="ID model, contoh: gemini-3.6-flash" style="margin-top:6px;${k?'display:none':''}">
-  <label>Model pembuat gambar (untuk blok gambar tanpa SVG)</label><input type="text" id="simg" value="${esc(S.set.imgModel||'')}" placeholder="gemini-3.1-flash-image-preview">
-  <p class="note" style="margin:14px 0 0">Daftar nama model, satu nama per baris. Tambah nama baru kapan saja saat ada model baru, misalnya GPT-6.1.</p>`+S.set.cat.map((g,i)=>`<label>${esc(g.g)}</label><textarea class="cat" data-i="${i}" rows="5">${esc(g.m.join('\n'))}</textarea>`).join('')+`<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="gadd">+ Tambah grup</button><button class="btn d" id="grst">Reset daftar</button></div>`;
-  $('#sreal').onclick=async()=>{const b=$('#sreal'),v=await pick({title:'Model asli',value:b.dataset.v,options:KNOWN.map(x=>({v:x[0],l:x[1]})).concat([{v:'__c',l:'Kustom…'}])});if(v!=null){b.dataset.v=v;b.firstChild.textContent=v==='__c'?'Kustom…':(KNOWN.find(x=>x[0]===v)||[0,v])[1];$('#srealc').style.display=v==='__c'?'':'none'}};
+ else if(tab==='mdl'){const reals=S.set.reals||[];
+  c.innerHTML=`<label style="margin-top:0">Model asli yang tersedia</label><p class="note" style="margin:0 0 6px">Model sungguhan yang dipanggil di balik nama tampilan. API key tiap penyedia diisi di tab Umum.</p>
+  ${reals.map((r,i)=>`<div class="mi"><span>${esc(refLabel(r))}</span><button class="rd" data-i="${i}" aria-label="Hapus">${ic('trash',15)}</button></div>`).join('')}
+  <button class="btn" id="radd" style="margin-top:10px">+ Tambah model asli</button>
+  <label>Model asli bawaan (untuk nama tanpa pemetaan)</label><button class="sel" id="sreal" data-v="${esc(S.set.real)}"><span>${esc(refLabel(S.set.real))}</span>${ic('chev',16)}</button>
+  <label>Model pembuat gambar (Gemini)</label><input type="text" id="simg" value="${esc(S.set.imgModel||'')}" placeholder="gemini-3.1-flash-image-preview">
+  <p class="note" style="margin:14px 0 0">Daftar nama tampilan, satu per baris. Untuk menunjuk model asli tertentu tulis <b>Nama = gpt-5.6-sol</b> atau <b>Nama = anthropic:claude-opus-5-5</b>. Nama tanpa tanda "=" memakai model asli bawaan.</p>`
+  +S.set.cat.map((g,i)=>`<label style="display:flex;justify-content:space-between;align-items:center">${esc(g.g)}<button class="rg" data-i="${i}" style="color:var(--al);font-size:12px">Pakai model asli</button></label><textarea class="cat" data-i="${i}" rows="5">${esc(g.m.map(n=>n+((S.set.map||{})[g.g+'|'+n]?' = '+S.set.map[g.g+'|'+n]:'')).join('\n'))}</textarea>`).join('')
+  +`<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="gadd">+ Tambah grup</button><button class="btn d" id="grst">Reset daftar</button></div>`;
+  const choose=async(title,cur)=>{const groups=Object.keys(PNAME).map(pv=>({g:PNAME[pv],o:PRESETS[pv].map(m=>({v:pv+':'+m,l:m})).concat([{v:'custom:'+pv,l:'Kustom…'}])}));
+   const extra=(S.set.reals||[]).filter(r=>!PRESETS[parseRef(r).p].includes(parseRef(r).m));if(extra.length)groups.unshift({g:'Milikmu',o:extra.map(r=>({v:r,l:refLabel(r)}))});
+   const v=await pick({title,value:cur,groups});if(v==null)return null;
+   if(v.startsWith('custom:')){const pv=v.slice(7),id=await promptD('ID model '+PNAME[pv],'contoh: '+EXMP[pv],'','Tambah');return(id&&id.trim())?pv+':'+id.trim():null}return v};
+  $('#radd').onclick=async()=>{collect();const r=await choose('Tambah model asli','');if(r){if(!S.set.reals.includes(r))S.set.reals.push(r);save();drawTab()}};
+  $('#sreal').onclick=async()=>{const b=$('#sreal'),r=await choose('Model asli bawaan',b.dataset.v);if(r){if(!S.set.reals.includes(r))S.set.reals.push(r);b.dataset.v=r;b.firstChild.textContent=refLabel(r)}};
   $('#gadd').onclick=async()=>{collect();const n=await promptD('Nama grup baru, misalnya Qwen atau Grok','Nama grup');if(n&&n.trim()){S.set.cat.push({g:n.trim(),m:[]});drawTab()}};
-  $('#grst').onclick=async()=>{if(await confirmD('Kembalikan daftar nama ke bawaan?')){S.set.cat=JSON.parse(JSON.stringify(DEF_CAT));drawTab()}}}
+  $('#grst').onclick=async()=>{if(await confirmD('Kembalikan daftar nama ke bawaan?')){S.set.cat=JSON.parse(JSON.stringify(DEF_CAT));drawTab()}};
+  c.onclick=async e=>{const d=e.target.closest('.rd'),g=e.target.closest('.rg');
+   if(d){collect();const i=+d.dataset.i,r=S.set.reals[i];if(S.set.reals.length<2){note('Minimal satu model asli harus ada.');return}S.set.reals.splice(i,1);if(S.set.real===r)S.set.real=S.set.reals[0];save();drawTab()}
+   else if(g){collect();const x=S.set.cat[+g.dataset.i];let n=0;x.m.forEach(nm=>{const r=REALMAP[nm];if(r){S.set.map[x.g+'|'+nm]=r;if(!S.set.reals.includes(r))S.set.reals.push(r);n++}});save();drawTab();note(n?n+' nama di grup '+x.g+' sekarang memakai model aslinya. Isi API key penyedianya di tab Umum.':'Tidak ada nama di grup ini yang dikenali. Tulis manual: Nama = id-model.')}}}
  else if(tab==='mem'){const tot=S.mems.filter(m=>m.on).reduce((n,m)=>n+(m.txt?m.txt.length:Math.round((m.b64||'').length*.5)),0);
   c.innerHTML=`<label style="margin-top:0">Instruksi umum</label><textarea id="smem" placeholder="Contoh: Namaku Budi, aku programmer web. Jawab singkat dan santai.">${esc(S.set.mem)}</textarea>
   <label>Tambah prompt ke memori</label><div style="display:flex;gap:6px"><input type="text" id="mnew" placeholder="Contoh: Selalu jawab dalam bahasa Indonesia"><button class="btn p" id="madd">Tambah</button></div>
@@ -571,16 +664,18 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
    drawTab();if(bad.length)note('Tidak didukung atau terlalu besar: '+bad.join(', '));if(st!==S.mems.length)note('Penyimpanan browser penuh. Hapus chat atau memori lama.')};
   c.onchange=e=>{if(e.target.type==='checkbox'&&e.target.dataset.i!==undefined){S.mems[+e.target.dataset.i].on=e.target.checked;save()}};
   c.onclick=e=>{const b=e.target.closest('.md');if(b){collect();S.mems.splice(+b.dataset.i,1);save();drawTab()}}}
- else{c.innerHTML=`<p class="note" style="margin:0 0 12px">Semua data ada di browser ini. Versi 2026.10.04g.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="exp">Ekspor semua chat (JSON)</button><button class="btn" id="implink">Impor dari link</button><button class="btn d" id="clr">Hapus semua chat</button><button class="btn d" id="rst">Reset penggunaan</button></div>`;
+ else{c.innerHTML=`<p class="note" style="margin:0 0 12px">Semua data ada di browser ini. Versi 2026.10.04h.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="exp">Ekspor semua chat (JSON)</button><button class="btn" id="implink">Impor dari link</button><button class="btn d" id="clr">Hapus semua chat</button><button class="btn d" id="rst">Reset penggunaan</button></div>`;
   $('#implink').onclick=async()=>{const v=await promptD('Tempel link chat yang dibagikan','https://…','','Buka');if(v&&v.trim())handleShare(v.trim())};
   $('#exp').onclick=()=>download('multiai-chats.json',JSON.stringify(S.chats,null,1));
   $('#clr').onclick=async()=>{if(await confirmD('Hapus semua chat?')){S.chats=[];S.cur=null;save();renderAll()}};
   $('#rst').onclick=()=>{S.use={req:0,inp:0,out:0,by:{}};save();drawTab()}}}
 document.querySelector('.tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;collect();tab=b.dataset.t;drawTab()};
 function collect(){const g=id=>document.getElementById(id);
- if(g('skey'))S.set.key=g('skey').value.trim();if(g('smod'))S.set.model=g('smod').dataset.v;if(g('stemp'))S.set.temp=+g('stemp').value;if(g('sctx'))S.set.ctx=+g('sctx').value;if(g('smem'))S.set.mem=g('smem').value;if(g('sbase'))S.set.shareBase=g('sbase').value.trim();if(g('simg'))S.set.imgModel=g('simg').value.trim();
- if(g('sreal')){const v=g('sreal').dataset.v;S.set.real=v==='__c'?(g('srealc').value.trim()||S.set.real):v}
- document.querySelectorAll('textarea.cat').forEach(t=>{const x=S.set.cat[+t.dataset.i];if(x)x.m=t.value.split(/\r?\n/).map(z=>z.trim()).filter(Boolean)});
+ if(g('k_gemini'))S.set.key=g('k_gemini').value.trim();['openai','anthropic','deepseek','kimi'].forEach(pv=>{if(g('k_'+pv)){S.set.keys=S.set.keys||{};S.set.keys[pv]=g('k_'+pv).value.trim()}});if(g('kbase')){S.set.bases=S.set.bases||{};S.set.bases.kimi=g('kbase').value.trim()}if(g('smod'))S.set.model=g('smod').dataset.v;if(g('stemp'))S.set.temp=+g('stemp').value;if(g('sctx'))S.set.ctx=+g('sctx').value;if(g('smem'))S.set.mem=g('smem').value;if(g('sbase'))S.set.shareBase=g('sbase').value.trim();if(g('simg'))S.set.imgModel=g('simg').value.trim();
+ if(g('sreal'))S.set.real=g('sreal').dataset.v;
+ document.querySelectorAll('textarea.cat').forEach(t=>{const x=S.set.cat[+t.dataset.i];if(!x)return;const names=[];
+  t.value.split(/\r?\n/).forEach(l=>{const q=l.split('='),n=q[0].trim();if(!n)return;names.push(n);const r=normRef(q.slice(1).join('=')),k=x.g+'|'+n;
+   if(r){S.set.map[k]=r;if(!S.set.reals.includes(r))S.set.reals.push(r)}else delete S.set.map[k]});x.m=names});
  document.querySelectorAll('.al').forEach(i=>{S.set.alias[i.dataset.id]=i.value.trim()});if(g('spers'))S.set.persona=g('spers').checked}
 $('#setb').onclick=()=>{$('#side').classList.remove('on');openSettings('usage')};
 $('#mclose').onclick=()=>$('#modal').classList.remove('on');
@@ -654,95 +749,4 @@ async function handleShare(x){let pl;try{pl=await resolveShare(x)}catch(_){note(
   const pv=o.m.slice(0,3).map(m=>`<p><b>${m[0]==='u'?'Kamu':'AI'}:</b> ${esc(String(m[1]).slice(0,140))}</p>`).join('');
   $('#dlg').innerHTML=`<div class="dm"><b>${esc(o.t||'Chat dibagikan')}</b><div class="note" style="margin-top:2px">${o.m.length} pesan dibagikan kepadamu</div></div><div class="pvw">${pv}</div><div class="dbt"><button class="btn" data-k="n">Batal</button><button class="btn p" data-k="y">Buka chat</button></div>`;
   $('#dlgw').classList.add('on');
-  $('#dlg').onclick=e=>{const b=e.target.closest('button[data-k]');if(!b)return;$('#dlgw').classList.remove('on');if(b.dataset.k==='y'){$('#modal').classList.remove('on');importShared(o)}};
-  $('#dlgw').onclick=e=>{if(e.target.id==='dlgw')$('#dlgw').classList.remove('on')}}
- catch(e){note('Link chat tidak valid atau rusak.')}}
-window.openShared=x=>handleShare(x);
-/* ---------- akun (Supabase) ---------- */
-const CFG_OK=typeof SUPABASE_URL==='string'&&typeof SUPABASE_KEY==='string'&&!/ISI_/.test(SUPABASE_URL+SUPABASE_KEY);
-let user=null,sb=null,sv=S.sv||0,syncT=null,applying=false,amode='in';
-if(CFG_OK&&window.supabase){try{sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}})}catch(e){sb=null}}
-const syncData=()=>JSON.parse(JSON.stringify({chats:S.chats,cur:S.cur,set:S.set,use:S.use,mems:S.mems},(k,v)=>(k==='b64'||(k==='data'&&typeof v==='string'))?undefined:v));
-function queuePush(){if(!user||applying)return;clearTimeout(syncT);syncT=setTimeout(()=>{syncT=null;pushSync()},1500)}
-async function pushNow(){if(syncT){clearTimeout(syncT);syncT=null}await pushSync()}
-async function pushSync(){if(!sb||!user||applying)return;
- const row={data:syncData(),version:sv+1,updated_at:new Date().toISOString()};
- try{if(sv===0){const r=await sb.from('user_state').insert(Object.assign({user_id:user.id},row));if(r.error){await pullSync(true);return}}
-  else{const r=await sb.from('user_state').update(row).eq('user_id',user.id).eq('version',sv).select('version');if(r.error||!r.data||!r.data.length){await pullSync(true);return}}
-  sv=sv+1;S.sv=sv;S.syncUid=user.id;persist()}catch(e){}}
-function applyRemote(d,union){applying=true;const lc=S.chats||[],lm=S.mems||[],lk=S.set.key;
- let chats=d.chats||[],mems=d.mems||[];
- if(union){const ci=new Set(chats.map(c=>c.id)),mi=new Set(mems.map(m=>m.id));chats=chats.concat(lc.filter(c=>!ci.has(c.id)));mems=mems.concat(lm.filter(m=>!mi.has(m.id)))}
- else mems=mems.concat(lm.filter(m=>m.b64));
- S.chats=chats;S.mems=mems;S.cur=chats.some(c=>c.id===d.cur)?d.cur:(chats.some(c=>c.id===S.cur)?S.cur:null);
- S.set=Object.assign({},S.set,d.set||{});if(!S.set.key&&lk)S.set.key=lk;S.use=d.use||S.use;applying=false}
-async function pullSync(merge){if(!sb||!user||(syncT&&!merge)||busy)return;
- try{const r=await sb.from('user_state').select('data,version').eq('user_id',user.id).maybeSingle();if(r.error)return;
-  if(!r.data){sv=0;await pushSync();return}
-  const first=!!merge||S.syncUid!==user.id;if(!first&&r.data.version===sv)return;
-  applyRemote(r.data.data||{},first);sv=r.data.version;S.sv=sv;S.syncUid=user.id;persist();applyTheme();renderAll();
-  if(first)queuePush()}catch(e){}}
-async function logout(){if(!await confirmD('Keluar dari akun?'))return;
- try{await pushNow()}catch(_){}try{await sb.auth.signOut()}catch(_){}try{localStorage.removeItem('chatbotai')}catch(_){}location.href='/chat/'}
-function updAcct(){$('#acct').innerHTML=user?`<div class="ac"><span>${esc(user.email||'')}</span><button id="outb">Keluar</button></div>`:'<button class="btn p" id="inb">Masuk</button>';
- const o=$('#outb');if(o)o.onclick=logout;const i=$('#inb');if(i)i.onclick=openAuth;
- $('#inp').placeholder=user?'Tulis pesan…':'Masuk untuk mulai chat…'}
-function setAuthMode(m){amode=m;document.querySelectorAll('#authTabs button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
- $('#authT').textContent=m==='in'?'Masuk ke MultiAI':'Buat akun MultiAI';$('#ago').textContent=m==='in'?'Masuk':'Daftar';
- $('#apw').autocomplete=m==='in'?'current-password':'new-password';aerr('')}
-function aerr(t,ok){const e=$('#aerr');e.textContent=t;e.style.color=ok?'var(--tx)':'var(--err)'}
-function openAuth(){$('#authm').classList.add('on');setAuthMode(amode)}
-const aMsg=m=>/invalid login/i.test(m)?'Email atau password salah.':/already registered|already been registered/i.test(m)?'Email sudah terdaftar. Silakan masuk.':/not confirmed/i.test(m)?'Email belum dikonfirmasi. Cek kotak masuk emailmu.':/rate limit|too many/i.test(m)?'Terlalu banyak percobaan. Coba lagi beberapa saat.':/password/i.test(m)?'Password minimal 6 karakter.':'Gagal: '+m;
-async function doAuth(){const em=$('#aem').value.trim(),pw=$('#apw').value;
- if(!sb)return aerr(CFG_OK?'Layanan login tidak bisa dimuat. Periksa koneksi internet.':'Login belum dikonfigurasi. Isi SUPABASE_URL dan SUPABASE_KEY di chat/config.js.');
- if(!/^\S+@\S+\.\S+$/.test(em))return aerr('Email tidak valid.');
- if(pw.length<6)return aerr('Password minimal 6 karakter.');
- const b=$('#ago');b.disabled=true;aerr('');
- try{const r=amode==='in'?await sb.auth.signInWithPassword({email:em,password:pw}):await sb.auth.signUp({email:em,password:pw});
-  if(r.error)aerr(aMsg(r.error.message));
-  else if(amode==='up'&&!(r.data&&r.data.session)){setAuthMode('in');aerr('Akun dibuat. Cek emailmu untuk konfirmasi, lalu masuk.',1)}
-  else{$('#authm').classList.remove('on');$('#apw').value=''}}
- catch(e){aerr('Gagal terhubung. Coba lagi.')}
- b.disabled=false}
-$('#authTabs').onclick=e=>{const b=e.target.closest('button');if(b)setAuthMode(b.dataset.m)};
-$('#aclose').onclick=()=>$('#authm').classList.remove('on');
-$('#ago').onclick=doAuth;$('#apw').addEventListener('keydown',e=>{if(e.key==='Enter')doAuth()});$('#aem').addEventListener('keydown',e=>{if(e.key==='Enter')$('#apw').focus()});
-if(sb){sb.auth.onAuthStateChange((ev,ss)=>{const nu=(ss&&ss.user)||null,was=user;user=nu;updAcct();if(nu&&(!was||was.id!==nu.id)){$('#authm').classList.remove('on');setTimeout(pullSync,0)}});
- sb.auth.getSession().then(r=>{if(!(r.data&&r.data.session)&&/[?&]masuk/.test(location.search)){openAuth();try{history.replaceState(null,'',location.pathname)}catch(_){}}})}
-else if(/[?&]masuk/.test(location.search))setTimeout(openAuth,0);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)pullSync()});
-updAcct();
-/* ---------- layar penuh preview + geser sidebar ---------- */
-function togFull(on){const p=$('#panel');on=on===undefined?!p.classList.contains('full'):on;
- p.classList.toggle('full',on);$('#pfull').innerHTML=ic(on?'shrink':'expand',16);$('#pfull').title=on?'Keluar layar penuh':'Layar penuh';
- try{if(on&&p.requestFullscreen&&!document.fullscreenElement)p.requestFullscreen().catch(()=>{});else if(!on&&document.fullscreenElement)document.exitFullscreen()}catch(_){}
- setTimeout(()=>{if(pf&&pf.lang==='pdf'&&pmode==='p'&&p.classList.contains('on'))pdfPreview(pf,$('#pb'))},300)}
-$('#pfull').onclick=()=>togFull();
-document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&$('#panel').classList.contains('full'))togFull(false)});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#panel').classList.contains('full'))togFull(false)});
-const swipeOpen=(open,dx,dt,W)=>{const pos=Math.max(-W,Math.min(0,(open?0:-W)+dx)),v=dx/Math.max(dt,1);return v>.5?true:v<-.5?false:pos>-W*.5};
-(function(){const side=$('#side'),mq=matchMedia('(max-width:820px)');let t=null;
- const W=()=>side.offsetWidth||290;
- const hscroll=el=>{while(el&&el!==document.body){if(el.scrollWidth>el.clientWidth+2){const o=getComputedStyle(el).overflowX;if(o==='auto'||o==='scroll')return true}el=el.parentElement}return false};
- const shade=pos=>'0 0 0 100vmax rgba(0,0,0,'+(.55*(1+pos/W())).toFixed(2)+')';
- document.addEventListener('touchstart',e=>{t=null;if(!mq.matches||e.touches.length!==1)return;const p=e.touches[0],open=side.classList.contains('on');
-  if(!open&&(p.clientX>innerWidth*.55||hscroll(e.target)||e.target.closest('input,textarea,iframe,#panel,.modal,.ov')))return;
-  t={x:p.clientX,y:p.clientY,t0:Date.now(),open,drag:false,dx:0}},{passive:true});
- document.addEventListener('touchmove',e=>{if(!t)return;const p=e.touches[0],dx=p.clientX-t.x,dy=p.clientY-t.y;
-  if(!t.drag){if(Math.abs(dy)>10&&Math.abs(dy)>Math.abs(dx)){t=null;return}
-   if(Math.abs(dx)>10&&Math.abs(dx)>Math.abs(dy)*1.5&&((!t.open&&dx>0)||(t.open&&dx<0))){t.drag=true;side.style.transition='none'}else return}
-  t.dx=dx;const pos=Math.max(-W(),Math.min(0,(t.open?0:-W())+dx));side.style.transform='translateX('+pos+'px)';side.style.boxShadow=shade(pos)},{passive:true});
- document.addEventListener('touchend',()=>{if(!t||!t.drag){t=null;return}
-  const open=swipeOpen(t.open,t.dx,Date.now()-t.t0,W());t=null;side.style.transition='';
-  requestAnimationFrame(()=>{side.style.transform='';side.style.boxShadow='';side.classList.toggle('on',open)})},{passive:true});
- document.addEventListener('click',e=>{if(mq.matches&&side.classList.contains('on')&&!e.target.closest('#side,#menu')){e.stopPropagation();e.preventDefault();side.classList.remove('on')}},true)})();
-const wb=$('#webb'),syncWeb=()=>wb.classList.toggle('on',!!S.set.web);
-wb.onclick=()=>{S.set.web=!S.set.web;save();syncWeb()};syncWeb();
-$('#msave').addEventListener('click',()=>renderAll());
-renderAll();
-if(/share=/.test(location.hash))handleShare(location.hash);
-else if(/^\/s\/[A-Za-z0-9_-]{4,16}$/.test(location.pathname))handleShare(location.pathname);
-addEventListener('hashchange',()=>{if(/share=/.test(location.hash))handleShare(location.hash)});
-</script>
-</body>
-</html>
+  $('#dlg').onclick=e=>{const b=e.target.closest('button[data-k]');if(!b)return;
