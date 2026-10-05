@@ -71,6 +71,7 @@ textarea{flex:1;background:none;border:0;color:var(--tx);font:inherit;resize:non
 .ph button{padding:5px 10px;border-radius:7px;color:var(--mut);font-size:13px}.ph button:hover,.ph button.on{background:var(--panel2);color:var(--tx)}
 #pb{flex:1;min-height:0;position:relative}#pb iframe{width:100%;height:100%;border:0;background:#fff}
 #pb pre{position:absolute;inset:0;overflow:auto;padding:14px;font:12.5px/1.5 ui-monospace,Menlo,Consolas,monospace;background:var(--cbg);color:var(--tx)}
+#panel.full{position:fixed;inset:0;width:100%!important;z-index:45;border-left:0}
 .imgv{position:absolute;inset:0;display:grid;place-items:center;background:var(--cbg);padding:12px;overflow:auto}.imgv img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;background:repeating-conic-gradient(#8884 0 25%,transparent 0 50%) 50%/16px 16px}
 .pdfh{position:absolute;inset:0;overflow:auto;background:#525659;padding:12px;display:flex;flex-direction:column;align-items:center;gap:12px}.pdfh canvas{background:#fff;box-shadow:0 2px 10px #0006;max-width:100%}.pl{padding:20px;color:var(--mut)}
 .modal{position:fixed;inset:0;background:var(--ov);display:none;place-items:center;z-index:50;padding:16px}.modal.on{display:grid;grid-template-columns:minmax(0,1fr)}
@@ -109,7 +110,7 @@ header{padding:8px 12px;gap:8px}#mbtn{max-width:50vw;overflow:hidden}
 #msgs{padding:14px 12px}.msg{margin-bottom:16px}.empty{margin-top:6vh}.empty h1{font-size:23px}.chips button{font-size:13px;padding:7px 11px}
 .comp{padding:6px 10px;padding-bottom:max(8px,env(safe-area-inset-bottom))}.hint{font-size:10.5px;margin-top:4px}
 .cb pre{max-height:260px}.ph{overflow-x:auto}.ph b{min-width:70px;font-size:13px}.ph button{padding:4px 8px;font-size:12px}
-.card{border-radius:14px;max-height:92vh}.card h2{font-size:18px;padding:14px 16px 6px}.cbody{padding:12px 16px}.mf{padding:10px 16px}.stat b{font-size:18px}}
+.card{border-radius:14px;max-height:92vh}.card h2{font-size:18px;padding:14px 16px 6px}.cbody{padding:12px 16px}.mf{padding:10px 16px}.stat b{font-size:18px}#pfull{display:none}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 <script src="/chat/config.js"></script>
@@ -144,7 +145,7 @@ header{padding:8px 12px;gap:8px}#mbtn{max-width:50vw;overflow:hidden}
   </div>
 </div>
 <aside id="panel">
-  <div class="ph"><b id="pt">File</b><button id="tp">Preview</button><button id="tc">Kode</button><button id="pcopy">Salin</button><button id="ppng">PNG</button><button id="pdl">Unduh</button><button id="ptab">Tab baru</button><button id="px" aria-label="Tutup"><span class="i" data-ic="x" data-s="16"></span></button></div>
+  <div class="ph"><b id="pt">File</b><button id="tp">Preview</button><button id="tc">Kode</button><button id="pcopy">Salin</button><button id="ppng">PNG</button><button id="pdl">Unduh</button><button id="ptab">Tab baru</button><button id="pfull" title="Layar penuh" aria-label="Layar penuh"><span class="i" data-ic="expand" data-s="16"></span></button><button id="px" aria-label="Tutup"><span class="i" data-ic="x" data-s="16"></span></button></div>
   <div id="pb"></div>
 </aside>
 <input type="file" id="fi" multiple hidden>
@@ -455,7 +456,7 @@ $('#pcopy').onclick=e=>{copy(pf.code);e.target.textContent='Tersalin';setTimeout
 $('#pdl').onclick=()=>dlFile(pf);
 $('#ppng').onclick=()=>dlFile({lang:'png',code:pf.code,name:pf.name.replace(/\.\w+$/,'')+'.png'});
 $('#ptab').onclick=()=>{const u=URL.createObjectURL(new Blob([pf.code],{type:'text/html'}));window.open(u,'_blank')};
-$('#px').onclick=()=>{$('#panel').classList.remove('on');$('#pb').innerHTML=''};
+$('#px').onclick=()=>{togFull(false);$('#panel').classList.remove('on');$('#pb').innerHTML=''};
 
 /* ---------- files ---------- */
 const TXT=/\.(js|ts|jsx|tsx|py|html|css|json|md|txt|csv|java|c|cpp|h|go|rs|php|rb|sh|sql|xml|yml|yaml|kt|swift|ini|log|svg)$/i;
@@ -570,7 +571,7 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
    drawTab();if(bad.length)note('Tidak didukung atau terlalu besar: '+bad.join(', '));if(st!==S.mems.length)note('Penyimpanan browser penuh. Hapus chat atau memori lama.')};
   c.onchange=e=>{if(e.target.type==='checkbox'&&e.target.dataset.i!==undefined){S.mems[+e.target.dataset.i].on=e.target.checked;save()}};
   c.onclick=e=>{const b=e.target.closest('.md');if(b){collect();S.mems.splice(+b.dataset.i,1);save();drawTab()}}}
- else{c.innerHTML=`<p class="note" style="margin:0 0 12px">Semua data ada di browser ini. Versi 2026.10.04f.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="exp">Ekspor semua chat (JSON)</button><button class="btn" id="implink">Impor dari link</button><button class="btn d" id="clr">Hapus semua chat</button><button class="btn d" id="rst">Reset penggunaan</button></div>`;
+ else{c.innerHTML=`<p class="note" style="margin:0 0 12px">Semua data ada di browser ini. Versi 2026.10.04g.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="exp">Ekspor semua chat (JSON)</button><button class="btn" id="implink">Impor dari link</button><button class="btn d" id="clr">Hapus semua chat</button><button class="btn d" id="rst">Reset penggunaan</button></div>`;
   $('#implink').onclick=async()=>{const v=await promptD('Tempel link chat yang dibagikan','https://…','','Buka');if(v&&v.trim())handleShare(v.trim())};
   $('#exp').onclick=()=>download('multiai-chats.json',JSON.stringify(S.chats,null,1));
   $('#clr').onclick=async()=>{if(await confirmD('Hapus semua chat?')){S.chats=[];S.cur=null;save();renderAll()}};
@@ -597,7 +598,7 @@ $('#wrap').addEventListener('click',e=>{const b=e.target.closest('button[data-ac
  else if(a==='rg'){let j=i;while(j>0&&c.msgs[j].role!=='user')j--;resend(j)}});
 $('#wrap').addEventListener('click',e=>{const f=e.target.closest('.fc');if(!f)return;const i=+f.dataset.i;openPanel(i,PV.includes(store[i].lang)?'p':'c')});
 const LOGO='<svg viewBox="0 0 1024 1024"><g transform="translate(512 512) scale(.93)"><ellipse rx="490" ry="68"/><ellipse rx="435" ry="62" transform="rotate(90)"/><ellipse rx="445" ry="62" transform="rotate(-46)"/><ellipse rx="375" ry="62" transform="rotate(52)"/></g></svg>';
-const IC={menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',plus:'<path d="M12 5v14M5 12h14"/>',arrow:'<path d="M12 19V5M5 12l7-7 7 7"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/>',globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3"/>',chev:'<path d="M6 9l6 6 6-6"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',settings:'<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',bolt:'<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/>',check:'<path d="M5 12l5 5 9-10"/>',dots:'<circle cx="5" cy="12" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><circle cx="19" cy="12" r="1.7" fill="currentColor"/>',pin:'<path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6zM12 15v6"/>'};
+const IC={menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',plus:'<path d="M12 5v14M5 12h14"/>',arrow:'<path d="M12 19V5M5 12l7-7 7 7"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/>',globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3"/>',chev:'<path d="M6 9l6 6 6-6"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',settings:'<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',bolt:'<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/>',expand:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',shrink:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>',check:'<path d="M5 12l5 5 9-10"/>',dots:'<circle cx="5" cy="12" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><circle cx="19" cy="12" r="1.7" fill="currentColor"/>',pin:'<path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6zM12 15v6"/>'};
 const ic=(n,z=18)=>`<svg class="ic" width="${z}" height="${z}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${IC[n]||''}</svg>`;
 const themeOf=()=>S.set.theme==='light'?'light':'dark';
 function applyTheme(){document.documentElement.dataset.theme=themeOf();const b=$('#thi');if(b)b.innerHTML=ic(themeOf()==='dark'?'sun':'moon',17)}
@@ -711,6 +712,30 @@ if(sb){sb.auth.onAuthStateChange((ev,ss)=>{const nu=(ss&&ss.user)||null,was=user
 else if(/[?&]masuk/.test(location.search))setTimeout(openAuth,0);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)pullSync()});
 updAcct();
+/* ---------- layar penuh preview + geser sidebar ---------- */
+function togFull(on){const p=$('#panel');on=on===undefined?!p.classList.contains('full'):on;
+ p.classList.toggle('full',on);$('#pfull').innerHTML=ic(on?'shrink':'expand',16);$('#pfull').title=on?'Keluar layar penuh':'Layar penuh';
+ try{if(on&&p.requestFullscreen&&!document.fullscreenElement)p.requestFullscreen().catch(()=>{});else if(!on&&document.fullscreenElement)document.exitFullscreen()}catch(_){}
+ setTimeout(()=>{if(pf&&pf.lang==='pdf'&&pmode==='p'&&p.classList.contains('on'))pdfPreview(pf,$('#pb'))},300)}
+$('#pfull').onclick=()=>togFull();
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&$('#panel').classList.contains('full'))togFull(false)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#panel').classList.contains('full'))togFull(false)});
+const swipeOpen=(open,dx,dt,W)=>{const pos=Math.max(-W,Math.min(0,(open?0:-W)+dx)),v=dx/Math.max(dt,1);return v>.5?true:v<-.5?false:pos>-W*.5};
+(function(){const side=$('#side'),mq=matchMedia('(max-width:820px)');let t=null;
+ const W=()=>side.offsetWidth||290;
+ const hscroll=el=>{while(el&&el!==document.body){if(el.scrollWidth>el.clientWidth+2){const o=getComputedStyle(el).overflowX;if(o==='auto'||o==='scroll')return true}el=el.parentElement}return false};
+ const shade=pos=>'0 0 0 100vmax rgba(0,0,0,'+(.55*(1+pos/W())).toFixed(2)+')';
+ document.addEventListener('touchstart',e=>{t=null;if(!mq.matches||e.touches.length!==1)return;const p=e.touches[0],open=side.classList.contains('on');
+  if(!open&&(p.clientX>innerWidth*.55||hscroll(e.target)||e.target.closest('input,textarea,iframe,#panel,.modal,.ov')))return;
+  t={x:p.clientX,y:p.clientY,t0:Date.now(),open,drag:false,dx:0}},{passive:true});
+ document.addEventListener('touchmove',e=>{if(!t)return;const p=e.touches[0],dx=p.clientX-t.x,dy=p.clientY-t.y;
+  if(!t.drag){if(Math.abs(dy)>10&&Math.abs(dy)>Math.abs(dx)){t=null;return}
+   if(Math.abs(dx)>10&&Math.abs(dx)>Math.abs(dy)*1.5&&((!t.open&&dx>0)||(t.open&&dx<0))){t.drag=true;side.style.transition='none'}else return}
+  t.dx=dx;const pos=Math.max(-W(),Math.min(0,(t.open?0:-W())+dx));side.style.transform='translateX('+pos+'px)';side.style.boxShadow=shade(pos)},{passive:true});
+ document.addEventListener('touchend',()=>{if(!t||!t.drag){t=null;return}
+  const open=swipeOpen(t.open,t.dx,Date.now()-t.t0,W());t=null;side.style.transition='';
+  requestAnimationFrame(()=>{side.style.transform='';side.style.boxShadow='';side.classList.toggle('on',open)})},{passive:true});
+ document.addEventListener('click',e=>{if(mq.matches&&side.classList.contains('on')&&!e.target.closest('#side,#menu')){e.stopPropagation();e.preventDefault();side.classList.remove('on')}},true)})();
 const wb=$('#webb'),syncWeb=()=>wb.classList.toggle('on',!!S.set.web);
 wb.onclick=()=>{S.set.web=!S.set.web;save();syncWeb()};syncWeb();
 $('#msave').addEventListener('click',()=>renderAll());
