@@ -73,6 +73,10 @@ textarea{flex:1;background:none;border:0;color:var(--tx);font:inherit;resize:non
 #pb pre{position:absolute;inset:0;overflow:auto;padding:14px;font:12.5px/1.5 ui-monospace,Menlo,Consolas,monospace;background:var(--cbg);color:var(--tx)}
 #panel.full{position:fixed;inset:0;width:100%!important;z-index:45;border-left:0}
 .imgv{position:absolute;inset:0;display:grid;place-items:center;background:var(--cbg);padding:12px;overflow:auto}.imgv img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;background:repeating-conic-gradient(#8884 0 25%,transparent 0 50%) 50%/16px 16px}
+.live{font-size:12px;color:var(--mut);margin-bottom:6px;font-variant-numeric:tabular-nums}.live b{color:var(--al);font-weight:600}.meta{font-size:12px;color:var(--mut);margin-top:6px;font-variant-numeric:tabular-nums}
+.kb{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px}.kb b{display:block;font-size:13px;margin-bottom:6px}.kb input+input{margin-top:6px}
+.us{border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:8px}.uh{display:flex;justify-content:space-between;align-items:center}.uh span{display:flex;gap:4px}.uh button{color:var(--mut);padding:3px 9px;border-radius:7px}.uh button:hover{background:var(--panel2);color:var(--tx)}
+.uo{margin:8px 0 0;font:12px/1.5 ui-monospace,Menlo,monospace;color:var(--mut);white-space:pre-wrap;word-break:break-all;max-height:160px;overflow:auto}#dlg label+input{margin-top:0}
 .kr{display:flex;align-items:center;gap:10px;margin-bottom:8px}.kr span{width:78px;font-size:13px;color:var(--mut);flex-shrink:0}.kr input{flex:1}
 .pdfh{position:absolute;inset:0;overflow:auto;background:#525659;padding:12px;display:flex;flex-direction:column;align-items:center;gap:12px}.pdfh canvas{background:#fff;box-shadow:0 2px 10px #0006;max-width:100%}.pl{padding:20px;color:var(--mut)}
 .modal{position:fixed;inset:0;background:var(--ov);display:none;place-items:center;z-index:50;padding:16px}.modal.on{display:grid;grid-template-columns:minmax(0,1fr)}
@@ -280,7 +284,7 @@ function genCfg(id){const g={temperature:+S.set.temp},ef=S.set.effort,m=id.match
  return g}
 function msgHtml(m,i){const a=m.role==='model';
  const at=(m.att||[]).length?`<div class="att">${m.att.map(x=>`<span class="at">${esc(x.name)}</span>`).join('')}</div>`:'';
- return `<div class="msg ${a?'ai':'user'}"><div class="av">${a?'C':'K'}</div><div class="bd"><div class="who">${a?'MultiAI · '+esc(mname(m.model||mdl())):'Kamu'}</div>${at}<div class="body">${(!a&&editing===i)?`<textarea class="ed">${esc(m.text)}</textarea><div class="act"><button data-act="save" data-mi="${i}">Simpan &amp; kirim</button><button data-act="cancel" data-mi="${i}">Batal</button></div>`:m.err?`<p class="err">${esc(m.text)}</p>`:thinkHtml(m,false)+md(m.text)}</div>${m.src&&m.src.length?'<div class="att" style="margin-top:8px">'+m.src.map(s=>`<a class="at" href="${esc(s.u)}" target="_blank" rel="noopener">${esc(s.t)}</a>`).join('')+'</div>':''}${acts(m,i)}</div></div>`}
+ return `<div class="msg ${a?'ai':'user'}"><div class="av">${a?'C':'K'}</div><div class="bd"><div class="who">${a?'MultiAI · '+esc(mname(m.model||mdl())):'Kamu'}</div>${at}<div class="body">${(!a&&editing===i)?`<textarea class="ed">${esc(m.text)}</textarea><div class="act"><button data-act="save" data-mi="${i}">Simpan &amp; kirim</button><button data-act="cancel" data-mi="${i}">Batal</button></div>`:m.err?`<p class="err">${esc(m.text)}</p>`:thinkHtml(m,false)+md(m.text)}</div>${m.src&&m.src.length?'<div class="att" style="margin-top:8px">'+m.src.map(s=>`<a class="at" href="${esc(s.u)}" target="_blank" rel="noopener">${esc(s.t)}</a>`).join('')+'</div>':''}${metaHtml(m)}${acts(m,i)}</div></div>`}
 function renderChat(){store=[];const c=cur(),w=$('#wrap');
  if(!c||!c.msgs.length){w.innerHTML=`<div class="empty"><span class="logo big">${LOGO}</span><h1>Halo, ada yang bisa dibantu?</h1><p>Tanya apa saja, atau minta dibuatkan kode yang bisa langsung dijalankan.</p><div class="chips"><button>Buatkan game ular dalam satu file HTML</button><button>Buat landing page kopi yang responsif</button><button>Jelaskan cara kerja closure di JavaScript</button></div></div>`;
   w.querySelectorAll('.chips button').forEach(b=>b.onclick=()=>{$('#inp').value=b.textContent;send()});return}
@@ -353,7 +357,7 @@ async function convertBlob(src,lang){const url=URL.createObjectURL(src);
  try{const im=await loadImg(url),cv=document.createElement('canvas');cv.width=im.naturalWidth;cv.height=im.naturalHeight;const cx=cv.getContext('2d');if(lang==='jpg'){cx.fillStyle='#fff';cx.fillRect(0,0,cv.width,cv.height)}cx.drawImage(im,0,0);return await cvBlob(cv,lang)}finally{URL.revokeObjectURL(url)}}
 async function genImage(prompt,lang){if(!S.set.key)throw new Error('Isi API key dulu di Pengaturan → Umum.');
  const model=(S.set.imgModel||'').trim()||'gemini-3.1-flash-image-preview';
- const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':S.set.key},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{responseModalities:['TEXT','IMAGE']}})});
+ const r=await fetch(prov('gemini').base+'/models/'+model+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':S.set.key},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{responseModalities:['TEXT','IMAGE']}})});
  if(!r.ok){let e='';try{e=(await r.json()).error.message}catch(_){}throw new Error('Gagal membuat gambar ('+r.status+'): '+(e||'permintaan ditolak').split(model).join('model gambar'))}
  const j=await r.json(),parts=(j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts)||[],im=parts.find(p=>p.inlineData||p.inline_data);
  if(!im)throw new Error('Model tidak menghasilkan gambar. Coba ubah deskripsinya.');
@@ -484,7 +488,6 @@ function memText(){let o='',n=0;const on=S.mems.filter(m=>m.on);
  return o}
 function sysPrompt(){return `${S.set.persona?`Kamu adalah ${mname(mdl())}, asisten AI di aplikasi MultiAI. Perkenalkan dirimu dengan nama itu.`:`Kamu adalah asisten AI di aplikasi MultiAI, dijalankan oleh model ${mname(mdl())} dari Google.`}${['ultra','max'].includes(S.set.effort)?' Pikirkan dengan sangat teliti dan periksa ulang jawabanmu sebelum menjawab.':''}${S.set.web&&webOK()?' Kamu punya akses pencarian web; pakai untuk info terbaru.':''} Jika pengguna meminta link, video, artikel, atau sumber: cari lewat web, lalu tulis tiap hasil sebagai link Markdown [judul](url) dengan URL asli dari hasil pencarian dan jangan mengarang URL. Jika tidak menemukan link langsung, beri link pencarian, misalnya https://www.youtube.com/results?search_query=kata+kunci untuk video YouTube. Jawab dalam bahasa yang dipakai pengguna. Kamu bisa MEMBUAT FILE. Tulis tiap file sebagai satu blok kode dengan format \`\`\`bahasa namafile.ext; aplikasi akan mengubahnya jadi file yang bisa dilihat, diunduh, dan disalin. Jangan pernah bilang kamu tidak bisa membuat file. Jika isi file sendiri mengandung tanda tiga backtick, bungkus file itu dengan empat backtick. Pembuka dan penutup blok kode harus berada di barisnya sendiri. Format: html = satu file lengkap dengan CSS dan JS inline (langsung jalan di preview tanpa hosting); pptx = Markdown, tiap slide dipisah baris ---, slide pertama berisi "# Judul" dan "## Subjudul", slide lain "# Judul slide" lalu poin "- ..."; pdf dan docx = Markdown (#, ##, ###, daftar -, 1., **tebal**, tabel | a | b |); xlsx = isi CSV; py, js, css, json, md, txt, csv dan lainnya = isi file apa adanya. png, jpg, webp = gambar: kalau isi blok adalah kode SVG lengkap, aplikasi mengubahnya jadi gambar; kalau isinya deskripsi gambar (bahasa Inggris, rinci), aplikasi membuat gambarnya dengan model gambar. svg = kode SVG. zip, mcpack, mcaddon, mcworld, mctemplate = paket berisi banyak file: tulis tiap file diawali satu baris '=== path/nama-file' (contoh '=== BP/manifest.json') lalu isinya; untuk file biner tulis kata base64 setelah path lalu isi base64; jangan pakai baris yang diawali === di dalam isi file. Untuk Minecraft Bedrock: mcpack = satu pack dengan manifest.json di akar paket; mcaddon = beberapa pack dalam folder terpisah (misalnya BP/ dan RP/) yang masing-masing punya manifest.json; format_version 2, header.uuid dan uuid tiap module harus UUID acak berbeda satu sama lain, version berupa [1,0,0], min_engine_version sesuai versi game, dan hubungkan RP dengan BP lewat dependencies. Jenis file lain yang isinya teks boleh dibuat langsung dengan nama file berekstensi itu. Blok kode hanya untuk file atau kode panjang; jawaban biasa tetap teks.`+memText()+(S.set.mem.trim()?`\n\nCatatan memori dari pengguna:\n${S.set.mem}`:'')}
 /* ---------- multi-penyedia ---------- */
-const PNAME={gemini:'Gemini',openai:'OpenAI',anthropic:'Anthropic',deepseek:'DeepSeek',kimi:'Kimi'};
 const PRESETS={gemini:['gemini-3.8-flash','gemini-3.7-flash','gemini-3.6-flash','gemini-3.5-flash-lite','gemini-3.1-pro-preview','gemini-3-flash-preview','gemini-2.5-pro','gemini-2.5-flash'],
  openai:['gpt-6-astra','gpt-5.6-sol','gpt-5.6-terra','gpt-5.6-luna','gpt-5.5','gpt-5.4','gpt-5.4-mini','gpt-5.4-nano'],
  anthropic:['claude-fable-5-1','claude-opus-5-5','claude-sonnet-5-5','claude-haiku-4-5-20251001'],
@@ -494,18 +497,29 @@ const REALMAP={'Claude Fable 5.1':'anthropic:claude-fable-5-1','Claude Opus 5.5'
  'GPT-6.1 Sol':'openai:gpt-6.1-sol','GPT-6 Astra':'openai:gpt-6-astra','GPT-6 Sol':'openai:gpt-5.6-sol','GPT-6 Luna':'openai:gpt-5.6-luna','GPT-5.6':'openai:gpt-5.6','GPT-5.6 Sol':'openai:gpt-5.6-sol','GPT-5.6 Terra':'openai:gpt-5.6-terra','GPT-5.6 Luna':'openai:gpt-5.6-luna','GPT-5.5':'openai:gpt-5.5','GPT-5.4':'openai:gpt-5.4',
  'DeepSeek V4 Pro':'deepseek:deepseek-v4-pro','DeepSeek V4 Flash':'deepseek:deepseek-v4-flash','Kimi K2.6':'kimi:kimi-k2.6','Kimi K2.5':'kimi:kimi-k2.5',
  'Gemini 3.8 Flash':'gemini:gemini-3.8-flash','Gemini 3.7 Flash':'gemini:gemini-3.7-flash','Gemini 3.6 Flash':'gemini:gemini-3.6-flash','Gemini 3.1 Pro':'gemini:gemini-3.1-pro-preview','Gemini 2.5 Pro':'gemini:gemini-2.5-pro'};
-const keyOf=pv=>pv==='gemini'?(S.set.key||''):((S.set.keys||{})[pv]||'');
-const parseRef=r=>{r=String(r||'');const i=r.indexOf(':');return(i>0&&PNAME[r.slice(0,i)])?{p:r.slice(0,i),m:r.slice(i+1)}:{p:'gemini',m:r}};
-const refLabel=r=>{const x=parseRef(r);return PNAME[x.p]+' · '+x.m};
+const BUILTIN={gemini:{name:'Gemini',fmt:'gemini',base:'https://generativelanguage.googleapis.com/v1beta'},openai:{name:'OpenAI',fmt:'openai',base:'https://api.openai.com/v1'},anthropic:{name:'Anthropic',fmt:'anthropic',base:'https://api.anthropic.com'},deepseek:{name:'DeepSeek',fmt:'chat',base:'https://api.deepseek.com'},kimi:{name:'Kimi',fmt:'chat',base:'https://api.moonshot.ai/v1'}};
+const FMTN={gemini:'Gemini API',openai:'OpenAI Responses',anthropic:'Anthropic Messages',chat:'OpenAI Chat'};
+function provs(){const o={};Object.keys(BUILTIN).forEach(k=>{const b=BUILTIN[k];o[k]={name:b.name,fmt:b.fmt,base:(((S.set.bases||{})[k])||b.base).trim().replace(/\/+$/,''),key:k==='gemini'?(S.set.key||''):((S.set.keys||{})[k]||'')}});
+ (S.set.eps||[]).forEach(e=>{if(!o[e.id])o[e.id]={name:e.name,fmt:e.fmt,base:String(e.base||'').trim().replace(/\/+$/,''),key:e.key||'',custom:true}});return o}
+const prov=id=>provs()[id];
+const pn=id=>{const x=prov(id);return x?x.name:String(id)};
+const keyOf=id=>{const x=prov(id);return x?x.key:''};
+const parseRef=r=>{r=String(r||'');const i=r.indexOf(':');return(i>0&&prov(r.slice(0,i)))?{p:r.slice(0,i),m:r.slice(i+1)}:{p:'gemini',m:r}};
+const refLabel=r=>{const x=parseRef(r);return pn(x.p)+' · '+x.m};
 const realFor=id=>(S.set.map&&S.set.map[id])||S.set.real;
-function normRef(r){r=(r||'').trim();if(!r)return '';const i=r.indexOf(':');if(i>0&&PNAME[r.slice(0,i)])return r;
+function normRef(r){r=(r||'').trim();if(!r)return '';const i=r.indexOf(':');if(i>0&&prov(r.slice(0,i)))return r;
  const pv=/^gemini/i.test(r)?'gemini':/^(gpt|o\d|chatgpt)/i.test(r)?'openai':/^claude/i.test(r)?'anthropic':/^deepseek/i.test(r)?'deepseek':/^(kimi|moonshot)/i.test(r)?'kimi':'';return pv?pv+':'+r:''}
-const webOK=()=>['gemini','openai'].includes(parseRef(realFor(cur()?cur().model:S.set.model)).p);
-function needKey(){const id=cur()?cur().model:S.set.model,x=parseRef(realFor(id));if(keyOf(x.p))return false;openSettings('gen');note('Isi API key '+PNAME[x.p]+' dulu di tab Umum.');return true}
+const webOK=()=>{const x=prov(parseRef(realFor(cur()?cur().model:S.set.model)).p);return !!x&&['gemini','openai'].includes(x.fmt)};
+function needKey(){const id=cur()?cur().model:S.set.model,x=parseRef(realFor(id)),pv=prov(x.p);if(!pv||pv.custom||pv.key)return false;openSettings('gen');note('Isi API key '+pv.name+' dulu di tab Umum.');return true}
+const slug=t=>String(t).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,24);
+const nf=n=>Number(n||0).toLocaleString('id');
+const fmtDur=ms=>ms<60000?(ms/1000).toFixed(1).replace('.',',')+' d':Math.floor(ms/60000)+' m '+Math.round(ms%60000/1000)+' d';
+function estIn(h){return Math.round((sysPrompt().length+h.reduce((a,x)=>a+x.parts.reduce((b,q)=>b+(q.text!=null?q.text.length:3600),0),0))/3.6)}
+const metaHtml=m=>(m.role==='model'&&m.ms&&!m.err)?'<div class="meta">'+fmtDur(m.ms)+' · masuk '+(m.est?'~':'')+nf(m.uIn)+' · keluar '+(m.est?'~':'')+nf(m.uOut)+' · total '+(m.est?'~':'')+nf((m.uIn||0)+(m.uOut||0))+' token</div>':'';
 function got(ai){if(!ai.tms)ai.tms=Math.max(1,Math.round((Date.now()-ai.t0)/1000))}
 async function pfetch(url,o){try{return await fetch(url,o)}catch(e){
   if(!/^https?:/.test(location.protocol))throw e;
-  const r=await fetch('/api/llm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,headers:o.headers,body:o.body})});
+  const r=await fetch('/api/llm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,method:o.method||'POST',headers:o.headers,body:o.body})});
   if(r.status===404)throw e;return r}}
 async function errText(r,rid,c){let e='';try{const j=await r.json();e=(j.error&&(j.error.message||j.error))||j.message||''}catch(_){}
  return 'Error '+r.status+': '+String(e||'permintaan gagal').split(rid).join(mname(c.model))}
@@ -514,7 +528,7 @@ async function readSSE(r,onData,draw){
   for(;;){if(ctrl.stop){rd.cancel();break}const {done,value}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});const ls=buf.split('\n');buf=ls.pop();ls.forEach(l=>{if(l.startsWith('data:'))onData(l.slice(5).trim())});draw()}}
  else{(await r.text()).split('\n').forEach(l=>{if(l.startsWith('data:'))onData(l.slice(5).trim())});draw()}}
 async function callGemini(ref,c,ai,hist,draw){let uin=0,uout=0;const rid=ref.m;
- const post=(gc,wt=true)=>pfetch('https://generativelanguage.googleapis.com/v1beta/models/'+rid+':streamGenerateContent?alt=sse',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':keyOf('gemini')},body:JSON.stringify({systemInstruction:{parts:[{text:sysPrompt()}]},contents:hist,generationConfig:gc,...(S.set.web&&wt?{tools:[{google_search:{}}]}:{})})});
+ const post=(gc,wt=true)=>pfetch(prov(ref.p).base+'/models/'+rid+':streamGenerateContent?alt=sse',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':keyOf(ref.p)},body:JSON.stringify({systemInstruction:{parts:[{text:sysPrompt()}]},contents:hist,generationConfig:gc,...(S.set.web&&wt?{tools:[{google_search:{}}]}:{})})});
  const gc=genCfg(rid);let r=await post(gc);
  if(r.status===400&&gc.thinkingConfig){delete gc.thinkingConfig;r=await post(gc)}
  if(r.status===400&&Object.keys(gc).length){r=await post({})}
@@ -523,12 +537,12 @@ async function callGemini(ref,c,ai,hist,draw){let uin=0,uout=0;const rid=ref.m;
  await readSSE(r,d=>{let j;try{j=JSON.parse(d)}catch(_){return}const cd=j.candidates&&j.candidates[0];
   ((cd&&cd.content&&cd.content.parts)||[]).forEach(q=>{if(!q.text)return;if(q.thought)ai.think=(ai.think||'')+q.text;else{ai.text+=q.text;got(ai)}});
   ai.src=ai.src||[];((cd&&cd.groundingMetadata&&cd.groundingMetadata.groundingChunks)||[]).forEach(g=>{if(g.web&&!ai.src.some(x=>x.u===g.web.uri))ai.src.push({u:g.web.uri,t:g.web.title||g.web.uri})});
-  if(j.usageMetadata){uin=j.usageMetadata.promptTokenCount||uin;uout=((j.usageMetadata.candidatesTokenCount||0)+(j.usageMetadata.thoughtsTokenCount||0))||uout}},draw);
+  if(j.usageMetadata){uin=j.usageMetadata.promptTokenCount||uin;uout=((j.usageMetadata.candidatesTokenCount||0)+(j.usageMetadata.thoughtsTokenCount||0))||uout;if(uin)ai.uIn=uin;if(uout)ai.uOut=uout}},draw);
  return{in:uin,out:uout}}
 async function callOpenAI(ref,c,ai,hist,draw){let uin=0,uout=0;const rid=ref.m,em={low:'low',medium:'medium',high:'high',ultra:'high',max:'max'}[S.set.effort]||'medium';
  const input=hist.map(h=>({role:h.role==='model'?'assistant':'user',content:h.parts.map(q=>{if(q.text!=null)return{type:h.role==='model'?'output_text':'input_text',text:q.text};
   const mt=q.inlineData.mimeType,d=q.inlineData.data;if(/^image\//.test(mt))return{type:'input_image',image_url:'data:'+mt+';base64,'+d};if(mt==='application/pdf')return{type:'input_file',filename:'dokumen.pdf',file_data:'data:'+mt+';base64,'+d};return null}).filter(Boolean)})).filter(m=>m.content.length);
- const post=(eff,web)=>pfetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+keyOf('openai')},body:JSON.stringify({model:rid,instructions:sysPrompt(),input,stream:true,store:false,...(eff?{reasoning:{effort:eff,summary:'auto'}}:{}),...(web?{tools:[{type:'web_search'}]}:{})})});
+ const post=(eff,web)=>pfetch(prov(ref.p).base+'/responses',{method:'POST',headers:{'Content-Type':'application/json',...(keyOf(ref.p)?{'Authorization':'Bearer '+keyOf(ref.p)}:{})},body:JSON.stringify({model:rid,instructions:sysPrompt(),input,stream:true,store:false,...(eff?{reasoning:{effort:eff,summary:'auto'}}:{}),...(web?{tools:[{type:'web_search'}]}:{})})});
  let r=await post(em,S.set.web);
  if(r.status===400&&S.set.web)r=await post(em,false);
  if(r.status===400&&em!=='high')r=await post('high',false);
@@ -546,31 +560,58 @@ async function callAnthropic(ref,c,ai,hist,draw){let uin=0,uout=0;const rid=ref.
  hist.forEach(h=>{const role=h.role==='model'?'assistant':'user',bl=h.parts.map(q=>{if(q.text!=null)return q.text.trim()?{type:'text',text:q.text}:null;const mt=q.inlineData.mimeType;
   if(/^image\//.test(mt))return{type:'image',source:{type:'base64',media_type:mt,data:q.inlineData.data}};if(mt==='application/pdf')return{type:'document',source:{type:'base64',media_type:mt,data:q.inlineData.data}};return null}).filter(Boolean);
   if(!bl.length)return;const l=msgs[msgs.length-1];if(l&&l.role===role)l.content=l.content.concat(bl);else msgs.push({role,content:bl})});
- const post=th=>pfetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':keyOf('anthropic'),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:rid,max_tokens:th?bud+8192:8192,system:sysPrompt(),messages:msgs,stream:true,...(th?{thinking:{type:'enabled',budget_tokens:bud}}:{})})});
+ const post=th=>pfetch(prov(ref.p).base+'/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':keyOf(ref.p),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:rid,max_tokens:th?bud+8192:8192,system:sysPrompt(),messages:msgs,stream:true,...(th?{thinking:{type:'enabled',budget_tokens:bud}}:{})})});
  let r=await post(true);if(r.status===400)r=await post(false);
  if(!r.ok)throw new Error(await errText(r,rid,c));
  await readSSE(r,d=>{let j;try{j=JSON.parse(d)}catch(_){return}const t=j.type;
   if(t==='content_block_delta'&&j.delta){if(j.delta.type==='text_delta'){ai.text+=j.delta.text||'';got(ai)}else if(j.delta.type==='thinking_delta')ai.think=(ai.think||'')+(j.delta.thinking||'')}
-  else if(t==='message_start'&&j.message&&j.message.usage)uin=j.message.usage.input_tokens||0;
-  else if(t==='message_delta'&&j.usage)uout=j.usage.output_tokens||0;
+  else if(t==='message_start'&&j.message&&j.message.usage){uin=j.message.usage.input_tokens||0;ai.uIn=uin}
+  else if(t==='message_delta'&&j.usage){uout=j.usage.output_tokens||0;ai.uOut=uout}
   else if(t==='error')throw new Error((j.error&&j.error.message)||'Anthropic gagal')},draw);
  return{in:uin,out:uout}}
 async function callChat(ref,c,ai,hist,draw){let uin=0,uout=0;const pv=ref.p,rid=ref.m,eff=S.set.effort;
- const url=pv==='deepseek'?'https://api.deepseek.com/chat/completions':((S.set.bases&&S.set.bases.kimi)||'https://api.moonshot.ai/v1').replace(/\/+$/,'')+'/chat/completions';
+ const url=prov(pv).base+'/chat/completions';
  const msgs=[{role:'system',content:sysPrompt()}];
  hist.forEach(h=>{const role=h.role==='model'?'assistant':'user',tx=h.parts.filter(q=>q.text!=null).map(q=>q.text).join('\n'),
-  imgs=(pv==='kimi'&&role==='user')?h.parts.filter(q=>q.inlineData&&/^image\//.test(q.inlineData.mimeType)):[],
+  imgs=(pv!=='deepseek'&&role==='user')?h.parts.filter(q=>q.inlineData&&/^image\//.test(q.inlineData.mimeType)):[],
   skip=h.parts.filter(q=>q.inlineData).length-imgs.length,text=tx+((skip&&role==='user')?'\n\n[Lampiran biner tidak didukung model ini dan diabaikan]':'');
   msgs.push({role,content:imgs.length?[{type:'text',text}].concat(imgs.map(q=>({type:'image_url',image_url:{url:'data:'+q.inlineData.mimeType+';base64,'+q.inlineData.data}}))):text})});
- const extra=eff==='low'?{thinking:{type:'disabled'}}:(pv==='deepseek'?{thinking:{type:'enabled'},reasoning_effort:(eff==='ultra'||eff==='max')?'max':'high'}:{});
- const post=ex=>pfetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+keyOf(pv)},body:JSON.stringify({model:rid,messages:msgs,stream:true,stream_options:{include_usage:true},...ex})});
+ const extra=pv==='deepseek'?(eff==='low'?{thinking:{type:'disabled'}}:{thinking:{type:'enabled'},reasoning_effort:(eff==='ultra'||eff==='max')?'max':'high'}):((pv==='kimi'&&eff==='low')?{thinking:{type:'disabled'}}:{});
+ const post=ex=>pfetch(url,{method:'POST',headers:{'Content-Type':'application/json',...(keyOf(pv)?{'Authorization':'Bearer '+keyOf(pv)}:{})},body:JSON.stringify({model:rid,messages:msgs,stream:true,stream_options:{include_usage:true},...ex})});
  let r=await post(extra);if(r.status===400&&Object.keys(extra).length)r=await post({});
  if(!r.ok)throw new Error(await errText(r,rid,c));
  await readSSE(r,d=>{if(d==='[DONE]')return;let j;try{j=JSON.parse(d)}catch(_){return}const ch=j.choices&&j.choices[0],dl=ch&&ch.delta;
   if(dl){if(dl.reasoning_content)ai.think=(ai.think||'')+dl.reasoning_content;if(dl.content){ai.text+=dl.content;got(ai)}}
   if(j.usage){uin=j.usage.prompt_tokens||uin;uout=j.usage.completion_tokens||uout}},draw);
  return{in:uin,out:uout}}
-const PROV={gemini:callGemini,openai:callOpenAI,anthropic:callAnthropic,deepseek:callChat,kimi:callChat};
+const FMT={gemini:callGemini,openai:callOpenAI,anthropic:callAnthropic,chat:callChat};
+/* ---------- form, usage ---------- */
+function formD(title,fs,ok){return new Promise(res=>{
+ $('#dlg').innerHTML='<div class="dm"><b>'+esc(title)+'</b></div>'+fs.map(f=>f.opts?'<label>'+esc(f.l)+'</label><div class="seg fseg" data-id="'+f.id+'">'+f.opts.map((o,i)=>'<button data-v="'+o[0]+'" class="'+(i===0?'on':'')+'">'+o[1]+'</button>').join('')+'</div>':'<label>'+esc(f.l)+'</label><input type="'+(f.t||'text')+'" id="ff_'+f.id+'" placeholder="'+esc(f.ph||'')+'" value="'+esc(f.v||'')+'" autocomplete="off">').join('')+'<div class="dbt"><button class="btn" data-k="0">Batal</button><button class="btn p" data-k="1">'+(ok||'Simpan')+'</button></div>';
+ $('#dlgw').classList.add('on');const fin=v=>{$('#dlgw').classList.remove('on');res(v)};
+ $('#dlg').onclick=e=>{const sb=e.target.closest('.fseg button');if(sb){sb.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===sb));return}
+  const b=e.target.closest('button[data-k]');if(!b)return;if(b.dataset.k==='0')return fin(null);
+  const o={};fs.forEach(f=>{if(f.opts){const on=$('#dlg .fseg[data-id="'+f.id+'"] .on');o[f.id]=on?on.dataset.v:f.opts[0][0]}else o[f.id]=$('#ff_'+f.id).value.trim()});fin(o)};
+ $('#dlgw').onclick=e=>{if(e.target.id==='dlgw')fin(null)}})}
+function keyForUrl(url){let h='';try{h=new URL(url).hostname}catch(_){}const P=provs();
+ for(const id of Object.keys(P)){try{if(new URL(P[id].base).hostname===h&&P[id].key)return P[id].key}catch(_){}}return ''}
+function authHeaders(url,key){let h='';try{h=new URL(url).hostname}catch(_){}
+ if(/anthropic\.com$/.test(h))return{'x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'};
+ if(/googleapis\.com$/.test(h))return{'x-goog-api-key':key};return{Authorization:'Bearer '+key}}
+function flat(o,p,out){out=out||[];p=p||'';if(out.length>40)return out;if(o&&typeof o==='object')Object.keys(o).forEach(k=>flat(o[k],p?p+'.'+k:k,out));else out.push((p||'nilai')+': '+o);return out}
+async function checkUsage(u){const key=u.key||keyForUrl(u.url);if(!key)return 'API key belum diisi untuk alamat ini.';
+ const r=await pfetch(u.url,{method:'GET',headers:Object.assign({Accept:'application/json'},authHeaders(u.url,key))});
+ const t=await r.text();let j;try{j=JSON.parse(t)}catch(_){return 'HTTP '+r.status+'\n'+t.slice(0,300)}
+ return (r.ok?'':'HTTP '+r.status+'\n')+flat(j).join('\n')}
+function usageInit(){const c=$('#cb');
+ const run=async i=>{const u=(S.set.usages||[])[i],o=$('#uo'+i);if(!u||!o)return;o.textContent='Memeriksa…';try{o.textContent=await checkUsage(u)}catch(e){o.textContent='Gagal: '+e.message}};
+ (S.set.usages||[]).forEach((_,i)=>run(i));
+ c.onclick=e=>{const r=e.target.closest('.ur'),x=e.target.closest('.ux');if(r)run(+r.dataset.i);else if(x){S.set.usages.splice(+x.dataset.i,1);save();drawTab()}};
+ const add=u=>{S.set.usages=(S.set.usages||[]).concat([u]);save();drawTab()};
+ $('#up1').onclick=()=>add({name:'Saldo DeepSeek',url:'https://api.deepseek.com/user/balance',key:''});
+ $('#up2').onclick=()=>add({name:'Saldo Kimi',url:((S.set.bases||{}).kimi||'https://api.moonshot.ai/v1').replace(/\/+$/,'')+'/users/me/balance',key:''});
+ $('#uadd').onclick=async()=>{const f=await formD('Tambah URL usage',[{id:'name',l:'Nama',ph:'Saldo OpenRouter'},{id:'url',l:'URL (GET)',ph:'https://…'},{id:'key',l:'API key (kosong = pakai key penyedia)',t:'password'}],'Tambah');
+  if(!f)return;if(!f.name||!/^https:\/\//.test(f.url)){note('Isi nama dan URL (diawali https://).');return}add(f)}}
 function toParts(m){const p=[];let t=m.text;
  (m.att||[]).forEach(a=>{if(a.kind==='text')t+=`\n\n[File: ${a.name}]\n${a.data}`;else if(a.data)p.push({inlineData:{mimeType:a.mime,data:a.data}})});
  p.unshift({text:t});return p}
@@ -587,9 +628,17 @@ async function gen(c){if(busy)return;if(!user){openAuth();return}if(needKey())re
  let hs=c.msgs.slice(0,-1).filter(m=>!m.err).slice(-Math.max(1,S.set.ctx));while(hs.length>1&&hs[0].role==='model')hs.shift();const hist=hs.map(m=>({role:m.role,parts:toParts(m)}));const mb=S.mems.filter(m=>m.on&&m.t==='file'&&m.b64);if(mb.length&&hist.length)hist[0].parts=[{text:'Berkas memori (selalu jadikan konteks):'}].concat(mb.map(m=>({inlineData:{mimeType:m.mime,data:m.b64}})),hist[0].parts);
  let uin=0,uout=0;const ref=parseRef(realFor(c.model));
  const draw=()=>{store=[];body.innerHTML=thinkHtml(ai,!ai.text)+(md(ai.text)||(ai.think?'':'<span class="dots">Berpikir</span>'));scrollEnd()};
- try{const u=await PROV[ref.p](ref,c,ai,hist,draw);uin=u.in||0;uout=u.out||0;
+ const lv=document.createElement('div');lv.className='live';body.parentNode.insertBefore(lv,body);
+ ai.estIn=estIn(hist);let shown=0;
+ const tick=()=>{const eo=Math.round(((ai.think||'').length+ai.text.length)/3.6);shown=Math.max(shown,ai.uOut||0,eo);
+  lv.innerHTML='<b>'+(ai.text?'Menulis':'Berpikir')+'</b> · '+fmtDur(Date.now()-ai.t0)+' · masuk '+(ai.uIn?'':'~')+nf(ai.uIn||ai.estIn)+' · keluar ~'+nf(shown)};
+ const iv=setInterval(tick,100);tick();
+ try{const u=await FMT[prov(ref.p).fmt](ref,c,ai,hist,draw);uin=u.in||0;uout=u.out||0;
   if(!ai.text){if(ctrl.stop)ai.text='(dihentikan)';else{ai.text='Model tidak mengirim jawaban (mungkin diblokir filter keamanan). Coba ubah pertanyaan.';ai.err=1}}
- }catch(e){ai.err=1;ai.text=e.message+(/40[13]|api key|invalid|unauthor/i.test(e.message)?' — Periksa API key '+PNAME[ref.p]+' di Pengaturan > Umum.':/fetch|network|load failed/i.test(e.message)?' — Koneksi ke '+PNAME[ref.p]+' gagal. Pastikan internet aktif'+(/^https?:/.test(location.protocol)?' dan server proxy (/api/llm) sudah terpasang.':'.'):/429/.test(e.message)?' — Kuota habis atau terlalu cepat, tunggu sebentar atau ganti model.':'')}
+ }catch(e){ai.err=1;ai.text=e.message+(/40[13]|api key|invalid|unauthor/i.test(e.message)?' — Periksa API key dan Base URL '+pn(ref.p)+' di Pengaturan > Umum.':/fetch|network|load failed/i.test(e.message)?' — Koneksi ke '+pn(ref.p)+' gagal. Periksa Base URL dan internet'+(/^https?:/.test(location.protocol)?', atau pasang server proxy (/api/llm).':'.'):/429/.test(e.message)?' — Kuota habis atau terlalu cepat, tunggu sebentar atau ganti model.':'')}
+ clearInterval(iv);ai.ms=Date.now()-ai.t0;
+ if(!ai.err){const eo=Math.round(((ai.think||'').length+ai.text.length)/3.6);ai.est=!(uin&&uout);uin=uin||ai.uIn||ai.estIn;uout=uout||Math.max(ai.uOut||0,eo);ai.uIn=uin;ai.uOut=uout}
+ delete ai.estIn;
  S.use.req++;S.use.inp+=uin;S.use.out+=uout;const b=S.use.by[c.model]=S.use.by[c.model]||{req:0,inp:0,out:0};b.req++;b.inp+=uin;b.out+=uout;
  busy=false;ctrl=null;$('#send').innerHTML=ic('arrow',18);save();renderSide();renderChat()}
 $('#send').onclick=send;
@@ -616,9 +665,11 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
   <label>Penyimpanan lokal: ${(sz/1024).toFixed(1)} KB dari sekitar 5.000 KB · ${tot} pesan</label><div class="bar"><i style="width:${Math.min(100,sz/5120)}%"></i></div>
   <label>Jendela konteks model: ${used.toLocaleString('id')} token terpakai dari ±${lim.toLocaleString('id')} per permintaan</label>
   <table><tr><th>Model</th><th>Req</th><th>Masuk</th><th>Keluar</th></tr>${Object.keys(S.use.by).map(k=>`<tr><td>${mname(k)}</td><td>${S.use.by[k].req}</td><td>${S.use.by[k].inp}</td><td>${S.use.by[k].out}</td></tr>`).join('')||'<tr><td colspan=4>Belum ada data</td></tr>'}</table>
-  <p class="note">Sisa kuota harian/menit ada di akun Google AI Studio kamu; di sini hanya terhitung pemakaian lewat aplikasi ini.</p>`}
- else if(tab==='gen'){c.innerHTML=`<label style="margin-top:0">Tema</label><div class="seg" id="sth"><button data-t="dark" class="${themeOf()==='dark'?'on':''}">Gelap</button><button data-t="light" class="${themeOf()==='light'?'on':''}">Terang</button></div><label>API key</label>${Object.keys(PNAME).map(pv=>`<div class="kr"><span>${PNAME[pv]}</span><input type="password" id="k_${pv}" value="${esc(keyOf(pv))}" placeholder="API key ${PNAME[pv]}" autocomplete="off"></div>`).join('')}<p class="note">Isi hanya penyedia yang kamu pakai. Key dikirim langsung dari browser ke penyedianya. Kalau kamu login, key ikut tersimpan di akunmu supaya bisa dipakai di perangkat lain.</p>
-  <label>Alamat API Kimi (opsional)</label><input type="text" id="kbase" value="${esc((S.set.bases&&S.set.bases.kimi)||'')}" placeholder="https://api.moonshot.ai/v1">
+  <label>Cek saldo atau usage penyedia</label>${(S.set.usages||[]).map((u,i)=>`<div class="us"><div class="uh"><b>${esc(u.name)}</b><span><button class="ur" data-i="${i}">Cek</button><button class="ux" data-i="${i}" aria-label="Hapus">${ic('trash',15)}</button></span></div><pre class="uo" id="uo${i}">Memeriksa…</pre></div>`).join('')}
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn" id="uadd">+ Tambah URL usage</button><button class="btn" id="up1">Saldo DeepSeek</button><button class="btn" id="up2">Saldo Kimi</button></div>
+  <p class="note">Isi URL endpoint usage atau saldo milik penyedia (permintaan GET). API key dikosongkan = memakai key penyedia yang alamatnya cocok. Angka di atas hanya pemakaian lewat aplikasi ini.</p>`;usageInit()}
+ else if(tab==='gen'){c.innerHTML=`<label style="margin-top:0">Tema</label><div class="seg" id="sth"><button data-t="dark" class="${themeOf()==='dark'?'on':''}">Gelap</button><button data-t="light" class="${themeOf()==='light'?'on':''}">Terang</button></div><label>API key dan Base URL</label>${Object.keys(BUILTIN).map(pv=>`<div class="kb"><b>${BUILTIN[pv].name}</b><input type="password" id="k_${pv}" value="${esc(keyOf(pv))}" placeholder="API key" autocomplete="off"><input type="text" id="b_${pv}" value="${esc((S.set.bases||{})[pv]||'')}" placeholder="Base URL (kosong = ${BUILTIN[pv].base})"></div>`).join('')}<p class="note">Isi hanya penyedia yang kamu pakai. Kosongkan Base URL untuk alamat resmi; isi kalau memakai relay atau server sendiri. Kalau kamu login, key ikut tersimpan di akunmu.</p>
+  <label>Endpoint kustom</label>${(S.set.eps||[]).map((e,i)=>`<div class="mi"><span>${esc(e.name)}<small>${FMTN[e.fmt]} · ${esc(e.base)}</small></span><button class="epd" data-i="${i}" aria-label="Hapus">${ic('trash',15)}</button></div>`).join('')}<button class="btn" id="epadd" style="margin-top:8px">+ Tambah endpoint kustom</button>
   <label>Model bawaan chat baru</label><button class="sel" id="smod" data-v="${esc(S.set.model)}"><span>${esc(mname(S.set.model))}</span>${ic('chev',16)}</button>
   <label>Kreativitas (temperature): <span id="tv">${S.set.temp}</span></label><input type="range" id="stemp" min="0" max="2" step="0.1" value="${S.set.temp}" style="width:100%"><p class="note">Tidak dikirim untuk Gemini 3.6 ke atas karena Google sudah menghapus parameter ini.</p>
   <label>Batas memori (pesan terakhir yang dikirim): <span id="cv">${S.set.ctx}</span></label><input type="range" id="sctx" min="2" max="60" step="2" value="${S.set.ctx}" style="width:100%">
@@ -626,7 +677,12 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
   <label>Alamat web MultiAI (untuk link bagikan chat)</label><input type="text" id="sbase" value="${esc(S.set.shareBase||'')}" placeholder="Kosongkan = otomatis">`;
   $('#stemp').oninput=e=>$('#tv').textContent=e.target.value;$('#sctx').oninput=e=>$('#cv').textContent=e.target.value;
   $('#sth').onclick=e=>{const b=e.target.closest('button');if(b){collect();setTheme(b.dataset.t);drawTab()}};
-  $('#smod').onclick=async()=>{const b=$('#smod'),v=await pick({title:'Model bawaan chat baru',value:b.dataset.v,groups:S.set.cat.map(g=>({g:g.g,o:g.m.map(n=>({v:g.g+'|'+n,l:n}))}))});if(v!=null){b.dataset.v=v;b.firstChild.textContent=mname(v)}}}
+  $('#smod').onclick=async()=>{const b=$('#smod'),v=await pick({title:'Model bawaan chat baru',value:b.dataset.v,groups:S.set.cat.map(g=>({g:g.g,o:g.m.map(n=>({v:g.g+'|'+n,l:n}))}))});if(v!=null){b.dataset.v=v;b.firstChild.textContent=mname(v)}};
+  $('#epadd').onclick=async()=>{collect();const f=await formD('Tambah endpoint kustom',[{id:'name',l:'Nama',ph:'OpenRouter'},{id:'fmt',l:'Format API',opts:[['chat','OpenAI Chat'],['openai','OpenAI Responses'],['anthropic','Anthropic'],['gemini','Gemini']]},{id:'base',l:'Base URL',ph:'https://openrouter.ai/api/v1'},{id:'key',l:'API key (boleh kosong)',t:'password',ph:'sk-...'}],'Tambah');
+   if(!f)return;if(!f.name||!/^https?:\/\//.test(f.base)){note('Isi nama dan Base URL (diawali https://).');return}
+   const ex=new Set(Object.keys(provs())),b0=slug(f.name)||'ep';let k=b0,n=2;while(ex.has(k))k=b0+(n++);
+   S.set.eps=(S.set.eps||[]).concat([{id:k,name:f.name,fmt:f.fmt,base:f.base,key:f.key}]);save();drawTab()};
+  c.onclick=e=>{const d=e.target.closest('.epd');if(d){collect();S.set.eps.splice(+d.dataset.i,1);save();drawTab()}}}
  else if(tab==='mdl'){const reals=S.set.reals||[];
   c.innerHTML=`<label style="margin-top:0">Model asli yang tersedia</label><p class="note" style="margin:0 0 6px">Model sungguhan yang dipanggil di balik nama tampilan. API key tiap penyedia diisi di tab Umum.</p>
   ${reals.map((r,i)=>`<div class="mi"><span>${esc(refLabel(r))}</span><button class="rd" data-i="${i}" aria-label="Hapus">${ic('trash',15)}</button></div>`).join('')}
@@ -636,10 +692,10 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
   <p class="note" style="margin:14px 0 0">Daftar nama tampilan, satu per baris. Untuk menunjuk model asli tertentu tulis <b>Nama = gpt-5.6-sol</b> atau <b>Nama = anthropic:claude-opus-5-5</b>. Nama tanpa tanda "=" memakai model asli bawaan.</p>`
   +S.set.cat.map((g,i)=>`<label style="display:flex;justify-content:space-between;align-items:center">${esc(g.g)}<button class="rg" data-i="${i}" style="color:var(--al);font-size:12px">Pakai model asli</button></label><textarea class="cat" data-i="${i}" rows="5">${esc(g.m.map(n=>n+((S.set.map||{})[g.g+'|'+n]?' = '+S.set.map[g.g+'|'+n]:'')).join('\n'))}</textarea>`).join('')
   +`<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="gadd">+ Tambah grup</button><button class="btn d" id="grst">Reset daftar</button></div>`;
-  const choose=async(title,cur)=>{const groups=Object.keys(PNAME).map(pv=>({g:PNAME[pv],o:PRESETS[pv].map(m=>({v:pv+':'+m,l:m})).concat([{v:'custom:'+pv,l:'Kustom…'}])}));
-   const extra=(S.set.reals||[]).filter(r=>!PRESETS[parseRef(r).p].includes(parseRef(r).m));if(extra.length)groups.unshift({g:'Milikmu',o:extra.map(r=>({v:r,l:refLabel(r)}))});
+  const choose=async(title,cur)=>{const P=provs(),groups=Object.keys(P).map(pv=>({g:P[pv].name,o:(PRESETS[pv]||[]).map(m=>({v:pv+':'+m,l:m})).concat([{v:'@new:'+pv,l:'Kustom…'}])}));
+   const extra=(S.set.reals||[]).filter(r=>{const x=parseRef(r);return !(PRESETS[x.p]||[]).includes(x.m)});if(extra.length)groups.unshift({g:'Milikmu',o:extra.map(r=>({v:r,l:refLabel(r)}))});
    const v=await pick({title,value:cur,groups});if(v==null)return null;
-   if(v.startsWith('custom:')){const pv=v.slice(7),id=await promptD('ID model '+PNAME[pv],'contoh: '+EXMP[pv],'','Tambah');return(id&&id.trim())?pv+':'+id.trim():null}return v};
+   if(v.startsWith('@new:')){const pv=v.slice(5),id=await promptD('ID model '+pn(pv),'contoh: '+(EXMP[pv]||'nama-model'),'','Tambah');return(id&&id.trim())?pv+':'+id.trim():null}return v};
   $('#radd').onclick=async()=>{collect();const r=await choose('Tambah model asli','');if(r){if(!S.set.reals.includes(r))S.set.reals.push(r);save();drawTab()}};
   $('#sreal').onclick=async()=>{const b=$('#sreal'),r=await choose('Model asli bawaan',b.dataset.v);if(r){if(!S.set.reals.includes(r))S.set.reals.push(r);b.dataset.v=r;b.firstChild.textContent=refLabel(r)}};
   $('#gadd').onclick=async()=>{collect();const n=await promptD('Nama grup baru, misalnya Qwen atau Grok','Nama grup');if(n&&n.trim()){S.set.cat.push({g:n.trim(),m:[]});drawTab()}};
@@ -664,14 +720,14 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
    drawTab();if(bad.length)note('Tidak didukung atau terlalu besar: '+bad.join(', '));if(st!==S.mems.length)note('Penyimpanan browser penuh. Hapus chat atau memori lama.')};
   c.onchange=e=>{if(e.target.type==='checkbox'&&e.target.dataset.i!==undefined){S.mems[+e.target.dataset.i].on=e.target.checked;save()}};
   c.onclick=e=>{const b=e.target.closest('.md');if(b){collect();S.mems.splice(+b.dataset.i,1);save();drawTab()}}}
- else{c.innerHTML=`<p class="note" style="margin:0 0 12px">Semua data ada di browser ini. Versi 2026.10.04h.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="exp">Ekspor semua chat (JSON)</button><button class="btn" id="implink">Impor dari link</button><button class="btn d" id="clr">Hapus semua chat</button><button class="btn d" id="rst">Reset penggunaan</button></div>`;
+ else{c.innerHTML=`<p class="note" style="margin:0 0 12px">Semua data ada di browser ini. Versi 2026.10.04i.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="exp">Ekspor semua chat (JSON)</button><button class="btn" id="implink">Impor dari link</button><button class="btn d" id="clr">Hapus semua chat</button><button class="btn d" id="rst">Reset penggunaan</button></div>`;
   $('#implink').onclick=async()=>{const v=await promptD('Tempel link chat yang dibagikan','https://…','','Buka');if(v&&v.trim())handleShare(v.trim())};
   $('#exp').onclick=()=>download('multiai-chats.json',JSON.stringify(S.chats,null,1));
   $('#clr').onclick=async()=>{if(await confirmD('Hapus semua chat?')){S.chats=[];S.cur=null;save();renderAll()}};
   $('#rst').onclick=()=>{S.use={req:0,inp:0,out:0,by:{}};save();drawTab()}}}
 document.querySelector('.tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;collect();tab=b.dataset.t;drawTab()};
 function collect(){const g=id=>document.getElementById(id);
- if(g('k_gemini'))S.set.key=g('k_gemini').value.trim();['openai','anthropic','deepseek','kimi'].forEach(pv=>{if(g('k_'+pv)){S.set.keys=S.set.keys||{};S.set.keys[pv]=g('k_'+pv).value.trim()}});if(g('kbase')){S.set.bases=S.set.bases||{};S.set.bases.kimi=g('kbase').value.trim()}if(g('smod'))S.set.model=g('smod').dataset.v;if(g('stemp'))S.set.temp=+g('stemp').value;if(g('sctx'))S.set.ctx=+g('sctx').value;if(g('smem'))S.set.mem=g('smem').value;if(g('sbase'))S.set.shareBase=g('sbase').value.trim();if(g('simg'))S.set.imgModel=g('simg').value.trim();
+ Object.keys(BUILTIN).forEach(pv=>{if(g('k_'+pv)){if(pv==='gemini')S.set.key=g('k_gemini').value.trim();else{S.set.keys=S.set.keys||{};S.set.keys[pv]=g('k_'+pv).value.trim()}}if(g('b_'+pv)){S.set.bases=S.set.bases||{};S.set.bases[pv]=g('b_'+pv).value.trim()}});if(g('smod'))S.set.model=g('smod').dataset.v;if(g('stemp'))S.set.temp=+g('stemp').value;if(g('sctx'))S.set.ctx=+g('sctx').value;if(g('smem'))S.set.mem=g('smem').value;if(g('sbase'))S.set.shareBase=g('sbase').value.trim();if(g('simg'))S.set.imgModel=g('simg').value.trim();
  if(g('sreal'))S.set.real=g('sreal').dataset.v;
  document.querySelectorAll('textarea.cat').forEach(t=>{const x=S.set.cat[+t.dataset.i];if(!x)return;const names=[];
   t.value.split(/\r?\n/).forEach(l=>{const q=l.split('='),n=q[0].trim();if(!n)return;names.push(n);const r=normRef(q.slice(1).join('=')),k=x.g+'|'+n;
