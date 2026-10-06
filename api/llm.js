@@ -8,6 +8,8 @@ const ALLOW = [
   'api.moonshot.cn',
   'generativelanguage.googleapis.com',
 ];
+// Host tambahan (mis. endpoint kustom milikmu): set env LLM_ALLOW_HOSTS="host1.com,host2.com" di Vercel
+const EXTRA = (process.env.LLM_ALLOW_HOSTS || '').split(',').map((x) => x.trim()).filter(Boolean);
 const PASS = ['content-type', 'authorization', 'x-api-key', 'x-goog-api-key', 'anthropic-version', 'anthropic-beta'];
 
 module.exports = async (req, res) => {
@@ -17,19 +19,20 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method tidak didukung' });
 
-  const { url, headers, body } = req.body || {};
+  const { url, method, headers, body } = req.body || {};
+  const m = method === 'GET' ? 'GET' : 'POST';
   let u;
   try { u = new URL(url); } catch (e) { return res.status(400).json({ error: 'URL tidak valid' }); }
-  if (u.protocol !== 'https:' || !ALLOW.includes(u.hostname)) {
+  if (u.protocol !== 'https:' || !ALLOW.concat(EXTRA).includes(u.hostname)) {
     return res.status(400).json({ error: 'Host tidak diizinkan' });
   }
-  if (typeof body !== 'string') return res.status(400).json({ error: 'Body tidak valid' });
+  if (m === 'POST' && typeof body !== 'string') return res.status(400).json({ error: 'Body tidak valid' });
 
   const h = {};
   Object.keys(headers || {}).forEach((k) => { if (PASS.includes(k.toLowerCase())) h[k] = headers[k]; });
 
   try {
-    const up = await fetch(url, { method: 'POST', headers: h, body });
+    const up = await fetch(url, m === 'GET' ? { method: 'GET', headers: h } : { method: 'POST', headers: h, body });
     res.status(up.status);
     res.setHeader('Content-Type', up.headers.get('content-type') || 'application/json');
     res.setHeader('Cache-Control', 'no-store');
