@@ -73,6 +73,9 @@ textarea{flex:1;background:none;border:0;color:var(--tx);font:inherit;resize:non
 #pb pre{position:absolute;inset:0;overflow:auto;padding:14px;font:12.5px/1.5 ui-monospace,Menlo,Consolas,monospace;background:var(--cbg);color:var(--tx)}
 #panel.full{position:fixed;inset:0;width:100%!important;z-index:45;border-left:0}
 .imgv{position:absolute;inset:0;display:grid;place-items:center;background:var(--cbg);padding:12px;overflow:auto}.imgv img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;background:repeating-conic-gradient(#8884 0 25%,transparent 0 50%) 50%/16px 16px}
+.spin{display:inline-flex;vertical-align:middle;width:20px;height:20px;color:var(--tx);animation:rot 1.6s linear infinite;flex-shrink:0}.spin svg{width:100%;height:100%;stroke:currentColor;fill:none;stroke-width:64}@keyframes rot{to{transform:rotate(360deg)}}
+.live .spin{width:16px;height:16px;margin-right:7px;color:var(--al)}.th summary .spin{width:16px;height:16px;color:var(--al)}.pl{display:grid;place-items:center;min-height:120px}.pl .spin{width:34px;height:34px}.uo .spin{width:18px;height:18px}
+.gd{width:8px;height:8px;border-radius:50%;background:var(--ac);flex-shrink:0;animation:pl 1s infinite alternate}@keyframes pl{from{opacity:.25}to{opacity:1}}.idle{color:var(--err)}
 .live{font-size:12px;color:var(--mut);margin-bottom:6px;font-variant-numeric:tabular-nums}.live b{color:var(--al);font-weight:600}.meta{font-size:12px;color:var(--mut);margin-top:6px;font-variant-numeric:tabular-nums}
 .kb{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px}.kb b{display:block;font-size:13px;margin-bottom:6px}.kb input+input{margin-top:6px}
 .us{border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:8px}.uh{display:flex;justify-content:space-between;align-items:center}.uh span{display:flex;gap:4px}.uh button{color:var(--mut);padding:3px 9px;border-radius:7px}.uh button:hover{background:var(--panel2);color:var(--tx)}
@@ -206,7 +209,12 @@ const persist=()=>{try{localStorage.setItem('chatbotai',JSON.stringify(S,(k,v)=>
 const save=()=>{persist();queuePush()};
 const uid=()=>Math.random().toString(36).slice(2,10);
 const cur=()=>S.chats.find(c=>c.id===S.cur);
-let pending=[],busy=false,ctrl=null,store=[],pf=null,pmode='p',editing=null;
+const gens=new Map(),thOpen=new WeakMap();let pending=[],store=[],pf=null,pmode='p',editing=null;
+const isGen=c=>!!c&&gens.has(c.id);
+const isGenMsg=m=>{const c=cur();return !!c&&gens.has(c.id)&&gens.get(c.id).ai===m};
+function stopGen(c,reason){const g=gens.get(c.id);if(!g)return;g.reason=g.reason||reason||'stop';
+ try{g.ac.abort()}catch(_){}try{g.rd&&g.rd.cancel()}catch(_){}if(g.kill)g.kill(new Error('ABORT'))}
+function syncSend(){const on=isGen(cur());$('#send').innerHTML=on?ic('stop',16):ic('arrow',18)}
 const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
 /* ---------- markdown ---------- */
@@ -254,7 +262,7 @@ function md(t){let o='';fences(t).forEach(sg=>{
 function renderSide(){const l=$('#list');l.innerHTML='';
  const all=[...S.chats].sort((a,b)=>b.t-a.t),pins=all.filter(c=>c.pin),rest=all.filter(c=>!c.pin);
  const add=c=>{const d=document.createElement('div');d.className='ci'+(c.id===S.cur?' on':'');
-  d.innerHTML=`${c.pin?'<span class="pn">'+ic('pin',14)+'</span>':''}<span>${esc(c.title)}</span><button title="Opsi" aria-label="Opsi chat">${ic('dots',16)}</button>`;
+  d.innerHTML=`${c.pin?'<span class="pn">'+ic('pin',14)+'</span>':''}<span>${esc(c.title)}</span>${gens.has(c.id)?'<i class="gd" title="AI sedang menjawab"></i>':''}<button title="Opsi" aria-label="Opsi chat">${ic('dots',16)}</button>`;
   d.onclick=()=>{S.cur=c.id;save();renderAll();$('#side').classList.remove('on')};
   d.querySelector('button').onclick=e=>{e.stopPropagation();chatMenu(c)};l.appendChild(d)};
  const lab=t=>{const h=document.createElement('div');h.className='gh';h.textContent=t;l.appendChild(h)};
@@ -263,7 +271,7 @@ async function chatMenu(c){const v=await pick({title:c.title.slice(0,40),options
  if(v==='pin'){c.pin=!c.pin;save();renderSide()}
  else if(v==='share')shareChat(c);
  else if(v==='ren'){const n=await promptD('Nama chat','Nama chat',c.title,'Simpan');if(n&&n.trim()){c.title=n.trim().slice(0,60);save();renderSide()}}
- else if(v==='del'&&await confirmD('Hapus chat ini?')){S.chats=S.chats.filter(x=>x.id!==c.id);if(S.cur===c.id)S.cur=null;save();renderAll()}}
+ else if(v==='del'&&await confirmD('Hapus chat ini?')){stopGen(c,'stop');S.chats=S.chats.filter(x=>x.id!==c.id);if(S.cur===c.id)S.cur=null;save();renderAll()}}
 function mdl(){const c=cur();return c?c.model:S.set.model}
 function renderModel(){$('#mbtn').innerHTML='<span>'+esc(mname(mdl()))+'</span>'+ic('chev',14);
  $('#mmenu').innerHTML=S.set.cat.map(c=>`<div class="gh">${esc(c.g)}</div>`+c.m.map(n=>{const id=c.g+'|'+n;return `<button data-m="${esc(id)}" class="${id===mdl()?'on':''}">${esc(n)}</button>`}).join('')).join('');
@@ -271,10 +279,10 @@ function renderModel(){$('#mbtn').innerHTML='<span>'+esc(mname(mdl()))+'</span>'
  $('#emenu').innerHTML=EFF.map(x=>`<button data-e="${x[0]}" class="${x[0]===e[0]?'on':''}">${x[1]}<small>${x[2]}</small></button>`).join('')}
 function steps(t){const p=t.split(/\*\*([^*\n]+)\*\*/),o=[];if(p[0].trim())o.push({t:'Proses berpikir',b:p[0].trim()});
  for(let i=1;i<p.length;i+=2)o.push({t:p[i].trim(),b:(p[i+1]||'').trim()});return o}
-function thinkHtml(m,open){if(!m.think)return '';const st=steps(m.think);
- const head=open?'Berpikir…':'Berpikir'+(m.tms?' '+m.tms+' detik':'')+' · '+st.length+' langkah';
- return `<details class="th" ${open?'open':''}><summary>${head}</summary><ol>${st.map(x=>`<li><details ${open?'open':''}><summary>${esc(x.t)}</summary>${x.b?`<div>${esc(x.b)}</div>`:''}</details></li>`).join('')}</ol></details>`}
-function acts(m,i){const c=cur();if(editing===i||(!m.text&&!m.err)||(busy&&c&&i===c.msgs.length-1))return '';
+function thinkHtml(m,open){if(!m.think)return '';const st=steps(m.think),op=thOpen.has(m)?thOpen.get(m):open;
+ const head=open?spin():'Berpikir'+(m.tms?' '+m.tms+' detik':'')+' · '+st.length+' langkah';
+ return `<details class="th" ${op?'open':''}><summary>${head}</summary><ol>${st.map((x,k)=>`<li><details ${open&&k===st.length-1?'open':''}><summary>${esc(x.t)}</summary>${x.b?`<div>${esc(x.b)}</div>`:''}</details></li>`).join('')}</ol></details>`}
+function acts(m,i){const c=cur();if(editing===i||(!m.text&&!m.err)||isGenMsg(m))return '';
  const b=(k,t)=>`<button data-act="${k}" data-mi="${i}">${t}</button>`;
  return '<div class="act">'+(m.role==='user'?b('cpu','Salin prompt')+b('edit','Edit')+b('rs','Kirim ulang'):(m.err?'':b('cpa','Salin jawaban'))+b('rg','Ulangi'))+'</div>'}
 function genCfg(id){const g={temperature:+S.set.temp},ef=S.set.effort,m=id.match(/gemini-(\d+)(?:\.(\d+))?/);if(!m)return g;
@@ -282,13 +290,13 @@ function genCfg(id){const g={temperature:+S.set.temp},ef=S.set.effort,m=id.match
  if(+m[1]>=3)g.thinkingConfig={thinkingLevel:{low:'low',medium:'medium',high:'high',ultra:'high',max:'high'}[ef],includeThoughts:true};
  else if(+m[1]===2&&+(m[2]||0)>=5)g.thinkingConfig={thinkingBudget:{low:1024,medium:4096,high:8192,ultra:16384,max:/pro/.test(id)?32768:24576}[ef],includeThoughts:true};
  return g}
-function msgHtml(m,i){const a=m.role==='model';
+function msgHtml(m,i){const a=m.role==='model',gm=a&&isGenMsg(m);
  const at=(m.att||[]).length?`<div class="att">${m.att.map(x=>`<span class="at">${esc(x.name)}</span>`).join('')}</div>`:'';
- return `<div class="msg ${a?'ai':'user'}"><div class="av">${a?'C':'K'}</div><div class="bd"><div class="who">${a?'MultiAI · '+esc(mname(m.model||mdl())):'Kamu'}</div>${at}<div class="body">${(!a&&editing===i)?`<textarea class="ed">${esc(m.text)}</textarea><div class="act"><button data-act="save" data-mi="${i}">Simpan &amp; kirim</button><button data-act="cancel" data-mi="${i}">Batal</button></div>`:m.err?`<p class="err">${esc(m.text)}</p>`:thinkHtml(m,false)+md(m.text)}</div>${m.src&&m.src.length?'<div class="att" style="margin-top:8px">'+m.src.map(s=>`<a class="at" href="${esc(s.u)}" target="_blank" rel="noopener">${esc(s.t)}</a>`).join('')+'</div>':''}${metaHtml(m)}${acts(m,i)}</div></div>`}
+ return `<div class="msg ${a?'ai':'user'}"><div class="av">${a?'C':'K'}</div><div class="bd"><div class="who">${a?'MultiAI · '+esc(mname(m.model||mdl())):'Kamu'}</div>${at}${gm?'<div class="live"></div>':''}<div class="body">${(!a&&editing===i)?`<textarea class="ed">${esc(m.text)}</textarea><div class="act"><button data-act="save" data-mi="${i}">Simpan &amp; kirim</button><button data-act="cancel" data-mi="${i}">Batal</button></div>`:m.err?`<p class="err">${esc(m.text)}</p>`:thinkHtml(m,gm?!m.text:false)+(md(m.text)||(gm&&!m.think?spin():''))}</div>${m.src&&m.src.length?'<div class="att" style="margin-top:8px">'+m.src.map(s=>`<a class="at" href="${esc(s.u)}" target="_blank" rel="noopener">${esc(s.t)}</a>`).join('')+'</div>':''}${metaHtml(m)}${acts(m,i)}</div></div>`}
 function renderChat(){store=[];const c=cur(),w=$('#wrap');
  if(!c||!c.msgs.length){w.innerHTML=`<div class="empty"><span class="logo big">${LOGO}</span><h1>Halo, ada yang bisa dibantu?</h1><p>Tanya apa saja, atau minta dibuatkan kode yang bisa langsung dijalankan.</p><div class="chips"><button>Buatkan game ular dalam satu file HTML</button><button>Buat landing page kopi yang responsif</button><button>Jelaskan cara kerja closure di JavaScript</button></div></div>`;
-  w.querySelectorAll('.chips button').forEach(b=>b.onclick=()=>{$('#inp').value=b.textContent;send()});return}
- w.innerHTML=c.msgs.map(msgHtml).join('');scrollEnd()}
+  w.querySelectorAll('.chips button').forEach(b=>b.onclick=()=>{$('#inp').value=b.textContent;send()});syncSend();return}
+ w.innerHTML=c.msgs.map((m,i)=>{const g=gens.get(c.id);if(g&&g.ai===m)g.sbase=store.length;return msgHtml(m,i)}).join('');scrollEnd();syncSend()}
 function renderAll(){editing=null;renderSide();renderModel();renderChat()}
 const scrollEnd=()=>{const m=$('#msgs');m.scrollTop=m.scrollHeight};
 
@@ -369,7 +377,7 @@ function makeImage(f){const key=f.lang+'|'+f.code;
  return imgCache.get(key)}
 async function imgPreview(f,pb){const ok=()=>pf===f&&pmode==='p';
  if(f.open){pb.innerHTML='<div class="pl">AI masih menulis. Tap kartunya lagi setelah selesai.</div>';return}
- pb.innerHTML='<div class="pl">'+(isSvg(f.code)?'Membuat gambar…':'Membuat gambar dengan AI… (bisa 10 sampai 30 detik)')+'</div>';
+ pb.innerHTML='<div class="pl">'+spin()+'</div>';
  try{const b=await makeImage(f);if(!ok())return;pb.innerHTML='<div class="imgv"><img alt=""></div>';pb.querySelector('img').src=URL.createObjectURL(b)}
  catch(e){if(ok()){pb.innerHTML='<div class="pl" style="color:var(--err)"></div>';pb.firstChild.textContent=e.message}}}
 /* ---------- paket (zip, mcpack, mcaddon, ...) ---------- */
@@ -440,7 +448,7 @@ function previewDoc(f){const l=f.lang;
  if(l==='pptx')return slidesDoc(f.code);
  if(l==='csv'||l==='xlsx')return sheetDoc(csv(f.code));
  return paperDoc(parseDoc(f.code))}
-async function pdfPreview(f,pb){pb.innerHTML='<div class="pl">Menyiapkan preview…</div>';const ok=()=>pf===f&&pmode==='p';
+async function pdfPreview(f,pb){pb.innerHTML='<div class="pl">'+spin()+'</div>';const ok=()=>pf===f&&pmode==='p';
  try{const blob=await makePdf(f.code);await lib('pdfjs');const wt=await (await fetch('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js')).text();
   window.pdfjsLib.GlobalWorkerOptions.workerSrc=URL.createObjectURL(new Blob([wt],{type:'text/javascript'}));
   const doc=await window.pdfjsLib.getDocument({data:new Uint8Array(await blob.arrayBuffer())}).promise;const host=document.createElement('div');host.className='pdfh';
@@ -517,18 +525,20 @@ const fmtDur=ms=>ms<60000?(ms/1000).toFixed(1).replace('.',',')+' d':Math.floor(
 function estIn(h){return Math.round((sysPrompt().length+h.reduce((a,x)=>a+x.parts.reduce((b,q)=>b+(q.text!=null?q.text.length:3600),0),0))/3.6)}
 const metaHtml=m=>(m.role==='model'&&m.ms&&!m.err)?'<div class="meta">'+fmtDur(m.ms)+' · masuk '+(m.est?'~':'')+nf(m.uIn)+' · keluar '+(m.est?'~':'')+nf(m.uOut)+' · total '+(m.est?'~':'')+nf((m.uIn||0)+(m.uOut||0))+' token</div>':'';
 function got(ai){if(!ai.tms)ai.tms=Math.max(1,Math.round((Date.now()-ai.t0)/1000))}
-async function pfetch(url,o){try{return await fetch(url,o)}catch(e){
-  if(!/^https?:/.test(location.protocol))throw e;
-  const r=await fetch('/api/llm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,method:o.method||'POST',headers:o.headers,body:o.body})});
-  if(r.status===404)throw e;return r}}
+async function pfetch(url,o){const run=async oo=>{try{return await fetch(url,oo)}catch(e){
+   if(e&&e.name==='AbortError')throw e;
+   if(oo.signal&&/clone/i.test(String(e&&e.message))){const o2=Object.assign({},oo);delete o2.signal;return run(o2)}
+   if(!/^https?:/.test(location.protocol))throw e;
+   const r=await fetch('/api/llm',{method:'POST',signal:oo.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({url,method:oo.method||'POST',headers:oo.headers,body:oo.body})});
+   if(r.status===404)throw e;return r}};return run(o)}
 async function errText(r,rid,c){let e='';try{const j=await r.json();e=(j.error&&(j.error.message||j.error))||j.message||''}catch(_){}
  return 'Error '+r.status+': '+String(e||'permintaan gagal').split(rid).join(mname(c.model))}
-async function readSSE(r,onData,draw){
- if(r.body&&r.body.getReader){const rd=r.body.getReader(),dec=new TextDecoder();let buf='';
-  for(;;){if(ctrl.stop){rd.cancel();break}const {done,value}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});const ls=buf.split('\n');buf=ls.pop();ls.forEach(l=>{if(l.startsWith('data:'))onData(l.slice(5).trim())});draw()}}
- else{(await r.text()).split('\n').forEach(l=>{if(l.startsWith('data:'))onData(l.slice(5).trim())});draw()}}
+async function readSSE(r,onData,draw){const g=draw.g||{};
+ if(r.body&&r.body.getReader){const rd=r.body.getReader(),dec=new TextDecoder();g.rd=rd;let buf='';
+  for(;;){if(g.dead)break;const {done,value}=await rd.read();if(done)break;g.last=Date.now();buf+=dec.decode(value,{stream:true});const ls=buf.split('\n');buf=ls.pop();ls.forEach(l=>{if(l.startsWith('data:'))onData(l.slice(5).trim())});draw()}}
+ else{const t=await r.text();g.last=Date.now();t.split('\n').forEach(l=>{if(l.startsWith('data:'))onData(l.slice(5).trim())});draw()}}
 async function callGemini(ref,c,ai,hist,draw){let uin=0,uout=0;const rid=ref.m;
- const post=(gc,wt=true)=>pfetch(prov(ref.p).base+'/models/'+rid+':streamGenerateContent?alt=sse',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':keyOf(ref.p)},body:JSON.stringify({systemInstruction:{parts:[{text:sysPrompt()}]},contents:hist,generationConfig:gc,...(S.set.web&&wt?{tools:[{google_search:{}}]}:{})})});
+ const post=(gc,wt=true)=>pfetch(prov(ref.p).base+'/models/'+rid+':streamGenerateContent?alt=sse',{method:'POST',signal:draw.g.ac.signal,headers:{'Content-Type':'application/json','x-goog-api-key':keyOf(ref.p)},body:JSON.stringify({systemInstruction:{parts:[{text:sysPrompt()}]},contents:hist,generationConfig:gc,...(S.set.web&&wt?{tools:[{google_search:{}}]}:{})})});
  const gc=genCfg(rid);let r=await post(gc);
  if(r.status===400&&gc.thinkingConfig){delete gc.thinkingConfig;r=await post(gc)}
  if(r.status===400&&Object.keys(gc).length){r=await post({})}
@@ -542,7 +552,7 @@ async function callGemini(ref,c,ai,hist,draw){let uin=0,uout=0;const rid=ref.m;
 async function callOpenAI(ref,c,ai,hist,draw){let uin=0,uout=0;const rid=ref.m,em={low:'low',medium:'medium',high:'high',ultra:'high',max:'max'}[S.set.effort]||'medium';
  const input=hist.map(h=>({role:h.role==='model'?'assistant':'user',content:h.parts.map(q=>{if(q.text!=null)return{type:h.role==='model'?'output_text':'input_text',text:q.text};
   const mt=q.inlineData.mimeType,d=q.inlineData.data;if(/^image\//.test(mt))return{type:'input_image',image_url:'data:'+mt+';base64,'+d};if(mt==='application/pdf')return{type:'input_file',filename:'dokumen.pdf',file_data:'data:'+mt+';base64,'+d};return null}).filter(Boolean)})).filter(m=>m.content.length);
- const post=(eff,web)=>pfetch(prov(ref.p).base+'/responses',{method:'POST',headers:{'Content-Type':'application/json',...(keyOf(ref.p)?{'Authorization':'Bearer '+keyOf(ref.p)}:{})},body:JSON.stringify({model:rid,instructions:sysPrompt(),input,stream:true,store:false,...(eff?{reasoning:{effort:eff,summary:'auto'}}:{}),...(web?{tools:[{type:'web_search'}]}:{})})});
+ const post=(eff,web)=>pfetch(prov(ref.p).base+'/responses',{method:'POST',signal:draw.g.ac.signal,headers:{'Content-Type':'application/json',...(keyOf(ref.p)?{'Authorization':'Bearer '+keyOf(ref.p)}:{})},body:JSON.stringify({model:rid,instructions:sysPrompt(),input,stream:true,store:false,...(eff?{reasoning:{effort:eff,summary:'auto'}}:{}),...(web?{tools:[{type:'web_search'}]}:{})})});
  let r=await post(em,S.set.web);
  if(r.status===400&&S.set.web)r=await post(em,false);
  if(r.status===400&&em!=='high')r=await post('high',false);
@@ -560,7 +570,7 @@ async function callAnthropic(ref,c,ai,hist,draw){let uin=0,uout=0;const rid=ref.
  hist.forEach(h=>{const role=h.role==='model'?'assistant':'user',bl=h.parts.map(q=>{if(q.text!=null)return q.text.trim()?{type:'text',text:q.text}:null;const mt=q.inlineData.mimeType;
   if(/^image\//.test(mt))return{type:'image',source:{type:'base64',media_type:mt,data:q.inlineData.data}};if(mt==='application/pdf')return{type:'document',source:{type:'base64',media_type:mt,data:q.inlineData.data}};return null}).filter(Boolean);
   if(!bl.length)return;const l=msgs[msgs.length-1];if(l&&l.role===role)l.content=l.content.concat(bl);else msgs.push({role,content:bl})});
- const post=th=>pfetch(prov(ref.p).base+'/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':keyOf(ref.p),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:rid,max_tokens:th?bud+8192:8192,system:sysPrompt(),messages:msgs,stream:true,...(th?{thinking:{type:'enabled',budget_tokens:bud}}:{})})});
+ const post=th=>pfetch(prov(ref.p).base+'/v1/messages',{method:'POST',signal:draw.g.ac.signal,headers:{'Content-Type':'application/json','x-api-key':keyOf(ref.p),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:rid,max_tokens:th?bud+8192:8192,system:sysPrompt(),messages:msgs,stream:true,...(th?{thinking:{type:'enabled',budget_tokens:bud}}:{})})});
  let r=await post(true);if(r.status===400)r=await post(false);
  if(!r.ok)throw new Error(await errText(r,rid,c));
  await readSSE(r,d=>{let j;try{j=JSON.parse(d)}catch(_){return}const t=j.type;
@@ -577,7 +587,7 @@ async function callChat(ref,c,ai,hist,draw){let uin=0,uout=0;const pv=ref.p,rid=
   skip=h.parts.filter(q=>q.inlineData).length-imgs.length,text=tx+((skip&&role==='user')?'\n\n[Lampiran biner tidak didukung model ini dan diabaikan]':'');
   msgs.push({role,content:imgs.length?[{type:'text',text}].concat(imgs.map(q=>({type:'image_url',image_url:{url:'data:'+q.inlineData.mimeType+';base64,'+q.inlineData.data}}))):text})});
  const extra=pv==='deepseek'?(eff==='low'?{thinking:{type:'disabled'}}:{thinking:{type:'enabled'},reasoning_effort:(eff==='ultra'||eff==='max')?'max':'high'}):((pv==='kimi'&&eff==='low')?{thinking:{type:'disabled'}}:{});
- const post=ex=>pfetch(url,{method:'POST',headers:{'Content-Type':'application/json',...(keyOf(pv)?{'Authorization':'Bearer '+keyOf(pv)}:{})},body:JSON.stringify({model:rid,messages:msgs,stream:true,stream_options:{include_usage:true},...ex})});
+ const post=ex=>pfetch(url,{method:'POST',signal:draw.g.ac.signal,headers:{'Content-Type':'application/json',...(keyOf(pv)?{'Authorization':'Bearer '+keyOf(pv)}:{})},body:JSON.stringify({model:rid,messages:msgs,stream:true,stream_options:{include_usage:true},...ex})});
  let r=await post(extra);if(r.status===400&&Object.keys(extra).length)r=await post({});
  if(!r.ok)throw new Error(await errText(r,rid,c));
  await readSSE(r,d=>{if(d==='[DONE]')return;let j;try{j=JSON.parse(d)}catch(_){return}const ch=j.choices&&j.choices[0],dl=ch&&ch.delta;
@@ -604,7 +614,7 @@ async function checkUsage(u){const key=u.key||keyForUrl(u.url);if(!key)return 'A
  const t=await r.text();let j;try{j=JSON.parse(t)}catch(_){return 'HTTP '+r.status+'\n'+t.slice(0,300)}
  return (r.ok?'':'HTTP '+r.status+'\n')+flat(j).join('\n')}
 function usageInit(){const c=$('#cb');
- const run=async i=>{const u=(S.set.usages||[])[i],o=$('#uo'+i);if(!u||!o)return;o.textContent='Memeriksa…';try{o.textContent=await checkUsage(u)}catch(e){o.textContent='Gagal: '+e.message}};
+ const run=async i=>{const u=(S.set.usages||[])[i],o=$('#uo'+i);if(!u||!o)return;o.innerHTML=spin();try{o.textContent=await checkUsage(u)}catch(e){o.textContent='Gagal: '+e.message}};
  (S.set.usages||[]).forEach((_,i)=>run(i));
  c.onclick=e=>{const r=e.target.closest('.ur'),x=e.target.closest('.ux');if(r)run(+r.dataset.i);else if(x){S.set.usages.splice(+x.dataset.i,1);save();drawTab()}};
  const add=u=>{S.set.usages=(S.set.usages||[]).concat([u]);save();drawTab()};
@@ -615,32 +625,39 @@ function usageInit(){const c=$('#cb');
 function toParts(m){const p=[];let t=m.text;
  (m.att||[]).forEach(a=>{if(a.kind==='text')t+=`\n\n[File: ${a.name}]\n${a.data}`;else if(a.data)p.push({inlineData:{mimeType:a.mime,data:a.data}})});
  p.unshift({text:t});return p}
-async function send(){if(busy){if(ctrl)ctrl.stop=true;return}
+async function send(){const c0=cur();if(c0&&isGen(c0)){stopGen(c0,'stop');return}
  const txt=$('#inp').value.trim();if(!txt&&!pending.length)return;
  if(!user){openAuth();return}if(needKey())return;
  let c=cur();if(!c){c={id:uid(),title:(txt||pending[0].name).slice(0,40),t:Date.now(),model:S.set.model,msgs:[]};S.chats.push(c);S.cur=c.id}
  c.msgs.push({role:'user',text:txt||'(file terlampir)',att:pending});pending=[];renderPF();$('#inp').value='';grow();
  await gen(c)}
-async function gen(c){if(busy)return;if(!user){openAuth();return}if(needKey())return;
- const ai={role:'model',text:'',model:c.model,t0:Date.now()};c.msgs.push(ai);c.t=Date.now();renderSide();renderChat();
- const body=document.querySelector('#wrap .msg:last-child .body');body.innerHTML='<span class="dots">Berpikir</span>';
- busy=true;$('#send').innerHTML=ic('stop',16);ctrl={stop:false};
+async function gen(c){if(isGen(c))return;if(!user){openAuth();return}if(needKey())return;
+ const ai={role:'model',text:'',model:c.model,t0:Date.now()};c.msgs.push(ai);c.t=Date.now();
+ const g={ai,ac:new AbortController(),last:Date.now(),reason:'',rd:null,dead:false,sbase:null,kill:null};gens.set(c.id,g);
+ renderSide();if(S.cur===c.id)renderChat();else syncSend();
  let hs=c.msgs.slice(0,-1).filter(m=>!m.err).slice(-Math.max(1,S.set.ctx));while(hs.length>1&&hs[0].role==='model')hs.shift();const hist=hs.map(m=>({role:m.role,parts:toParts(m)}));const mb=S.mems.filter(m=>m.on&&m.t==='file'&&m.b64);if(mb.length&&hist.length)hist[0].parts=[{text:'Berkas memori (selalu jadikan konteks):'}].concat(mb.map(m=>({inlineData:{mimeType:m.mime,data:m.b64}})),hist[0].parts);
  let uin=0,uout=0;const ref=parseRef(realFor(c.model));
- const draw=()=>{store=[];body.innerHTML=thinkHtml(ai,!ai.text)+(md(ai.text)||(ai.think?'':'<span class="dots">Berpikir</span>'));scrollEnd()};
- const lv=document.createElement('div');lv.className='live';body.parentNode.insertBefore(lv,body);
- ai.estIn=estIn(hist);let shown=0;
- const tick=()=>{const eo=Math.round(((ai.think||'').length+ai.text.length)/3.6);shown=Math.max(shown,ai.uOut||0,eo);
-  lv.innerHTML='<b>'+(ai.text?'Menulis':'Berpikir')+'</b> · '+fmtDur(Date.now()-ai.t0)+' · masuk '+(ai.uIn?'':'~')+nf(ai.uIn||ai.estIn)+' · keluar ~'+nf(shown)};
- const iv=setInterval(tick,100);tick();
- try{const u=await FMT[prov(ref.p).fmt](ref,c,ai,hist,draw);uin=u.in||0;uout=u.out||0;
-  if(!ai.text){if(ctrl.stop)ai.text='(dihentikan)';else{ai.text='Model tidak mengirim jawaban (mungkin diblokir filter keamanan). Coba ubah pertanyaan.';ai.err=1}}
- }catch(e){ai.err=1;ai.text=e.message+(/40[13]|api key|invalid|unauthor/i.test(e.message)?' — Periksa API key dan Base URL '+pn(ref.p)+' di Pengaturan > Umum.':/fetch|network|load failed/i.test(e.message)?' — Koneksi ke '+pn(ref.p)+' gagal. Periksa Base URL dan internet'+(/^https?:/.test(location.protocol)?', atau pasang server proxy (/api/llm).':'.'):/429/.test(e.message)?' — Kuota habis atau terlalu cepat, tunggu sebentar atau ganti model.':'')}
- clearInterval(iv);ai.ms=Date.now()-ai.t0;
+ const viewMsg=()=>S.cur===c.id?document.querySelector('#wrap .msg:last-child'):null;
+ const draw=()=>{const m=viewMsg(),body=m&&m.querySelector('.body');if(!body)return;if(g.sbase!=null)store.length=g.sbase;
+  body.innerHTML=thinkHtml(ai,!ai.text)+(md(ai.text)||(ai.think?'':spin()));scrollEnd()};
+ draw.g=g;ai.estIn=estIn(hist);let shown=0;
+ const tick=()=>{const m=viewMsg(),lv=m&&m.querySelector('.live');if(!lv)return;const eo=Math.round(((ai.think||'').length+ai.text.length)/3.6),idle=Math.round((Date.now()-g.last)/1000);shown=Math.max(shown,ai.uOut||0,eo);
+  lv.innerHTML=spin()+fmtDur(Date.now()-ai.t0)+' · masuk '+(ai.uIn?'':'~')+nf(ai.uIn||ai.estIn)+' · keluar ~'+nf(shown)+(idle>=20?' · <span class="idle">menunggu respons '+idle+' d</span>':'')};
+ const iv=setInterval(()=>{tick();if(!g.reason&&Date.now()-g.last>(+S.set.timeout||180)*1000)stopGen(c,'timeout')},100);tick();
+ const killP=new Promise((_,rej)=>{g.kill=rej});killP.catch(()=>{});
+ try{const u=await Promise.race([FMT[prov(ref.p).fmt](ref,c,ai,hist,draw),killP]);uin=u.in||0;uout=u.out||0;
+  if(g.reason==='timeout')throw new Error('ABORT');
+  if(!ai.text){if(g.reason==='stop')ai.text='(dihentikan)';else{ai.text='Model tidak mengirim jawaban (mungkin diblokir filter keamanan). Coba ubah pertanyaan.';ai.err=1}}
+ }catch(e){
+  if(g.reason||(e&&e.name==='AbortError')){
+   if(g.reason==='timeout'){const mm='Tidak ada respons dari '+pn(ref.p)+' selama '+Math.round((Date.now()-g.last)/1000)+' detik, jadi permintaan dihentikan. Coba kirim ulang, turunkan Effort, atau naikkan batas waktu di Pengaturan → Umum.';if(ai.text)ai.text+='\n\n'+mm;else{ai.err=1;ai.text=mm}}
+   else if(!ai.text)ai.text='(dihentikan)'}
+  else{ai.err=1;ai.text=e.message+(/40[13]|api key|invalid|unauthor/i.test(e.message)?' — Periksa API key dan Base URL '+pn(ref.p)+' di Pengaturan > Umum.':/fetch|network|load failed/i.test(e.message)?' — Koneksi ke '+pn(ref.p)+' gagal. Periksa Base URL dan internet'+(/^https?:/.test(location.protocol)?', atau pasang server proxy (/api/llm).':'.'):/429/.test(e.message)?' — Kuota habis atau terlalu cepat, tunggu sebentar atau ganti model.':'')}}
+ clearInterval(iv);g.dead=true;ai.ms=Date.now()-ai.t0;
  if(!ai.err){const eo=Math.round(((ai.think||'').length+ai.text.length)/3.6);ai.est=!(uin&&uout);uin=uin||ai.uIn||ai.estIn;uout=uout||Math.max(ai.uOut||0,eo);ai.uIn=uin;ai.uOut=uout}
  delete ai.estIn;
  S.use.req++;S.use.inp+=uin;S.use.out+=uout;const b=S.use.by[c.model]=S.use.by[c.model]||{req:0,inp:0,out:0};b.req++;b.inp+=uin;b.out+=uout;
- busy=false;ctrl=null;$('#send').innerHTML=ic('arrow',18);save();renderSide();renderChat()}
+ gens.delete(c.id);save();renderSide();if(S.cur===c.id)renderChat();else syncSend()}
 $('#send').onclick=send;
 const grow=()=>{const t=$('#inp');t.style.height='auto';t.style.height=Math.min(t.scrollHeight,200)+'px'};
 $('#inp').addEventListener('input',grow);
@@ -665,7 +682,7 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
   <label>Penyimpanan lokal: ${(sz/1024).toFixed(1)} KB dari sekitar 5.000 KB · ${tot} pesan</label><div class="bar"><i style="width:${Math.min(100,sz/5120)}%"></i></div>
   <label>Jendela konteks model: ${used.toLocaleString('id')} token terpakai dari ±${lim.toLocaleString('id')} per permintaan</label>
   <table><tr><th>Model</th><th>Req</th><th>Masuk</th><th>Keluar</th></tr>${Object.keys(S.use.by).map(k=>`<tr><td>${mname(k)}</td><td>${S.use.by[k].req}</td><td>${S.use.by[k].inp}</td><td>${S.use.by[k].out}</td></tr>`).join('')||'<tr><td colspan=4>Belum ada data</td></tr>'}</table>
-  <label>Cek saldo atau usage penyedia</label>${(S.set.usages||[]).map((u,i)=>`<div class="us"><div class="uh"><b>${esc(u.name)}</b><span><button class="ur" data-i="${i}">Cek</button><button class="ux" data-i="${i}" aria-label="Hapus">${ic('trash',15)}</button></span></div><pre class="uo" id="uo${i}">Memeriksa…</pre></div>`).join('')}
+  <label>Cek saldo atau usage penyedia</label>${(S.set.usages||[]).map((u,i)=>`<div class="us"><div class="uh"><b>${esc(u.name)}</b><span><button class="ur" data-i="${i}">Cek</button><button class="ux" data-i="${i}" aria-label="Hapus">${ic('trash',15)}</button></span></div><pre class="uo" id="uo${i}">${spin()}</pre></div>`).join('')}
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn" id="uadd">+ Tambah URL usage</button><button class="btn" id="up1">Saldo DeepSeek</button><button class="btn" id="up2">Saldo Kimi</button></div>
   <p class="note">Isi URL endpoint usage atau saldo milik penyedia (permintaan GET). API key dikosongkan = memakai key penyedia yang alamatnya cocok. Angka di atas hanya pemakaian lewat aplikasi ini.</p>`;usageInit()}
  else if(tab==='gen'){c.innerHTML=`<label style="margin-top:0">Tema</label><div class="seg" id="sth"><button data-t="dark" class="${themeOf()==='dark'?'on':''}">Gelap</button><button data-t="light" class="${themeOf()==='light'?'on':''}">Terang</button></div><label>API key dan Base URL</label>${Object.keys(BUILTIN).map(pv=>`<div class="kb"><b>${BUILTIN[pv].name}</b><input type="password" id="k_${pv}" value="${esc(keyOf(pv))}" placeholder="API key" autocomplete="off"><input type="text" id="b_${pv}" value="${esc((S.set.bases||{})[pv]||'')}" placeholder="Base URL (kosong = ${BUILTIN[pv].base})"></div>`).join('')}<p class="note">Isi hanya penyedia yang kamu pakai. Kosongkan Base URL untuk alamat resmi; isi kalau memakai relay atau server sendiri. Kalau kamu login, key ikut tersimpan di akunmu.</p>
@@ -673,9 +690,10 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
   <label>Model bawaan chat baru</label><button class="sel" id="smod" data-v="${esc(S.set.model)}"><span>${esc(mname(S.set.model))}</span>${ic('chev',16)}</button>
   <label>Kreativitas (temperature): <span id="tv">${S.set.temp}</span></label><input type="range" id="stemp" min="0" max="2" step="0.1" value="${S.set.temp}" style="width:100%"><p class="note">Tidak dikirim untuk Gemini 3.6 ke atas karena Google sudah menghapus parameter ini.</p>
   <label>Batas memori (pesan terakhir yang dikirim): <span id="cv">${S.set.ctx}</span></label><input type="range" id="sctx" min="2" max="60" step="2" value="${S.set.ctx}" style="width:100%">
+  <label>Batas waktu tanpa respons: <span id="tov">${S.set.timeout||180}</span> detik</label><input type="range" id="stimeout" min="30" max="600" step="10" value="${S.set.timeout||180}" style="width:100%"><p class="note">Kalau penyedia tidak mengirim data selama itu, permintaan dihentikan otomatis supaya tidak macet.</p>
   <label class="row2"><span>AI memperkenalkan diri sesuai nama model yang dipilih</span><input type="checkbox" id="spers" ${S.set.persona?'checked':''}></label>
   <label>Alamat web MultiAI (untuk link bagikan chat)</label><input type="text" id="sbase" value="${esc(S.set.shareBase||'')}" placeholder="Kosongkan = otomatis">`;
-  $('#stemp').oninput=e=>$('#tv').textContent=e.target.value;$('#sctx').oninput=e=>$('#cv').textContent=e.target.value;
+  $('#stemp').oninput=e=>$('#tv').textContent=e.target.value;$('#sctx').oninput=e=>$('#cv').textContent=e.target.value;$('#stimeout').oninput=e=>$('#tov').textContent=e.target.value;
   $('#sth').onclick=e=>{const b=e.target.closest('button');if(b){collect();setTheme(b.dataset.t);drawTab()}};
   $('#smod').onclick=async()=>{const b=$('#smod'),v=await pick({title:'Model bawaan chat baru',value:b.dataset.v,groups:S.set.cat.map(g=>({g:g.g,o:g.m.map(n=>({v:g.g+'|'+n,l:n}))}))});if(v!=null){b.dataset.v=v;b.firstChild.textContent=mname(v)}};
   $('#epadd').onclick=async()=>{collect();const f=await formD('Tambah endpoint kustom',[{id:'name',l:'Nama',ph:'OpenRouter'},{id:'fmt',l:'Format API',opts:[['chat','OpenAI Chat'],['openai','OpenAI Responses'],['anthropic','Anthropic'],['gemini','Gemini']]},{id:'base',l:'Base URL',ph:'https://openrouter.ai/api/v1'},{id:'key',l:'API key (boleh kosong)',t:'password',ph:'sk-...'}],'Tambah');
@@ -720,14 +738,14 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
    drawTab();if(bad.length)note('Tidak didukung atau terlalu besar: '+bad.join(', '));if(st!==S.mems.length)note('Penyimpanan browser penuh. Hapus chat atau memori lama.')};
   c.onchange=e=>{if(e.target.type==='checkbox'&&e.target.dataset.i!==undefined){S.mems[+e.target.dataset.i].on=e.target.checked;save()}};
   c.onclick=e=>{const b=e.target.closest('.md');if(b){collect();S.mems.splice(+b.dataset.i,1);save();drawTab()}}}
- else{c.innerHTML=`<p class="note" style="margin:0 0 12px">Semua data ada di browser ini. Versi 2026.10.04i.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="exp">Ekspor semua chat (JSON)</button><button class="btn" id="implink">Impor dari link</button><button class="btn d" id="clr">Hapus semua chat</button><button class="btn d" id="rst">Reset penggunaan</button></div>`;
+ else{c.innerHTML=`<p class="note" style="margin:0 0 12px">Semua data ada di browser ini. Versi 2026.10.04k.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="exp">Ekspor semua chat (JSON)</button><button class="btn" id="implink">Impor dari link</button><button class="btn d" id="clr">Hapus semua chat</button><button class="btn d" id="rst">Reset penggunaan</button></div>`;
   $('#implink').onclick=async()=>{const v=await promptD('Tempel link chat yang dibagikan','https://…','','Buka');if(v&&v.trim())handleShare(v.trim())};
   $('#exp').onclick=()=>download('multiai-chats.json',JSON.stringify(S.chats,null,1));
   $('#clr').onclick=async()=>{if(await confirmD('Hapus semua chat?')){S.chats=[];S.cur=null;save();renderAll()}};
   $('#rst').onclick=()=>{S.use={req:0,inp:0,out:0,by:{}};save();drawTab()}}}
 document.querySelector('.tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;collect();tab=b.dataset.t;drawTab()};
 function collect(){const g=id=>document.getElementById(id);
- Object.keys(BUILTIN).forEach(pv=>{if(g('k_'+pv)){if(pv==='gemini')S.set.key=g('k_gemini').value.trim();else{S.set.keys=S.set.keys||{};S.set.keys[pv]=g('k_'+pv).value.trim()}}if(g('b_'+pv)){S.set.bases=S.set.bases||{};S.set.bases[pv]=g('b_'+pv).value.trim()}});if(g('smod'))S.set.model=g('smod').dataset.v;if(g('stemp'))S.set.temp=+g('stemp').value;if(g('sctx'))S.set.ctx=+g('sctx').value;if(g('smem'))S.set.mem=g('smem').value;if(g('sbase'))S.set.shareBase=g('sbase').value.trim();if(g('simg'))S.set.imgModel=g('simg').value.trim();
+ Object.keys(BUILTIN).forEach(pv=>{if(g('k_'+pv)){if(pv==='gemini')S.set.key=g('k_gemini').value.trim();else{S.set.keys=S.set.keys||{};S.set.keys[pv]=g('k_'+pv).value.trim()}}if(g('b_'+pv)){S.set.bases=S.set.bases||{};S.set.bases[pv]=g('b_'+pv).value.trim()}});if(g('smod'))S.set.model=g('smod').dataset.v;if(g('stemp'))S.set.temp=+g('stemp').value;if(g('sctx'))S.set.ctx=+g('sctx').value;if(g('stimeout'))S.set.timeout=+g('stimeout').value;if(g('smem'))S.set.mem=g('smem').value;if(g('sbase'))S.set.shareBase=g('sbase').value.trim();if(g('simg'))S.set.imgModel=g('simg').value.trim();
  if(g('sreal'))S.set.real=g('sreal').dataset.v;
  document.querySelectorAll('textarea.cat').forEach(t=>{const x=S.set.cat[+t.dataset.i];if(!x)return;const names=[];
   t.value.split(/\r?\n/).forEach(l=>{const q=l.split('='),n=q[0].trim();if(!n)return;names.push(n);const r=normRef(q.slice(1).join('=')),k=x.g+'|'+n;
@@ -737,12 +755,13 @@ $('#setb').onclick=()=>{$('#side').classList.remove('on');openSettings('usage')}
 $('#mclose').onclick=()=>$('#modal').classList.remove('on');
 $('#msave').onclick=()=>{collect();save();$('#modal').classList.remove('on');renderModel()};
 $('#modal').onclick=e=>{if(e.target.id==='modal')$('#modal').classList.remove('on')};
+$('#wrap').addEventListener('click',e=>{const sm=e.target.closest('details.th>summary');if(!sm)return;const det=sm.parentNode,msg=det.closest('.msg'),c=cur();if(!c||!msg)return;const m=c.msgs[[...$('#wrap').children].indexOf(msg)];if(m)thOpen.set(m,!det.open)});
 function flash(b){const o=b.textContent;b.textContent='Tersalin';setTimeout(()=>b.textContent=o,1200)}
-function resend(i){const c=cur();if(!c||busy)return;c.msgs=c.msgs.slice(0,i+1);save();gen(c)}
+function resend(i){const c=cur();if(!c||isGen(c))return;c.msgs=c.msgs.slice(0,i+1);save();gen(c)}
 $('#wrap').addEventListener('click',e=>{const b=e.target.closest('button[data-act]');if(!b)return;const c=cur(),i=+b.dataset.mi,m=c&&c.msgs[i],a=b.dataset.act;if(!m)return;
  if(a==='cpu'||a==='cpa'){copy(m.text);flash(b);return}
  if(a==='cancel'){editing=null;renderChat();return}
- if(busy)return;
+ if(isGen(c))return;
  if(a==='edit'){editing=i;renderChat();setTimeout(()=>{const t=document.querySelector('.ed');if(t){t.focus();t.setSelectionRange(t.value.length,t.value.length)}},0)}
  else if(a==='save'){const t=document.querySelector('.ed').value.trim();if(!t)return;m.text=t;editing=null;resend(i)}
  else if(a==='rs')resend(i);
@@ -751,6 +770,7 @@ $('#wrap').addEventListener('click',e=>{const f=e.target.closest('.fc');if(!f)re
 const LOGO='<svg viewBox="0 0 1024 1024"><g transform="translate(512 512) scale(.93)"><ellipse rx="490" ry="68"/><ellipse rx="435" ry="62" transform="rotate(90)"/><ellipse rx="445" ry="62" transform="rotate(-46)"/><ellipse rx="375" ry="62" transform="rotate(52)"/></g></svg>';
 const IC={menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',plus:'<path d="M12 5v14M5 12h14"/>',arrow:'<path d="M12 19V5M5 12l7-7 7 7"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/>',globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3"/>',chev:'<path d="M6 9l6 6 6-6"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',settings:'<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',bolt:'<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/>',expand:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',shrink:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>',check:'<path d="M5 12l5 5 9-10"/>',dots:'<circle cx="5" cy="12" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><circle cx="19" cy="12" r="1.7" fill="currentColor"/>',pin:'<path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6zM12 15v6"/>'};
 const ic=(n,z=18)=>`<svg class="ic" width="${z}" height="${z}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${IC[n]||''}</svg>`;
+const spin=()=>'<span class="spin" role="status" aria-label="Memuat" style="animation-delay:-'+(Date.now()%1600)+'ms">'+LOGO+'</span>';
 const themeOf=()=>S.set.theme==='light'?'light':'dark';
 function applyTheme(){document.documentElement.dataset.theme=themeOf();const b=$('#thi');if(b)b.innerHTML=ic(themeOf()==='dark'?'sun':'moon',17)}
 function setTheme(t){S.set.theme=t;save();applyTheme()}
@@ -789,7 +809,7 @@ function importShared(o){if(!o||!Array.isArray(o.m))throw new Error('x');
  const c={id:uid(),title:String(o.t||'Chat dibagikan').slice(0,60),t:Date.now(),model:S.set.model,msgs:o.m.map(x=>({role:x[0]==='u'?'user':'model',text:String(x[1]),model:x[2]||S.set.model,src:x[3]||undefined}))};
  S.chats.push(c);S.cur=c.id;save();renderAll()}
 async function shareChat(c){if(!c.msgs.length){note('Chat ini masih kosong.');return}
- $('#dlg').innerHTML='<div class="dm">Membuat link…</div>';$('#dlgw').classList.add('on');
+ $('#dlg').innerHTML='<div class="dm">'+spin()+'</div>';$('#dlgw').classList.add('on');
  const pl=await pack(shareObj(c));let link=shareBase()+'#share='+pl,short=false;
  try{const r=await fetch(shareOrigin()+'/api/share',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({d:pl})});if(r.ok){const j=await r.json();if(j.id){link=shareOrigin()+'/s/'+j.id;short=true}}}catch(_){}
  $('#dlg').innerHTML=`<div class="dm"><b>Bagikan chat</b><div class="note" style="margin-top:2px">${esc(c.title)}</div></div><textarea class="lk" readonly rows="4">${link}</textarea><p class="note">${short?'Link pendek ini tersimpan di server dan berlaku 30 hari. ':link.length>3500?'Link ini panjang ('+link.length+' karakter) dan bisa terpotong di aplikasi chat tertentu. ':''}Siapa pun yang punya link bisa membaca chat ini. API key dan memori tidak ikut terkirim.</p><div class="dbt"><button class="btn" data-k="c">Salin</button><button class="btn p" data-k="s">Bagikan</button></div>`;
@@ -827,7 +847,7 @@ function applyRemote(d,union){applying=true;const lc=S.chats||[],lm=S.mems||[],l
  else mems=mems.concat(lm.filter(m=>m.b64));
  S.chats=chats;S.mems=mems;S.cur=chats.some(c=>c.id===d.cur)?d.cur:(chats.some(c=>c.id===S.cur)?S.cur:null);
  S.set=Object.assign({},S.set,d.set||{});if(!S.set.key&&lk)S.set.key=lk;S.use=d.use||S.use;applying=false}
-async function pullSync(merge){if(!sb||!user||(syncT&&!merge)||busy)return;
+async function pullSync(merge){if(!sb||!user||(syncT&&!merge)||gens.size)return;
  try{const r=await sb.from('user_state').select('data,version').eq('user_id',user.id).maybeSingle();if(r.error)return;
   if(!r.data){sv=0;await pushSync();return}
   const first=!!merge||S.syncUid!==user.id;if(!first&&r.data.version===sv)return;
