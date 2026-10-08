@@ -160,7 +160,7 @@ header{padding:8px 12px;gap:8px}#mbtn{max-width:50vw;overflow:hidden}
 <div id="drop">Lepas file di sini</div>
 <div class="modal" id="modal"><div class="card">
   <h2>Pengaturan</h2>
-  <div class="tabs"><button data-t="usage" class="on">Penggunaan</button><button data-t="gen">Umum</button><button data-t="mdl">Model</button><button data-t="mem">Memori</button><button data-t="data">Data</button></div>
+  <div class="tabs"><button data-t="usage" class="on">Penggunaan</button><button data-t="gen">Umum</button><button data-t="mdl">Model</button><button data-t="mem">Memori</button><button data-t="data">Data</button><button data-t="chk">Cek Model</button></div>
   <div class="cbody" id="cb"></div>
   <div class="mf"><button class="btn" id="mclose">Tutup</button><button class="btn p" id="msave">Simpan</button></div>
 </div></div>
@@ -611,7 +611,7 @@ function authHeaders(url,key){let h='';try{h=new URL(url).hostname}catch(_){}
 function flat(o,p,out){out=out||[];p=p||'';if(out.length>40)return out;if(o&&typeof o==='object')Object.keys(o).forEach(k=>flat(o[k],p?p+'.'+k:k,out));else out.push((p||'nilai')+': '+o);return out}
 async function checkUsage(u){const key=u.key||keyForUrl(u.url);if(!key)return 'API key belum diisi untuk alamat ini.';
  const r=await pfetch(u.url,{method:'GET',headers:Object.assign({Accept:'application/json'},authHeaders(u.url,key))});
- const t=await r.text();let j;try{j=JSON.parse(t)}catch(_){return 'HTTP '+r.status+'\n'+t.slice(0,300)}
+ const t=await r.text();let j;try{j=JSON.parse(t)}catch(_){return /^\s*</.test(t)?'HTTP '+r.status+'. Alamat ini mengembalikan halaman web (HTML), bukan data JSON.\nPakai URL endpoint API saldo atau usage, bukan alamat dashboard.':'HTTP '+r.status+'\n'+t.slice(0,300)}
  return (r.ok?'':'HTTP '+r.status+'\n')+flat(j).join('\n')}
 function usageInit(){const c=$('#cb');
  const run=async i=>{const u=(S.set.usages||[])[i],o=$('#uo'+i);if(!u||!o)return;o.innerHTML=spin();try{o.textContent=await checkUsage(u)}catch(e){o.textContent='Gagal: '+e.message}};
@@ -622,6 +622,54 @@ function usageInit(){const c=$('#cb');
  $('#up2').onclick=()=>add({name:'Saldo Kimi',url:((S.set.bases||{}).kimi||'https://api.moonshot.ai/v1').replace(/\/+$/,'')+'/users/me/balance',key:''});
  $('#uadd').onclick=async()=>{const f=await formD('Tambah URL usage',[{id:'name',l:'Nama',ph:'Saldo OpenRouter'},{id:'url',l:'URL (GET)',ph:'https://…'},{id:'key',l:'API key (kosong = pakai key penyedia)',t:'password'}],'Tambah');
   if(!f)return;if(!f.name||!/^https:\/\//.test(f.url)){note('Isi nama dan URL (diawali https://).');return}add(f)}}
+/* ---------- cek model yang tersedia dari API key ---------- */
+const mc={p:'openai',fmt:'chat',base:'',key:'',list:null,q:'',err:'',busy:false};
+function chkProv(){if(mc.p==='@adhoc')return{name:'Kustom',fmt:mc.fmt,base:mc.base.trim().replace(/\/+$/,''),key:mc.key.trim(),adhoc:true};
+ const x=provs()[mc.p]||provs().openai;return{name:x.name,fmt:x.fmt,base:x.base,key:mc.key.trim()||x.key,custom:x.custom}}
+async function listModels(P){const h={Accept:'application/json'};let url;
+ if(P.fmt==='gemini'){url=P.base+'/models?pageSize=1000';h['x-goog-api-key']=P.key}
+ else if(P.fmt==='anthropic'){url=P.base+'/v1/models?limit=1000';Object.assign(h,{'x-api-key':P.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'})}
+ else{url=P.base+'/models';if(P.key)h.Authorization='Bearer '+P.key}
+ const r=await pfetch(url,{method:'GET',headers:h}),t=await r.text();let j;
+ try{j=JSON.parse(t)}catch(_){throw new Error(/^\s*</.test(t)?'Alamat ini mengembalikan halaman web, bukan API. Periksa Base URL (biasanya berakhiran /v1).':'Respons bukan JSON (HTTP '+r.status+').')}
+ if(!r.ok)throw new Error('HTTP '+r.status+': '+((j.error&&(j.error.message||j.error))||j.message||'ditolak'));
+ let a;
+ if(P.fmt==='gemini')a=(j.models||[]).filter(m=>!m.supportedGenerationMethods||m.supportedGenerationMethods.includes('generateContent')).map(m=>({id:String(m.name).replace(/^models\//,''),n:m.displayName||''}));
+ else a=(j.data||j.models||[]).map(m=>typeof m==='string'?{id:m,n:''}:{id:m.id||m.name,n:m.display_name||''}).filter(m=>m.id);
+ return a.sort((x,y)=>String(x.id).localeCompare(String(y.id)))}
+function addModelRef(id){const P=chkProv();let pid=mc.p;
+ if(P.adhoc){const ex=(S.set.eps||[]).find(e=>String(e.base).replace(/\/+$/,'')===P.base&&e.fmt===P.fmt);
+  if(ex)pid=ex.id;else{let h='ep';try{h=new URL(P.base).hostname}catch(_){}const b0=slug(h)||'ep',used=new Set(Object.keys(provs()));let k=b0,n=2;while(used.has(k))k=b0+(n++);
+   S.set.eps=(S.set.eps||[]).concat([{id:k,name:h,fmt:P.fmt,base:P.base,key:P.key||''}]);pid=k}}
+ const ref=pid+':'+id;if(!S.set.reals.includes(ref))S.set.reals.push(ref);save();return ref}
+function chkList(){const el=$('#clist');if(!el)return;const q=mc.q.toLowerCase(),a=(mc.list||[]).filter(m=>!q||m.id.toLowerCase().includes(q)||m.n.toLowerCase().includes(q));
+ const have=new Set(S.set.reals||[]);const pid=mc.p==='@adhoc'?null:mc.p;
+ el.innerHTML=a.length?a.map(m=>{const on=pid&&have.has(pid+':'+m.id);return `<div class="mi"><span>${esc(m.id)}${m.n?'<small>'+esc(m.n)+'</small>':''}</span><button class="ma btn" data-id="${esc(m.id)}" ${on?'disabled style="opacity:.6"':''}>${on?'Ditambahkan':'Tambah'}</button></div>`}).join(''):'<p class="note">Tidak ada model yang cocok.</p>'}
+function chkRes(){const el=$('#cres');if(!el)return;
+ if(mc.busy){el.innerHTML='<div class="pl">'+spin()+'</div>';return}
+ if(mc.err){el.innerHTML='<p class="note" style="color:var(--err);margin-top:12px"></p>';el.firstChild.textContent=mc.err;return}
+ if(!mc.list){el.innerHTML='<p class="note" style="margin-top:12px">Pilih penyedia, isi API key, lalu tap Cek. Daftar yang muncul adalah model yang bisa dipakai oleh key itu.</p>';return}
+ const P=chkProv(),saved=P.adhoc?'':keyOf(mc.p),canSave=!P.adhoc&&mc.key.trim()&&mc.key.trim()!==saved;
+ el.innerHTML=`<label>${mc.list.length} model ditemukan</label><input type="text" id="cq" placeholder="Cari model…" value="${esc(mc.q)}">${canSave?'<button class="btn" id="csave" style="margin-top:8px">Simpan key ini ke '+esc(pn(mc.p))+'</button>':''}<div id="clist" style="margin-top:6px"></div><p class="note">Tap Tambah untuk memasukkan model ke daftar model asli (tab Model), lalu pilih atau petakan ke nama tampilan.</p>`;
+ chkList();$('#cq').oninput=e=>{mc.q=e.target.value;chkList()};
+ const sv=$('#csave');if(sv)sv.onclick=()=>{const k=mc.key.trim();if(mc.p==='gemini')S.set.key=k;else if(BUILTIN[mc.p]){S.set.keys=S.set.keys||{};S.set.keys[mc.p]=k}else{const e=(S.set.eps||[]).find(x=>x.id===mc.p);if(e)e.key=k}save();sv.textContent='Tersimpan';sv.disabled=true}}
+function chkTab(c){const adhoc=mc.p==='@adhoc';
+ c.innerHTML=`<label style="margin-top:0">Penyedia</label><button class="sel" id="cprov"><span>${esc(adhoc?'Kustom (isi sendiri)':pn(mc.p))}</span>${ic('chev',16)}</button>
+ <div id="cadhoc" style="${adhoc?'':'display:none'}"><label>Format API</label><div class="seg" id="cfmt">${[['chat','OpenAI Chat'],['openai','OpenAI Resp.'],['anthropic','Anthropic'],['gemini','Gemini']].map(o=>'<button data-v="'+o[0]+'" class="'+(mc.fmt===o[0]?'on':'')+'">'+o[1]+'</button>').join('')}</div><label>Base URL</label><input type="text" id="cbase" value="${esc(mc.base)}" placeholder="https://api.example.com/v1"></div>
+ <label>API key</label><input type="password" id="ckey" value="${esc(mc.key)}" placeholder="${adhoc?'API key':'Kosong = pakai key yang tersimpan'}" autocomplete="off">
+ <button class="btn p" id="cgo" style="width:100%;margin-top:12px">Cek model yang tersedia</button><div id="cres"></div>`;
+ chkRes();
+ $('#cprov').onclick=async()=>{const P=provs(),o=Object.keys(P).map(k=>({v:k,l:P[k].name+(P[k].custom?' (kustom)':'')}));o.push({v:'@adhoc',l:'Kustom (isi sendiri)…'});
+  const v=await pick({title:'Penyedia',value:mc.p,options:o});if(v==null)return;mc.p=v;mc.key='';mc.list=null;mc.err='';mc.q='';chkTab(c)};
+ $('#cfmt').onclick=e=>{const b=e.target.closest('button');if(!b)return;mc.fmt=b.dataset.v;document.querySelectorAll('#cfmt button').forEach(x=>x.classList.toggle('on',x===b))};
+ $('#cbase').oninput=e=>{mc.base=e.target.value};$('#ckey').oninput=e=>{mc.key=e.target.value};
+ $('#cgo').onclick=async()=>{const P=chkProv();mc.q='';
+  if(P.adhoc&&!/^https?:\/\//.test(P.base)){mc.err='Isi Base URL dulu (diawali https://).';mc.list=null;chkRes();return}
+  if(!P.key&&!P.adhoc&&!P.custom){mc.err='Isi API key dulu, atau simpan key di tab Umum.';mc.list=null;chkRes();return}
+  mc.busy=true;mc.err='';chkRes();
+  try{mc.list=await listModels(P)}catch(e){mc.err=(e.message||'Gagal').split(P.key||'\u0001').join('•••');mc.list=null}
+  mc.busy=false;chkRes()};
+ c.onclick=e=>{const b=e.target.closest('.ma');if(!b||b.disabled)return;addModelRef(b.dataset.id);chkList()}}
 function toParts(m){const p=[];let t=m.text;
  (m.att||[]).forEach(a=>{if(a.kind==='text')t+=`\n\n[File: ${a.name}]\n${a.data}`;else if(a.data)p.push({inlineData:{mimeType:a.mime,data:a.data}})});
  p.unshift({text:t});return p}
@@ -738,11 +786,12 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
    drawTab();if(bad.length)note('Tidak didukung atau terlalu besar: '+bad.join(', '));if(st!==S.mems.length)note('Penyimpanan browser penuh. Hapus chat atau memori lama.')};
   c.onchange=e=>{if(e.target.type==='checkbox'&&e.target.dataset.i!==undefined){S.mems[+e.target.dataset.i].on=e.target.checked;save()}};
   c.onclick=e=>{const b=e.target.closest('.md');if(b){collect();S.mems.splice(+b.dataset.i,1);save();drawTab()}}}
- else{c.innerHTML=`<p class="note" style="margin:0 0 12px">Semua data ada di browser ini. Versi 2026.10.04k.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="exp">Ekspor semua chat (JSON)</button><button class="btn" id="implink">Impor dari link</button><button class="btn d" id="clr">Hapus semua chat</button><button class="btn d" id="rst">Reset penggunaan</button></div>`;
+ else if(tab==='data'){c.innerHTML=`<p class="note" style="margin:0 0 12px">Semua data ada di browser ini. Versi 2026.10.04l.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="exp">Ekspor semua chat (JSON)</button><button class="btn" id="implink">Impor dari link</button><button class="btn d" id="clr">Hapus semua chat</button><button class="btn d" id="rst">Reset penggunaan</button></div>`;
   $('#implink').onclick=async()=>{const v=await promptD('Tempel link chat yang dibagikan','https://…','','Buka');if(v&&v.trim())handleShare(v.trim())};
   $('#exp').onclick=()=>download('multiai-chats.json',JSON.stringify(S.chats,null,1));
   $('#clr').onclick=async()=>{if(await confirmD('Hapus semua chat?')){S.chats=[];S.cur=null;save();renderAll()}};
-  $('#rst').onclick=()=>{S.use={req:0,inp:0,out:0,by:{}};save();drawTab()}}}
+  $('#rst').onclick=()=>{S.use={req:0,inp:0,out:0,by:{}};save();drawTab()}}
+ else if(tab==='chk')chkTab(c)}
 document.querySelector('.tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;collect();tab=b.dataset.t;drawTab()};
 function collect(){const g=id=>document.getElementById(id);
  Object.keys(BUILTIN).forEach(pv=>{if(g('k_'+pv)){if(pv==='gemini')S.set.key=g('k_gemini').value.trim();else{S.set.keys=S.set.keys||{};S.set.keys[pv]=g('k_'+pv).value.trim()}}if(g('b_'+pv)){S.set.bases=S.set.bases||{};S.set.bases[pv]=g('b_'+pv).value.trim()}});if(g('smod'))S.set.model=g('smod').dataset.v;if(g('stemp'))S.set.temp=+g('stemp').value;if(g('sctx'))S.set.ctx=+g('sctx').value;if(g('stimeout'))S.set.timeout=+g('stimeout').value;if(g('smem'))S.set.mem=g('smem').value;if(g('sbase'))S.set.shareBase=g('sbase').value.trim();if(g('simg'))S.set.imgModel=g('simg').value.trim();
