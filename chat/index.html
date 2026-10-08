@@ -76,6 +76,12 @@ textarea{flex:1;background:none;border:0;color:var(--tx);font:inherit;resize:non
 .spin{display:inline-flex;vertical-align:middle;width:20px;height:20px;color:var(--tx);animation:rot 1.6s linear infinite;flex-shrink:0}.spin svg{width:100%;height:100%;stroke:currentColor;fill:none;stroke-width:64}@keyframes rot{to{transform:rotate(360deg)}}
 .live .spin{width:16px;height:16px;margin-right:7px;color:var(--al)}.th summary .spin{width:16px;height:16px;color:var(--al)}.pl{display:grid;place-items:center;min-height:120px}.pl .spin{width:34px;height:34px}.uo .spin{width:18px;height:18px}
 .gd{width:8px;height:8px;border-radius:50%;background:var(--ac);flex-shrink:0;animation:pl 1s infinite alternate}@keyframes pl{from{opacity:.25}to{opacity:1}}.idle{color:var(--err)}
+.sh{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin:26px 0 10px;padding-top:18px;border-top:1px solid var(--line)}.cbody>.sh:first-child{margin-top:0;padding-top:0;border-top:0}
+.cm{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px;background:var(--bg)}.cmh{display:flex;justify-content:space-between;align-items:center;gap:8px}.cmh b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cmh span{display:flex;gap:2px;flex-shrink:0}.cmh button{color:var(--mut);padding:5px 8px;border-radius:8px}.cmh button:hover{background:var(--panel2);color:var(--tx)}
+.cmd{font-size:12.5px;color:var(--mut);margin-top:5px;overflow-wrap:anywhere}.cmd b{color:var(--tx);font-weight:500}
+details.grp{border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:var(--bg)}details.grp>summary{padding:11px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;list-style:none}details.grp>summary::-webkit-details-marker{display:none}details.grp>summary small{color:var(--mut);margin-left:4px}details.grp .rg{color:var(--al);font-size:12px;padding:3px 8px;border-radius:7px}details.grp .rg:hover{background:var(--panel2)}details.grp .gb{padding:0 12px 12px}
+.ba{display:flex;gap:6px;flex-shrink:0}.ba .btn{padding:5px 10px;font-size:13px}
+#shw{z-index:85}#dlg{max-height:88vh;overflow:auto}
 .live{font-size:12px;color:var(--mut);margin-bottom:6px;font-variant-numeric:tabular-nums}.live b{color:var(--al);font-weight:600}.meta{font-size:12px;color:var(--mut);margin-top:6px;font-variant-numeric:tabular-nums}
 .kb{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px}.kb b{display:block;font-size:13px;margin-bottom:6px}.kb input+input{margin-top:6px}
 .us{border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:8px}.uh{display:flex;justify-content:space-between;align-items:center}.uh span{display:flex;gap:4px}.uh button{color:var(--mut);padding:3px 9px;border-radius:7px}.uh button:hover{background:var(--panel2);color:var(--tx)}
@@ -204,7 +210,7 @@ S.set=Object.assign({alias:{},web:true,persona:true,effort:'medium'},S.set);if(!
 if(!S.set.cat){S.set.cat=JSON.parse(JSON.stringify(DEF_CAT));S.set.model='Claude|Claude Opus 5.5';delete S.set.slots}
 S.set.keys=S.set.keys||{};S.set.map=S.set.map||{};S.set.bases=S.set.bases||{};S.mems=S.mems||[];
 S.set.real=S.set.real||'gemini:gemini-3.6-flash';if(!/^[a-z]+:/.test(S.set.real))S.set.real='gemini:'+S.set.real;
-S.set.reals=S.set.reals||[S.set.real];
+S.set.reals=S.set.reals||[S.set.real];S.set.cmods=S.set.cmods||[];
 const persist=()=>{try{localStorage.setItem('chatbotai',JSON.stringify(S,(k,v)=>k==='data'&&typeof v==='string'&&v.length>2e5?undefined:v))}catch(e){}};
 const save=()=>{persist();queuePush()};
 const uid=()=>Math.random().toString(36).slice(2,10);
@@ -597,12 +603,37 @@ async function callChat(ref,c,ai,hist,draw){let uin=0,uout=0;const pv=ref.p,rid=
 const FMT={gemini:callGemini,openai:callOpenAI,anthropic:callAnthropic,chat:callChat};
 /* ---------- form, usage ---------- */
 function formD(title,fs,ok){return new Promise(res=>{
- $('#dlg').innerHTML='<div class="dm"><b>'+esc(title)+'</b></div>'+fs.map(f=>f.opts?'<label>'+esc(f.l)+'</label><div class="seg fseg" data-id="'+f.id+'">'+f.opts.map((o,i)=>'<button data-v="'+o[0]+'" class="'+(i===0?'on':'')+'">'+o[1]+'</button>').join('')+'</div>':'<label>'+esc(f.l)+'</label><input type="'+(f.t||'text')+'" id="ff_'+f.id+'" placeholder="'+esc(f.ph||'')+'" value="'+esc(f.v||'')+'" autocomplete="off">').join('')+'<div class="dbt"><button class="btn" data-k="0">Batal</button><button class="btn p" data-k="1">'+(ok||'Simpan')+'</button></div>';
+ const fld=f=>f.opts?'<label>'+esc(f.l)+'</label><div class="seg fseg" data-id="'+f.id+'">'+f.opts.map((o,i)=>'<button data-v="'+o[0]+'" class="'+((f.v?o[0]===f.v:i===0)?'on':'')+'">'+o[1]+'</button>').join('')+'</div>'
+  :f.sel?'<label>'+esc(f.l)+'</label><button class="sel fsel" id="ff_'+f.id+'" data-v="'+esc(f.v||f.sel[0][0])+'"><span>'+esc((f.sel.find(o=>o[0]===(f.v||f.sel[0][0]))||f.sel[0])[1])+'</span>'+ic('chev',16)+'</button>'
+  :'<label>'+esc(f.l)+'</label><input type="'+(f.t||'text')+'" id="ff_'+f.id+'" placeholder="'+esc(f.ph||'')+'" value="'+esc(f.v||'')+'" autocomplete="off">';
+ $('#dlg').innerHTML='<div class="dm"><b>'+esc(title)+'</b></div>'+fs.map(fld).join('')+'<div class="dbt"><button class="btn" data-k="0">Batal</button><button class="btn p" data-k="1">'+(ok||'Simpan')+'</button></div>';
  $('#dlgw').classList.add('on');const fin=v=>{$('#dlgw').classList.remove('on');res(v)};
- $('#dlg').onclick=e=>{const sb=e.target.closest('.fseg button');if(sb){sb.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===sb));return}
+ $('#dlg').onclick=async e=>{const sb=e.target.closest('.fseg button');if(sb){sb.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===sb));return}
+  const fb=e.target.closest('.fsel');if(fb){const f=fs.find(x=>'ff_'+x.id===fb.id),v=await pick({title:f.l,value:fb.dataset.v,options:f.sel.map(o=>({v:o[0],l:o[1]}))});if(v!=null){fb.dataset.v=v;fb.firstChild.textContent=(f.sel.find(o=>o[0]===v)||[0,v])[1]}return}
   const b=e.target.closest('button[data-k]');if(!b)return;if(b.dataset.k==='0')return fin(null);
-  const o={};fs.forEach(f=>{if(f.opts){const on=$('#dlg .fseg[data-id="'+f.id+'"] .on');o[f.id]=on?on.dataset.v:f.opts[0][0]}else o[f.id]=$('#ff_'+f.id).value.trim()});fin(o)};
+  const o={};fs.forEach(f=>{if(f.opts){const on=$('#dlg .fseg[data-id="'+f.id+'"] .on');o[f.id]=on?on.dataset.v:f.opts[0][0]}else if(f.sel)o[f.id]=$('#ff_'+f.id).dataset.v;else o[f.id]=$('#ff_'+f.id).value.trim()});fin(o)};
  $('#dlgw').onclick=e=>{if(e.target.id==='dlgw')fin(null)}})}
+/* ---------- model kustom: mask + model asli + base URL + key ---------- */
+function ensureEp(base,fmt,key){base=String(base).trim().replace(/\/+$/,'');
+ const e=(S.set.eps||[]).find(x=>String(x.base).replace(/\/+$/,'')===base&&x.fmt===fmt&&(x.key||'')===(key||''));if(e)return e.id;
+ let h='ep';try{h=new URL(base).hostname}catch(_){}const b0=slug(h)||'ep',used=new Set(Object.keys(provs()));let k=b0,n=2;while(used.has(k))k=b0+(n++);
+ S.set.eps=(S.set.eps||[]).concat([{id:k,name:h,fmt,base,key:key||''}]);return k}
+function applyCmod(m){const g=m.g||'Kustom';let grp=S.set.cat.find(x=>x.g===g);if(!grp){grp={g,m:[]};S.set.cat.push(grp)}
+ if(!grp.m.includes(m.mask))grp.m.push(m.mask);const ref=m.ep+':'+m.model;S.set.map[g+'|'+m.mask]=ref;if(!S.set.reals.includes(ref))S.set.reals.push(ref)}
+function dropCmod(m){const g=m.g||'Kustom',grp=S.set.cat.find(x=>x.g===g);if(grp){grp.m=grp.m.filter(n=>n!==m.mask);if(g==='Kustom'&&!grp.m.length)S.set.cat=S.set.cat.filter(x=>x!==grp)}delete S.set.map[g+'|'+m.mask]}
+async function cmodForm(m,pre){const groups=['Kustom'].concat(S.set.cat.map(x=>x.g).filter(x=>x!=='Kustom')),ep=m?(S.set.eps||[]).find(e=>e.id===m.ep):null,src=ep||pre||{};
+ const f=await formD(m?'Ubah model kustom':'Tambah model kustom',[
+  {id:'mask',l:'Mask (nama yang tampil)',ph:'Claude Opus 5.5',v:m?m.mask:''},
+  {id:'model',l:'Model asli (ID di penyedia)',ph:'deepseek-v4-pro',v:m?m.model:(pre&&pre.model)||''},
+  {id:'fmt',l:'Format API',opts:[['chat','OpenAI Chat'],['openai','OpenAI Responses'],['anthropic','Anthropic'],['gemini','Gemini']],v:src.fmt},
+  {id:'base',l:'Base URL',ph:'https://api.example.com/v1',v:src.base||''},
+  {id:'key',l:'API key (boleh kosong)',t:'password',ph:'sk-…',v:src.key||''},
+  {id:'g',l:'Grup di daftar model',sel:groups.map(x=>[x,x]),v:(m&&m.g)||'Kustom'}],m?'Simpan':'Tambah');
+ if(!f)return false;
+ if(!f.mask||!f.model||!/^https?:\/\//.test(f.base)){note('Isi mask, model asli, dan Base URL (diawali https://).');return false}
+ if(m)dropCmod(m);
+ const nm={id:m?m.id:uid(),mask:f.mask,model:f.model,ep:ensureEp(f.base,f.fmt,f.key),g:f.g||'Kustom'};
+ S.set.cmods=(S.set.cmods||[]).filter(x=>x.id!==nm.id).concat([nm]);applyCmod(nm);save();return true}
 function keyForUrl(url){let h='';try{h=new URL(url).hostname}catch(_){}const P=provs();
  for(const id of Object.keys(P)){try{if(new URL(P[id].base).hostname===h&&P[id].key)return P[id].key}catch(_){}}return ''}
 function authHeaders(url,key){let h='';try{h=new URL(url).hostname}catch(_){}
@@ -644,13 +675,13 @@ function addModelRef(id){const P=chkProv();let pid=mc.p;
  const ref=pid+':'+id;if(!S.set.reals.includes(ref))S.set.reals.push(ref);save();return ref}
 function chkList(){const el=$('#clist');if(!el)return;const q=mc.q.toLowerCase(),a=(mc.list||[]).filter(m=>!q||m.id.toLowerCase().includes(q)||m.n.toLowerCase().includes(q));
  const have=new Set(S.set.reals||[]);const pid=mc.p==='@adhoc'?null:mc.p;
- el.innerHTML=a.length?a.map(m=>{const on=pid&&have.has(pid+':'+m.id);return `<div class="mi"><span>${esc(m.id)}${m.n?'<small>'+esc(m.n)+'</small>':''}</span><button class="ma btn" data-id="${esc(m.id)}" ${on?'disabled style="opacity:.6"':''}>${on?'Ditambahkan':'Tambah'}</button></div>`}).join(''):'<p class="note">Tidak ada model yang cocok.</p>'}
+ el.innerHTML=a.length?a.map(m=>{const on=pid&&have.has(pid+':'+m.id);return `<div class="mi"><span>${esc(m.id)}${m.n?'<small>'+esc(m.n)+'</small>':''}</span><div class="ba"><button class="mk btn" data-id="${esc(m.id)}">Mask</button><button class="ma btn" data-id="${esc(m.id)}" ${on?'disabled style="opacity:.6"':''}>${on?'Ditambahkan':'Tambah'}</button></div></div>`}).join(''):'<p class="note">Tidak ada model yang cocok.</p>'}
 function chkRes(){const el=$('#cres');if(!el)return;
  if(mc.busy){el.innerHTML='<div class="pl">'+spin()+'</div>';return}
  if(mc.err){el.innerHTML='<p class="note" style="color:var(--err);margin-top:12px"></p>';el.firstChild.textContent=mc.err;return}
  if(!mc.list){el.innerHTML='<p class="note" style="margin-top:12px">Pilih penyedia, isi API key, lalu tap Cek. Daftar yang muncul adalah model yang bisa dipakai oleh key itu.</p>';return}
  const P=chkProv(),saved=P.adhoc?'':keyOf(mc.p),canSave=!P.adhoc&&mc.key.trim()&&mc.key.trim()!==saved;
- el.innerHTML=`<label>${mc.list.length} model ditemukan</label><input type="text" id="cq" placeholder="Cari model…" value="${esc(mc.q)}">${canSave?'<button class="btn" id="csave" style="margin-top:8px">Simpan key ini ke '+esc(pn(mc.p))+'</button>':''}<div id="clist" style="margin-top:6px"></div><p class="note">Tap Tambah untuk memasukkan model ke daftar model asli (tab Model), lalu pilih atau petakan ke nama tampilan.</p>`;
+ el.innerHTML=`<label>${mc.list.length} model ditemukan</label><input type="text" id="cq" placeholder="Cari model…" value="${esc(mc.q)}">${canSave?'<button class="btn" id="csave" style="margin-top:8px">Simpan key ini ke '+esc(pn(mc.p))+'</button>':''}<div id="clist" style="margin-top:6px"></div><p class="note">Tap Mask untuk membuat nama tampilan bagi model itu, atau Tambah untuk menyimpannya ke daftar pilihan. Model itu muncul saat memilih Model asli bawaan di tab Model, atau tulis Nama = id-model di daftar nama.</p>`;
  chkList();$('#cq').oninput=e=>{mc.q=e.target.value;chkList()};
  const sv=$('#csave');if(sv)sv.onclick=()=>{const k=mc.key.trim();if(mc.p==='gemini')S.set.key=k;else if(BUILTIN[mc.p]){S.set.keys=S.set.keys||{};S.set.keys[mc.p]=k}else{const e=(S.set.eps||[]).find(x=>x.id===mc.p);if(e)e.key=k}save();sv.textContent='Tersimpan';sv.disabled=true}}
 function chkTab(c){const adhoc=mc.p==='@adhoc';
@@ -669,7 +700,7 @@ function chkTab(c){const adhoc=mc.p==='@adhoc';
   mc.busy=true;mc.err='';chkRes();
   try{mc.list=await listModels(P)}catch(e){mc.err=(e.message||'Gagal').split(P.key||'\u0001').join('•••');mc.list=null}
   mc.busy=false;chkRes()};
- c.onclick=e=>{const b=e.target.closest('.ma');if(!b||b.disabled)return;addModelRef(b.dataset.id);chkList()}}
+ c.onclick=async e=>{const k=e.target.closest('.mk');if(k){const P=chkProv();if(await cmodForm(null,{model:k.dataset.id,fmt:P.fmt,base:P.base,key:P.key}))note('Model kustom dibuat. Lihat di tab Model.');return}const b=e.target.closest('.ma');if(!b||b.disabled)return;addModelRef(b.dataset.id);chkList()}}
 function toParts(m){const p=[];let t=m.text;
  (m.att||[]).forEach(a=>{if(a.kind==='text')t+=`\n\n[File: ${a.name}]\n${a.data}`;else if(a.data)p.push({inlineData:{mimeType:a.mime,data:a.data}})});
  p.unshift({text:t});return p}
@@ -733,14 +764,15 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
   <label>Cek saldo atau usage penyedia</label>${(S.set.usages||[]).map((u,i)=>`<div class="us"><div class="uh"><b>${esc(u.name)}</b><span><button class="ur" data-i="${i}">Cek</button><button class="ux" data-i="${i}" aria-label="Hapus">${ic('trash',15)}</button></span></div><pre class="uo" id="uo${i}">${spin()}</pre></div>`).join('')}
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn" id="uadd">+ Tambah URL usage</button><button class="btn" id="up1">Saldo DeepSeek</button><button class="btn" id="up2">Saldo Kimi</button></div>
   <p class="note">Isi URL endpoint usage atau saldo milik penyedia (permintaan GET). API key dikosongkan = memakai key penyedia yang alamatnya cocok. Angka di atas hanya pemakaian lewat aplikasi ini.</p>`;usageInit()}
- else if(tab==='gen'){c.innerHTML=`<label style="margin-top:0">Tema</label><div class="seg" id="sth"><button data-t="dark" class="${themeOf()==='dark'?'on':''}">Gelap</button><button data-t="light" class="${themeOf()==='light'?'on':''}">Terang</button></div><label>API key dan Base URL</label>${Object.keys(BUILTIN).map(pv=>`<div class="kb"><b>${BUILTIN[pv].name}</b><input type="password" id="k_${pv}" value="${esc(keyOf(pv))}" placeholder="API key" autocomplete="off"><input type="text" id="b_${pv}" value="${esc((S.set.bases||{})[pv]||'')}" placeholder="Base URL (kosong = ${BUILTIN[pv].base})"></div>`).join('')}<p class="note">Isi hanya penyedia yang kamu pakai. Kosongkan Base URL untuk alamat resmi; isi kalau memakai relay atau server sendiri. Kalau kamu login, key ikut tersimpan di akunmu.</p>
-  <label>Endpoint kustom</label>${(S.set.eps||[]).map((e,i)=>`<div class="mi"><span>${esc(e.name)}<small>${FMTN[e.fmt]} · ${esc(e.base)}</small></span><button class="epd" data-i="${i}" aria-label="Hapus">${ic('trash',15)}</button></div>`).join('')}<button class="btn" id="epadd" style="margin-top:8px">+ Tambah endpoint kustom</button>
-  <label>Model bawaan chat baru</label><button class="sel" id="smod" data-v="${esc(S.set.model)}"><span>${esc(mname(S.set.model))}</span>${ic('chev',16)}</button>
+ else if(tab==='gen'){c.innerHTML=`<div class="sh">Tampilan</div><div class="seg" id="sth"><button data-t="dark" class="${themeOf()==='dark'?'on':''}">Gelap</button><button data-t="light" class="${themeOf()==='light'?'on':''}">Terang</button></div>
+  <div class="sh">API key dan Base URL</div>${Object.keys(BUILTIN).map(pv=>`<div class="kb"><b>${BUILTIN[pv].name}</b><input type="password" id="k_${pv}" value="${esc(keyOf(pv))}" placeholder="API key" autocomplete="off"><input type="text" id="b_${pv}" value="${esc((S.set.bases||{})[pv]||'')}" placeholder="Base URL (kosong = ${BUILTIN[pv].base})"></div>`).join('')}<p class="note">Isi hanya penyedia yang kamu pakai. Kosongkan Base URL untuk alamat resmi; isi kalau memakai relay atau server sendiri. Kalau kamu login, key ikut tersimpan di akunmu.</p>
+  <div class="sh">Endpoint kustom</div><p class="note" style="margin:0 0 8px">Dibuat otomatis saat kamu menambah model kustom di tab Model. Kamu juga bisa menambahkannya di sini.</p>${(S.set.eps||[]).map((e,i)=>`<div class="mi"><span>${esc(e.name)}<small>${FMTN[e.fmt]} · ${esc(e.base)}</small></span><button class="epd" data-i="${i}" aria-label="Hapus">${ic('trash',15)}</button></div>`).join('')}<button class="btn" id="epadd" style="margin-top:8px">+ Tambah endpoint kustom</button>
+  <div class="sh">Chat</div><label style="margin-top:0">Model bawaan chat baru</label><button class="sel" id="smod" data-v="${esc(S.set.model)}"><span>${esc(mname(S.set.model))}</span>${ic('chev',16)}</button>
   <label>Kreativitas (temperature): <span id="tv">${S.set.temp}</span></label><input type="range" id="stemp" min="0" max="2" step="0.1" value="${S.set.temp}" style="width:100%"><p class="note">Tidak dikirim untuk Gemini 3.6 ke atas karena Google sudah menghapus parameter ini.</p>
   <label>Batas memori (pesan terakhir yang dikirim): <span id="cv">${S.set.ctx}</span></label><input type="range" id="sctx" min="2" max="60" step="2" value="${S.set.ctx}" style="width:100%">
   <label>Batas waktu tanpa respons: <span id="tov">${S.set.timeout||180}</span> detik</label><input type="range" id="stimeout" min="30" max="600" step="10" value="${S.set.timeout||180}" style="width:100%"><p class="note">Kalau penyedia tidak mengirim data selama itu, permintaan dihentikan otomatis supaya tidak macet.</p>
-  <label class="row2"><span>AI memperkenalkan diri sesuai nama model yang dipilih</span><input type="checkbox" id="spers" ${S.set.persona?'checked':''}></label>
-  <label>Alamat web MultiAI (untuk link bagikan chat)</label><input type="text" id="sbase" value="${esc(S.set.shareBase||'')}" placeholder="Kosongkan = otomatis">`;
+  <label class="row2" style="margin-top:16px"><span>AI memperkenalkan diri sesuai nama model yang dipilih</span><input type="checkbox" id="spers" ${S.set.persona?'checked':''}></label>
+  <div class="sh">Bagikan chat</div><label style="margin-top:0">Alamat web MultiAI (untuk link bagikan chat)</label><input type="text" id="sbase" value="${esc(S.set.shareBase||'')}" placeholder="Kosongkan = otomatis">`;
   $('#stemp').oninput=e=>$('#tv').textContent=e.target.value;$('#sctx').oninput=e=>$('#cv').textContent=e.target.value;$('#stimeout').oninput=e=>$('#tov').textContent=e.target.value;
   $('#sth').onclick=e=>{const b=e.target.closest('button');if(b){collect();setTheme(b.dataset.t);drawTab()}};
   $('#smod').onclick=async()=>{const b=$('#smod'),v=await pick({title:'Model bawaan chat baru',value:b.dataset.v,groups:S.set.cat.map(g=>({g:g.g,o:g.m.map(n=>({v:g.g+'|'+n,l:n}))}))});if(v!=null){b.dataset.v=v;b.firstChild.textContent=mname(v)}};
@@ -748,27 +780,30 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
    if(!f)return;if(!f.name||!/^https?:\/\//.test(f.base)){note('Isi nama dan Base URL (diawali https://).');return}
    const ex=new Set(Object.keys(provs())),b0=slug(f.name)||'ep';let k=b0,n=2;while(ex.has(k))k=b0+(n++);
    S.set.eps=(S.set.eps||[]).concat([{id:k,name:f.name,fmt:f.fmt,base:f.base,key:f.key}]);save();drawTab()};
-  c.onclick=e=>{const d=e.target.closest('.epd');if(d){collect();S.set.eps.splice(+d.dataset.i,1);save();drawTab()}}}
- else if(tab==='mdl'){const reals=S.set.reals||[];
-  c.innerHTML=`<label style="margin-top:0">Model asli yang tersedia</label><p class="note" style="margin:0 0 6px">Model sungguhan yang dipanggil di balik nama tampilan. API key tiap penyedia diisi di tab Umum.</p>
-  ${reals.map((r,i)=>`<div class="mi"><span>${esc(refLabel(r))}</span><button class="rd" data-i="${i}" aria-label="Hapus">${ic('trash',15)}</button></div>`).join('')}
-  <button class="btn" id="radd" style="margin-top:10px">+ Tambah model asli</button>
-  <label>Model asli bawaan (untuk nama tanpa pemetaan)</label><button class="sel" id="sreal" data-v="${esc(S.set.real)}"><span>${esc(refLabel(S.set.real))}</span>${ic('chev',16)}</button>
+  c.onclick=e=>{const d=e.target.closest('.epd');if(d){collect();const ep=S.set.eps[+d.dataset.i];(S.set.cmods||[]).filter(m=>m.ep===ep.id).forEach(dropCmod);S.set.cmods=(S.set.cmods||[]).filter(m=>m.ep!==ep.id);S.set.eps.splice(+d.dataset.i,1);save();drawTab()}}}
+ else if(tab==='mdl'){const cm=S.set.cmods||[],hostOf=u=>{try{return new URL(u).hostname}catch(_){return String(u||'')}};
+  c.innerHTML=`<div class="sh">Model kustom</div><p class="note" style="margin:0 0 10px">Buat nama tampilan (mask) yang memanggil model, Base URL, dan API key milikmu sendiri.</p>
+  ${cm.map((m,i)=>{const e=(S.set.eps||[]).find(x=>x.id===m.ep)||{};return `<div class="cm"><div class="cmh"><b>${esc(m.mask)}</b><span><button class="cme" data-i="${i}" aria-label="Ubah">${ic('edit',15)}</button><button class="cmx" data-i="${i}" aria-label="Hapus">${ic('trash',15)}</button></span></div><div class="cmd">Model asli <b>${esc(m.model)}</b> · ${esc(hostOf(e.base))} · ${esc(FMTN[e.fmt]||'')}</div></div>`}).join('')}
+  <button class="btn" id="cmadd">+ Tambah model kustom</button>
+  <div class="sh">Model bawaan</div>
+  <label style="margin-top:0">Model asli bawaan (untuk nama tanpa pemetaan)</label><button class="sel" id="sreal" data-v="${esc(S.set.real)}"><span>${esc(refLabel(S.set.real))}</span>${ic('chev',16)}</button>
   <label>Model pembuat gambar (Gemini)</label><input type="text" id="simg" value="${esc(S.set.imgModel||'')}" placeholder="gemini-3.1-flash-image-preview">
-  <p class="note" style="margin:14px 0 0">Daftar nama tampilan, satu per baris. Untuk menunjuk model asli tertentu tulis <b>Nama = gpt-5.6-sol</b> atau <b>Nama = anthropic:claude-opus-5-5</b>. Nama tanpa tanda "=" memakai model asli bawaan.</p>`
-  +S.set.cat.map((g,i)=>`<label style="display:flex;justify-content:space-between;align-items:center">${esc(g.g)}<button class="rg" data-i="${i}" style="color:var(--al);font-size:12px">Pakai model asli</button></label><textarea class="cat" data-i="${i}" rows="5">${esc(g.m.map(n=>n+((S.set.map||{})[g.g+'|'+n]?' = '+S.set.map[g.g+'|'+n]:'')).join('\n'))}</textarea>`).join('')
+  <div class="sh">Daftar nama tampilan</div>
+  <p class="note" style="margin:0 0 10px">Satu nama per baris. Untuk menunjuk model asli tertentu tulis <b>Nama = gpt-5.6-sol</b> atau <b>Nama = anthropic:claude-opus-5-5</b>. Nama tanpa tanda "=" memakai model asli bawaan.</p>`
+  +S.set.cat.map((g,i)=>`<details class="grp"><summary><span>${esc(g.g)} <small>${g.m.length} nama</small></span><button class="rg" data-i="${i}">Pakai model asli</button></summary><div class="gb"><textarea class="cat" data-i="${i}" rows="5">${esc(g.m.map(n=>n+((S.set.map||{})[g.g+'|'+n]?' = '+S.set.map[g.g+'|'+n]:'')).join('\n'))}</textarea></div></details>`).join('')
   +`<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="gadd">+ Tambah grup</button><button class="btn d" id="grst">Reset daftar</button></div>`;
   const choose=async(title,cur)=>{const P=provs(),groups=Object.keys(P).map(pv=>({g:P[pv].name,o:(PRESETS[pv]||[]).map(m=>({v:pv+':'+m,l:m})).concat([{v:'@new:'+pv,l:'Kustom…'}])}));
    const extra=(S.set.reals||[]).filter(r=>{const x=parseRef(r);return !(PRESETS[x.p]||[]).includes(x.m)});if(extra.length)groups.unshift({g:'Milikmu',o:extra.map(r=>({v:r,l:refLabel(r)}))});
    const v=await pick({title,value:cur,groups});if(v==null)return null;
    if(v.startsWith('@new:')){const pv=v.slice(5),id=await promptD('ID model '+pn(pv),'contoh: '+(EXMP[pv]||'nama-model'),'','Tambah');return(id&&id.trim())?pv+':'+id.trim():null}return v};
-  $('#radd').onclick=async()=>{collect();const r=await choose('Tambah model asli','');if(r){if(!S.set.reals.includes(r))S.set.reals.push(r);save();drawTab()}};
   $('#sreal').onclick=async()=>{const b=$('#sreal'),r=await choose('Model asli bawaan',b.dataset.v);if(r){if(!S.set.reals.includes(r))S.set.reals.push(r);b.dataset.v=r;b.firstChild.textContent=refLabel(r)}};
+  $('#cmadd').onclick=async()=>{collect();if(await cmodForm(null))drawTab()};
   $('#gadd').onclick=async()=>{collect();const n=await promptD('Nama grup baru, misalnya Qwen atau Grok','Nama grup');if(n&&n.trim()){S.set.cat.push({g:n.trim(),m:[]});drawTab()}};
-  $('#grst').onclick=async()=>{if(await confirmD('Kembalikan daftar nama ke bawaan?')){S.set.cat=JSON.parse(JSON.stringify(DEF_CAT));drawTab()}};
-  c.onclick=async e=>{const d=e.target.closest('.rd'),g=e.target.closest('.rg');
-   if(d){collect();const i=+d.dataset.i,r=S.set.reals[i];if(S.set.reals.length<2){note('Minimal satu model asli harus ada.');return}S.set.reals.splice(i,1);if(S.set.real===r)S.set.real=S.set.reals[0];save();drawTab()}
-   else if(g){collect();const x=S.set.cat[+g.dataset.i];let n=0;x.m.forEach(nm=>{const r=REALMAP[nm];if(r){S.set.map[x.g+'|'+nm]=r;if(!S.set.reals.includes(r))S.set.reals.push(r);n++}});save();drawTab();note(n?n+' nama di grup '+x.g+' sekarang memakai model aslinya. Isi API key penyedianya di tab Umum.':'Tidak ada nama di grup ini yang dikenali. Tulis manual: Nama = id-model.')}}}
+  $('#grst').onclick=async()=>{if(await confirmD('Kembalikan daftar nama ke bawaan?')){S.set.cat=JSON.parse(JSON.stringify(DEF_CAT));(S.set.cmods||[]).forEach(applyCmod);save();drawTab()}};
+  c.onclick=async e=>{const ed=e.target.closest('.cme'),dl=e.target.closest('.cmx'),g=e.target.closest('.rg');
+   if(ed){collect();if(await cmodForm(S.set.cmods[+ed.dataset.i]))drawTab()}
+   else if(dl){collect();const i=+dl.dataset.i,m=S.set.cmods[i];if(await confirmD('Hapus model kustom "'+m.mask+'"?')){dropCmod(m);S.set.cmods.splice(i,1);save();drawTab()}}
+   else if(g){e.preventDefault();collect();const x=S.set.cat[+g.dataset.i];let n=0;x.m.forEach(nm=>{const r=REALMAP[nm];if(r){S.set.map[x.g+'|'+nm]=r;if(!S.set.reals.includes(r))S.set.reals.push(r);n++}});save();drawTab();note(n?n+' nama di grup '+x.g+' sekarang memakai model aslinya. Isi API key penyedianya di tab Umum.':'Tidak ada nama di grup ini yang dikenali. Tulis manual: Nama = id-model.')}}}
  else if(tab==='mem'){const tot=S.mems.filter(m=>m.on).reduce((n,m)=>n+(m.txt?m.txt.length:Math.round((m.b64||'').length*.5)),0);
   c.innerHTML=`<label style="margin-top:0">Instruksi umum</label><textarea id="smem" placeholder="Contoh: Namaku Budi, aku programmer web. Jawab singkat dan santai.">${esc(S.set.mem)}</textarea>
   <label>Tambah prompt ke memori</label><div style="display:flex;gap:6px"><input type="text" id="mnew" placeholder="Contoh: Selalu jawab dalam bahasa Indonesia"><button class="btn p" id="madd">Tambah</button></div>
@@ -786,7 +821,7 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
    drawTab();if(bad.length)note('Tidak didukung atau terlalu besar: '+bad.join(', '));if(st!==S.mems.length)note('Penyimpanan browser penuh. Hapus chat atau memori lama.')};
   c.onchange=e=>{if(e.target.type==='checkbox'&&e.target.dataset.i!==undefined){S.mems[+e.target.dataset.i].on=e.target.checked;save()}};
   c.onclick=e=>{const b=e.target.closest('.md');if(b){collect();S.mems.splice(+b.dataset.i,1);save();drawTab()}}}
- else if(tab==='data'){c.innerHTML=`<p class="note" style="margin:0 0 12px">Semua data ada di browser ini. Versi 2026.10.04l.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="exp">Ekspor semua chat (JSON)</button><button class="btn" id="implink">Impor dari link</button><button class="btn d" id="clr">Hapus semua chat</button><button class="btn d" id="rst">Reset penggunaan</button></div>`;
+ else if(tab==='data'){c.innerHTML=`<p class="note" style="margin:0 0 12px">Semua data ada di browser ini. Versi 2026.10.04n.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="exp">Ekspor semua chat (JSON)</button><button class="btn" id="implink">Impor dari link</button><button class="btn d" id="clr">Hapus semua chat</button><button class="btn d" id="rst">Reset penggunaan</button></div>`;
   $('#implink').onclick=async()=>{const v=await promptD('Tempel link chat yang dibagikan','https://…','','Buka');if(v&&v.trim())handleShare(v.trim())};
   $('#exp').onclick=()=>download('multiai-chats.json',JSON.stringify(S.chats,null,1));
   $('#clr').onclick=async()=>{if(await confirmD('Hapus semua chat?')){S.chats=[];S.cur=null;save();renderAll()}};
@@ -817,7 +852,7 @@ $('#wrap').addEventListener('click',e=>{const b=e.target.closest('button[data-ac
  else if(a==='rg'){let j=i;while(j>0&&c.msgs[j].role!=='user')j--;resend(j)}});
 $('#wrap').addEventListener('click',e=>{const f=e.target.closest('.fc');if(!f)return;const i=+f.dataset.i;openPanel(i,PV.includes(store[i].lang)?'p':'c')});
 const LOGO='<svg viewBox="0 0 1024 1024"><g transform="translate(512 512) scale(.93)"><ellipse rx="490" ry="68"/><ellipse rx="435" ry="62" transform="rotate(90)"/><ellipse rx="445" ry="62" transform="rotate(-46)"/><ellipse rx="375" ry="62" transform="rotate(52)"/></g></svg>';
-const IC={menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',plus:'<path d="M12 5v14M5 12h14"/>',arrow:'<path d="M12 19V5M5 12l7-7 7 7"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/>',globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3"/>',chev:'<path d="M6 9l6 6 6-6"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',settings:'<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',bolt:'<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/>',expand:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',shrink:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>',check:'<path d="M5 12l5 5 9-10"/>',dots:'<circle cx="5" cy="12" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><circle cx="19" cy="12" r="1.7" fill="currentColor"/>',pin:'<path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6zM12 15v6"/>'};
+const IC={menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',plus:'<path d="M12 5v14M5 12h14"/>',arrow:'<path d="M12 19V5M5 12l7-7 7 7"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/>',globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3"/>',chev:'<path d="M6 9l6 6 6-6"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',settings:'<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',bolt:'<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/>',expand:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',shrink:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>',check:'<path d="M5 12l5 5 9-10"/>',edit:'<path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"/>',dots:'<circle cx="5" cy="12" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><circle cx="19" cy="12" r="1.7" fill="currentColor"/>',pin:'<path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6zM12 15v6"/>'};
 const ic=(n,z=18)=>`<svg class="ic" width="${z}" height="${z}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${IC[n]||''}</svg>`;
 const spin=()=>'<span class="spin" role="status" aria-label="Memuat" style="animation-delay:-'+(Date.now()%1600)+'ms">'+LOGO+'</span>';
 const themeOf=()=>S.set.theme==='light'?'light':'dark';
