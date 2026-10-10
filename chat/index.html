@@ -7,126 +7,197 @@
 <title>MultiAI</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%201024%201024%22%3E%3Crect%20width%3D%221024%22%20height%3D%221024%22%20rx%3D%22220%22%20fill%3D%22%23000%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2256%22%3E%3Cg%20transform%3D%22translate%28512%20512%29%20scale%28.8%29%22%3E%3Cellipse%20rx%3D%22490%22%20ry%3D%2268%22/%3E%3Cellipse%20rx%3D%22435%22%20ry%3D%2262%22%20transform%3D%22rotate%2890%29%22/%3E%3Cellipse%20rx%3D%22445%22%20ry%3D%2262%22%20transform%3D%22rotate%28-46%29%22/%3E%3Cellipse%20rx%3D%22375%22%20ry%3D%2262%22%20transform%3D%22rotate%2852%29%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E">
 <style>
-:root,[data-theme=dark]{--bg:#101113;--panel:#17181b;--panel2:#1f2125;--line:#2b2d32;--tx:#e8eaed;--mut:#8e939c;--ac:#2f6fed;--al:#7aa7ff;--ac2:#7aa7ff;--err:#ff7b7b;--cbg:#0c0d0f;--ov:rgba(0,0,0,.6);color-scheme:dark}
-[data-theme=light]{--bg:#f5f6f8;--panel:#fff;--panel2:#eceef2;--line:#dfe2e7;--tx:#16181d;--mut:#667085;--ac:#2563eb;--al:#1d4ed8;--ac2:#1d4ed8;--err:#d92d20;--cbg:#f4f5f7;--ov:rgba(16,24,40,.45);color-scheme:light}
-*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}*:focus,*:focus-visible{outline:none!important}
+/* MultiAI — tinta & kertas. Satu aksen (biru kobalt), bentuk tegas, tipografi Bricolage + Figtree. */
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap');
+:root,[data-theme=dark]{--bg:#0e0f12;--panel:#15171b;--panel2:#1d2025;--line:#272a31;--tx:#e9e7e2;--mut:#898d96;--ac:#3b6cff;--al:#8aa6ff;--ac2:#8aa6ff;--err:#ff7a70;--cbg:#0a0b0d;--ov:rgba(4,5,8,.62);--r:6px;--rl:12px;color-scheme:dark}
+[data-theme=light]{--bg:#f3f1ec;--panel:#fbfaf7;--panel2:#e9e6df;--line:#d9d5cb;--tx:#1b1c1f;--mut:#6c6f76;--ac:#1f4fe0;--al:#1f4fe0;--ac2:#1f4fe0;--err:#c8321f;--cbg:#ece9e1;--ov:rgba(27,28,31,.4);--r:6px;--rl:12px;color-scheme:light}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}*:focus{outline:none}
+*:focus-visible{outline:2px solid var(--al)!important;outline-offset:2px}
 html,body{height:100%}
-body{background:var(--bg);color:var(--tx);font:14px/1.55 Roboto,system-ui,"Segoe UI",sans-serif;-webkit-text-size-adjust:100%;display:flex;overflow:hidden;height:100dvh}
+body{background:var(--bg);color:var(--tx);font:15px/1.6 Figtree,system-ui,"Segoe UI",sans-serif;-webkit-text-size-adjust:100%;display:flex;overflow:hidden;height:100dvh}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;display:inline-flex;align-items:center;gap:6px}button:active{opacity:.6}
 .i{display:inline-flex}.ic{flex-shrink:0}
-::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
-#side{width:264px;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;flex-shrink:0;transition:transform .25s}
-.brand{display:flex;align-items:center;gap:10px;padding:16px 16px 8px;font-weight:700;font-size:17px;letter-spacing:-.2px}
-.logo{width:30px;height:30px;border-radius:8px;background:#000;border:1px solid var(--line);display:grid;place-items:center;padding:4px;flex-shrink:0}.logo svg{width:100%;height:100%;stroke:#fff;fill:none;stroke-width:56}.logo.big{width:64px;height:64px;border-radius:16px;padding:9px;margin:0 auto 16px}.logo.big svg{stroke-width:32}
-.newb{margin:8px 12px;padding:10px;border-radius:10px;background:var(--ac);color:#fff;font-weight:600;justify-content:center}
-#list{flex:1;overflow:auto;padding:4px 8px}
-.ci{display:flex;align-items:center;gap:6px;padding:9px 10px;border-radius:9px;cursor:pointer;color:var(--mut)}.ci:hover,.ci.on{background:var(--panel2)}.ci.on{color:var(--tx)}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px}::-webkit-scrollbar-track{background:transparent}
+
+/* sidebar */
+#side{width:268px;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;flex-shrink:0;transition:transform .25s}
+.brand{display:flex;align-items:center;gap:10px;padding:18px 18px 10px;font:700 19px/1 'Bricolage Grotesque',Figtree,sans-serif;letter-spacing:-.02em}
+.logo{width:28px;height:28px;border-radius:7px;background:#000;display:grid;place-items:center;padding:4px;flex-shrink:0}.logo svg{width:100%;height:100%;stroke:#fff;fill:none;stroke-width:56}
+.logo.big{width:56px;height:56px;border-radius:14px;padding:8px;margin:0 0 22px}.logo.big svg{stroke-width:32}
+.newb{margin:10px 14px 8px;padding:10px 12px;border-radius:var(--r);border:1px solid var(--tx);color:var(--tx);font-weight:600;justify-content:flex-start;transition:background .15s,color .15s}
+.newb:hover{background:var(--tx);color:var(--bg)}
+#list{flex:1;overflow:auto;padding:4px 10px}
+.ci{display:flex;align-items:center;gap:6px;padding:8px 10px;border-radius:var(--r);cursor:pointer;color:var(--mut);border-left:2px solid transparent}
+.ci:hover{background:var(--panel2);color:var(--tx)}.ci.on{color:var(--tx);border-left-color:var(--ac);background:var(--panel2);border-radius:0 var(--r) var(--r) 0}
 .ci span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ci button{opacity:0;color:var(--mut);padding:4px;border-radius:6px}.ci:hover button,.ci.on button{opacity:1}.ci button:hover{color:var(--tx)}.ci .pn{color:var(--mut);display:inline-flex}
-.bd a.yt{display:flex;gap:10px;align-items:center;max-width:380px;margin:6px 0;padding:6px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--tx);text-decoration:none}.yt img{width:112px;aspect-ratio:16/9;object-fit:cover;border-radius:6px;flex-shrink:0;background:var(--panel2)}.yt span{min-width:0;font-weight:500;overflow-wrap:anywhere}.yt small{display:block;color:var(--mut);font-weight:400;font-size:12px}
-.sfoot{display:flex;gap:6px;padding:10px 12px;border-top:1px solid var(--line)}
-.sfoot button{padding:9px 10px;border-radius:9px;color:var(--mut)}.sfoot button:hover{background:var(--panel2);color:var(--tx)}.sfoot #setb{flex:1}
+.ci button{opacity:0;color:var(--mut);padding:4px;border-radius:5px}.ci:hover button,.ci.on button{opacity:1}.ci button:hover{color:var(--tx)}.ci .pn{color:var(--al);display:inline-flex;flex:0}
+.gh{padding:12px 10px 4px;font-size:12px;color:var(--mut);font-weight:600}
+.sfoot{display:flex;gap:4px;padding:10px 14px;border-top:1px solid var(--line)}
+.sfoot button{padding:8px 10px;border-radius:var(--r);color:var(--mut)}.sfoot button:hover{background:var(--panel2);color:var(--tx)}.sfoot #setb{flex:1}
+
+/* header */
 #main{flex:1;display:flex;flex-direction:column;min-width:0;height:100%}
-header{display:flex;align-items:center;gap:8px;padding:10px 16px;padding-top:max(10px,env(safe-area-inset-top));border-bottom:1px solid var(--line)}
+header{display:flex;align-items:center;gap:8px;padding:10px 18px;padding-top:max(10px,env(safe-area-inset-top));border-bottom:1px solid var(--line);background:var(--bg)}
 .hb{display:none;padding:6px;margin-left:-6px}.mp{position:relative}header .mp:last-child{margin-left:auto}
-#mbtn,#ebtn{padding:6px 11px;border-radius:9px;border:1px solid var(--line);background:var(--panel);font-weight:500;white-space:nowrap}#ebtn{color:var(--al)}
-#mmenu,#emenu{position:absolute;top:calc(100% + 6px);left:0;z-index:30;width:300px;max-width:86vw;max-height:62vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px;display:none;box-shadow:0 12px 32px var(--ov)}
-#emenu{width:210px;left:auto;right:0}#mmenu.on,#emenu.on{display:block}
-#mmenu button,#emenu button{display:flex;width:100%;text-align:left;padding:9px 11px;border-radius:8px}#emenu button{flex-direction:column;align-items:flex-start;gap:0}
-#mmenu button:hover,#emenu button:hover{background:var(--panel2)}#mmenu button.on,#emenu button.on{background:var(--panel2);color:var(--al)}
-#emenu small{color:var(--mut);font-size:12px}.gh{padding:8px 11px 3px;font-size:11px;color:var(--mut);font-weight:500}
-#msgs{flex:1;overflow:auto;padding:22px 16px}.wrap{max-width:760px;margin:auto}
-.empty{text-align:center;margin-top:14vh}.empty h1{font-size:28px;font-weight:700;letter-spacing:-.5px;margin-bottom:6px}.empty p{color:var(--mut)}
-.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:20px}.chips button{padding:8px 13px;border:1px solid var(--line);border-radius:9px;color:var(--mut)}.chips button:hover{color:var(--tx);background:var(--panel)}
-.msg{margin-bottom:20px;display:flex}.av{display:none}.bd{min-width:0;max-width:100%;flex:1}
-.msg.user{justify-content:flex-end}.msg.user .bd{flex:0 1 auto;max-width:86%;background:var(--panel2);padding:9px 14px;border-radius:14px 14px 4px 14px}
-.who{font-size:12px;color:var(--mut);margin-bottom:3px}.msg.user .who{display:none}
-.bd p{margin:0 0 10px;overflow-wrap:anywhere}.bd h3,.bd h4{margin:14px 0 6px}.bd ul,.bd ol{margin:0 0 10px 22px}.bd a{color:var(--al)}
-.bd code.i{background:var(--panel2);padding:1px 6px;border-radius:5px;font:12.5px ui-monospace,Menlo,Consolas,monospace}
-.cb{border:1px solid var(--line);border-radius:10px;background:var(--cbg);margin:10px 0;overflow:hidden}
-.ch{display:flex;align-items:center;gap:4px;padding:6px 10px;border-bottom:1px solid var(--line);font-size:12px;color:var(--mut)}.ch b{flex:1;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ch button{padding:3px 9px;border-radius:6px}.ch button:hover{background:var(--panel2);color:var(--tx)}
-.cb pre{padding:12px;overflow:auto;max-height:340px;font:12.5px/1.5 ui-monospace,Menlo,Consolas,monospace;tab-size:2}
-.fc{display:flex;gap:12px;align-items:center;border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:10px;margin:10px 0;cursor:pointer;max-width:420px}.fc:hover{background:var(--panel2)}
-.fi{width:42px;height:48px;border-radius:8px;display:grid;place-items:center;font:700 12px Roboto,sans-serif;flex-shrink:0;color:#fff}
+#mbtn,#ebtn{padding:6px 10px;border-radius:var(--r);font-weight:600;white-space:nowrap;color:var(--tx)}
+#mbtn:hover,#ebtn:hover{background:var(--panel2)}
+#mbtn{font-family:'Bricolage Grotesque',Figtree,sans-serif;font-size:16px;letter-spacing:-.01em}
+#ebtn{color:var(--al);font-size:13px}
+#mmenu,#emenu{position:absolute;top:calc(100% + 6px);left:0;z-index:30;width:310px;max-width:86vw;max-height:62vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:var(--rl);padding:6px;display:none;box-shadow:0 18px 40px var(--ov)}
+#emenu{width:220px;left:auto;right:0}#mmenu.on,#emenu.on{display:block}
+#mmenu button,#emenu button{display:flex;width:100%;text-align:left;padding:9px 11px;border-radius:var(--r)}#emenu button{flex-direction:column;align-items:flex-start;gap:0}
+#mmenu button:hover,#emenu button:hover{background:var(--panel2)}#mmenu button.on,#emenu button.on{color:var(--al);background:var(--panel2)}
+#emenu small{color:var(--mut);font-size:12px}
+
+/* chat */
+#msgs{flex:1;overflow:auto;padding:28px 18px}.wrap{max-width:740px;margin:auto}
+.empty{margin-top:12vh;text-align:left;max-width:560px}
+.empty h1{font:700 clamp(28px,5vw,40px)/1.1 'Bricolage Grotesque',Figtree,sans-serif;letter-spacing:-.03em;margin-bottom:10px}
+.empty p{color:var(--mut);max-width:44ch}
+.chips{display:flex;flex-direction:column;align-items:flex-start;gap:0;margin-top:28px;border-top:1px solid var(--line);width:100%}
+.chips button{width:100%;padding:13px 2px;border-bottom:1px solid var(--line);color:var(--tx);text-align:left;justify-content:space-between;border-radius:0}
+.chips button::after{content:"";width:7px;height:7px;border-right:1.5px solid var(--mut);border-top:1.5px solid var(--mut);transform:rotate(45deg);margin-right:4px;transition:transform .15s,border-color .15s}
+.chips button:hover{color:var(--al)}.chips button:hover::after{border-color:var(--al);transform:translateX(3px) rotate(45deg)}
+.msg{margin-bottom:26px;display:flex}.av{display:none}.bd{min-width:0;max-width:100%;flex:1}
+.msg.user{justify-content:flex-end}
+.msg.user .bd{flex:0 1 auto;max-width:84%;background:var(--ac);color:#fff;padding:9px 14px;border-radius:var(--rl) var(--rl) 3px var(--rl)}
+.msg.user .bd a{color:#fff}.msg.user .at{background:rgba(255,255,255,.16);border-color:transparent;color:#fff}
+.who{font-size:12.5px;color:var(--mut);margin-bottom:5px;font-weight:600}.msg.user .who{display:none}
+.msg.ai .bd{padding-left:14px;border-left:2px solid var(--line)}
+.bd p{margin:0 0 11px;overflow-wrap:anywhere}.bd h3,.bd h4{margin:18px 0 6px;font-family:'Bricolage Grotesque',Figtree,sans-serif;letter-spacing:-.01em}.bd ul,.bd ol{margin:0 0 11px 22px}.bd li{margin-bottom:3px}.bd a{color:var(--al)}
+.bd code.i{background:var(--panel2);padding:1px 6px;border-radius:4px;font:12.5px ui-monospace,Menlo,Consolas,monospace}
+.cb{border:1px solid var(--line);border-radius:var(--r);background:var(--cbg);margin:12px 0;overflow:hidden}
+.ch{display:flex;align-items:center;gap:4px;padding:5px 8px 5px 12px;border-bottom:1px solid var(--line);font-size:12px;color:var(--mut)}.ch b{flex:1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ch button{padding:3px 9px;border-radius:5px}.ch button:hover{background:var(--panel2);color:var(--tx)}
+.cb pre{padding:12px;overflow:auto;max-height:340px;font:12.5px/1.55 ui-monospace,Menlo,Consolas,monospace;tab-size:2}
+.fc{display:flex;gap:12px;align-items:center;border:1px solid var(--line);background:var(--panel);border-radius:var(--r);padding:9px;margin:12px 0;cursor:pointer;max-width:420px}.fc:hover{border-color:var(--mut)}
+.fi{width:40px;height:44px;border-radius:5px;display:grid;place-items:center;font:700 11px Figtree,sans-serif;flex-shrink:0;color:#fff}
 .fn{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fs{font-size:12px;color:var(--mut)}
-.att{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}.at{padding:3px 10px;border-radius:7px;background:var(--panel2);border:1px solid var(--line);font-size:12px;color:var(--mut)}a.at{text-decoration:none}a.at:hover{color:var(--tx)}
+.att{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}.at{padding:2px 9px;border-radius:5px;background:var(--panel2);border:1px solid var(--line);font-size:12px;color:var(--mut)}a.at{text-decoration:none}a.at:hover{color:var(--tx)}
+.bd a.yt{display:flex;gap:10px;align-items:center;max-width:380px;margin:6px 0;padding:6px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel);color:var(--tx);text-decoration:none}.yt img{width:112px;aspect-ratio:16/9;object-fit:cover;border-radius:4px;flex-shrink:0;background:var(--panel2)}.yt span{min-width:0;font-weight:500;overflow-wrap:anywhere}.yt small{display:block;color:var(--mut);font-weight:400;font-size:12px}
 .err{color:var(--err)}.dots::after{content:"";animation:d 1s steps(4) infinite}@keyframes d{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
-.th{margin:2px 0 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
-.th summary{cursor:pointer;padding:8px 12px;color:var(--mut);font-size:13px;list-style:none;display:flex;align-items:center;gap:8px}.th summary::-webkit-details-marker{display:none}
-.th summary::after{content:"";margin-left:auto;width:6px;height:6px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);transition:transform .15s}.th[open]>summary::after{transform:rotate(-135deg)}
-.th ol{list-style:none;margin:0;padding:0 12px 10px;max-height:240px;overflow:auto}
+.th{margin:2px 0 12px;border-left:2px solid var(--line);padding-left:2px}
+.th summary{cursor:pointer;padding:4px 10px;color:var(--mut);font-size:13px;list-style:none;display:flex;align-items:center;gap:8px}.th summary::-webkit-details-marker{display:none}
+.th summary::after{content:"";margin-left:6px;width:6px;height:6px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);transition:transform .15s}.th[open]>summary::after{transform:rotate(-135deg)}
+.th ol{list-style:none;margin:0;padding:2px 10px 8px;max-height:240px;overflow:auto}
 .th li{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mut);padding:3px 0;min-width:0}.th li span:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.th li .spin{width:14px;height:14px;color:var(--al)}.spin.st{animation:none}
-.qc{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:8px}.qc b{font-size:26px;display:block;line-height:1.2}.qc small{color:var(--mut);display:block}.qr{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}.qr:last-child{border-bottom:0}.qr span:first-child{color:var(--mut)}.qr span:last-child{text-align:right;overflow-wrap:anywhere}
+.act{display:flex;gap:2px;margin-top:6px;flex-wrap:wrap;margin-left:-8px}.act button{padding:3px 8px;border-radius:5px;color:var(--mut);font-size:12.5px}.act button:hover{background:var(--panel2);color:var(--tx)}
+.msg.user .act{margin-left:0;justify-content:flex-end}.msg.user .act button{color:rgba(255,255,255,.75)}.msg.user .act button:hover{background:rgba(255,255,255,.16);color:#fff}
 #webb{display:none!important}
-.act{display:flex;gap:2px;margin-top:4px;flex-wrap:wrap}.act button{padding:3px 9px;border-radius:7px;color:var(--mut);font-size:12px}.act button:hover{background:var(--panel2);color:var(--tx)}
-.comp{padding:8px 16px;padding-bottom:max(12px,env(safe-area-inset-bottom))}
-.box{max-width:760px;margin:auto;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px}
+
+/* composer */
+.comp{padding:8px 18px;padding-bottom:max(12px,env(safe-area-inset-bottom));background:var(--bg)}
+.box{max-width:740px;margin:auto;background:var(--panel);border:1px solid var(--line);border-radius:var(--rl);padding:8px;transition:border-color .15s}
+.box:focus-within{border-color:var(--ac)}
 #pf{display:flex;flex-wrap:wrap;gap:6px;padding:0 2px}#pf:not(:empty){margin-bottom:6px}#pf .at button{margin-left:6px;color:var(--err)}
 .row{display:flex;align-items:flex-end;gap:6px}
 textarea{flex:1;background:none;border:0;color:var(--tx);font:inherit;resize:none;max-height:200px;padding:7px 6px}textarea::placeholder{color:var(--mut)}
-.ib{height:34px;min-width:34px;border-radius:9px;color:var(--mut);justify-content:center;padding:0 8px;flex-shrink:0}.ib:hover{background:var(--panel2);color:var(--tx)}
-#webb b{font-size:13px;font-weight:500}.ib.on{color:var(--al);background:var(--panel2)}#send{background:var(--ac);color:#fff;padding:0}
-.hint{text-align:center;font-size:12px;color:var(--mut);margin-top:6px}
+textarea:focus-visible{outline:none!important}
+.ib{height:36px;min-width:36px;border-radius:var(--r);color:var(--mut);justify-content:center;padding:0 8px;flex-shrink:0}.ib:hover{background:var(--panel2);color:var(--tx)}
+#webb b{font-size:13px;font-weight:500}.ib.on{color:var(--al);background:var(--panel2)}
+#send{background:var(--ac);color:#fff;padding:0;border-radius:var(--r)}#send:hover{background:var(--ac);filter:brightness(1.12);color:#fff}
+.hint{text-align:center;font-size:12px;color:var(--mut);margin-top:7px}
+
+/* panel preview */
 #panel{width:0;overflow:hidden;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;transition:width .25s;flex-shrink:0}#panel.on{width:min(48vw,640px)}
-.ph{display:flex;align-items:center;gap:4px;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}.ph b{flex:1;overflow:hidden;text-overflow:ellipsis;font-weight:600}
-.ph button{padding:5px 10px;border-radius:7px;color:var(--mut);font-size:13px}.ph button:hover,.ph button.on{background:var(--panel2);color:var(--tx)}
+.ph{display:flex;align-items:center;gap:2px;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}.ph b{flex:1;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.ph button{padding:5px 9px;border-radius:5px;color:var(--mut);font-size:13px}.ph button:hover,.ph button.on{background:var(--panel2);color:var(--tx)}
 #pb{flex:1;min-height:0;position:relative}#pb iframe{width:100%;height:100%;border:0;background:#fff}
-#pb pre{position:absolute;inset:0;overflow:auto;padding:14px;font:12.5px/1.5 ui-monospace,Menlo,Consolas,monospace;background:var(--cbg);color:var(--tx)}
+#pb pre{position:absolute;inset:0;overflow:auto;padding:14px;font:12.5px/1.55 ui-monospace,Menlo,Consolas,monospace;background:var(--cbg);color:var(--tx)}
 #panel.full{position:fixed;inset:0;width:100%!important;z-index:45;border-left:0}
-.imgv{position:absolute;inset:0;display:grid;place-items:center;background:var(--cbg);padding:12px;overflow:auto}.imgv img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;background:repeating-conic-gradient(#8884 0 25%,transparent 0 50%) 50%/16px 16px}
+.imgv{position:absolute;inset:0;display:grid;place-items:center;background:var(--cbg);padding:12px;overflow:auto}.imgv img{max-width:100%;max-height:100%;object-fit:contain;border-radius:4px;background:repeating-conic-gradient(#8884 0 25%,transparent 0 50%) 50%/16px 16px}
+.pdfh{position:absolute;inset:0;overflow:auto;background:#525659;padding:12px;display:flex;flex-direction:column;align-items:center;gap:12px}.pdfh canvas{background:#fff;box-shadow:0 2px 10px #0006;max-width:100%}
 .spin{display:inline-flex;vertical-align:middle;width:20px;height:20px;color:var(--tx);animation:rot 1.6s linear infinite;flex-shrink:0}.spin svg{width:100%;height:100%;stroke:currentColor;fill:none;stroke-width:64}@keyframes rot{to{transform:rotate(360deg)}}
-.live .spin{width:16px;height:16px;margin-right:7px;color:var(--al)}.th summary .spin{width:16px;height:16px;color:var(--al)}.pl{display:grid;place-items:center;min-height:120px}.pl .spin{width:34px;height:34px}.uo .spin{width:18px;height:18px}
-.gd{width:8px;height:8px;border-radius:50%;background:var(--ac);flex-shrink:0;animation:pl 1s infinite alternate}@keyframes pl{from{opacity:.25}to{opacity:1}}.idle{color:var(--err)}
-.sh{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin:26px 0 10px;padding-top:18px;border-top:1px solid var(--line)}.cbody>.sh:first-child{margin-top:0;padding-top:0;border-top:0}
-.cm{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px;background:var(--bg)}.cmh{display:flex;justify-content:space-between;align-items:center;gap:8px}.cmh b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cmh span{display:flex;gap:2px;flex-shrink:0}.cmh button{color:var(--mut);padding:5px 8px;border-radius:8px}.cmh button:hover{background:var(--panel2);color:var(--tx)}
-.cmd{font-size:12.5px;color:var(--mut);margin-top:5px;overflow-wrap:anywhere}.cmd b{color:var(--tx);font-weight:500}
-details.grp{border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:var(--bg)}details.grp>summary{padding:11px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;list-style:none}details.grp>summary::-webkit-details-marker{display:none}details.grp>summary small{color:var(--mut);margin-left:4px}details.grp .rg{color:var(--al);font-size:12px;padding:3px 8px;border-radius:7px}details.grp .rg:hover{background:var(--panel2)}details.grp .gb{padding:0 12px 12px}
-.ba{display:flex;gap:6px;flex-shrink:0}.ba .btn{padding:5px 10px;font-size:13px}
-#shw{z-index:85}#dlg{max-height:88vh;overflow:auto}
+.live .spin{width:16px;height:16px;margin-right:7px;color:var(--al)}.th summary .spin{width:16px;height:16px;color:var(--al)}.pl{display:grid;place-items:center;min-height:120px;padding:20px;color:var(--mut)}.pl .spin{width:34px;height:34px}.uo .spin{width:18px;height:18px}
+.gd{width:7px;height:7px;border-radius:50%;background:var(--ac);flex-shrink:0;animation:pl 1s infinite alternate}@keyframes pl{from{opacity:.25}to{opacity:1}}.idle{color:var(--err)}
 .live{font-size:12px;color:var(--mut);margin-bottom:6px;font-variant-numeric:tabular-nums}.live b{color:var(--al);font-weight:600}.meta{font-size:12px;color:var(--mut);margin-top:6px;font-variant-numeric:tabular-nums}
-.kb{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px}.kb b{display:block;font-size:13px;margin-bottom:6px}.kb input+input{margin-top:6px}
-.us{border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:8px}.uh{display:flex;justify-content:space-between;align-items:center}.uh span{display:flex;gap:4px}.uh button{color:var(--mut);padding:3px 9px;border-radius:7px}.uh button:hover{background:var(--panel2);color:var(--tx)}
+
+/* pengaturan */
+.modal{position:fixed;inset:0;background:var(--ov);display:none;place-items:center;z-index:50;padding:16px}.modal.on{display:grid;grid-template-columns:minmax(0,1fr)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--rl);width:min(580px,100%);max-height:90vh;max-height:90dvh;display:flex;flex-direction:column;justify-self:center;overflow:hidden;box-shadow:0 24px 60px var(--ov)}
+.card h2{font:700 22px/1.1 'Bricolage Grotesque',Figtree,sans-serif;letter-spacing:-.02em;padding:20px 22px 12px;flex-shrink:0}
+.tabs{display:flex;gap:2px;padding:0 14px;border-bottom:1px solid var(--line);overflow-x:auto;flex-shrink:0;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+.tabs button{padding:10px 12px;color:var(--mut);border-bottom:2px solid transparent;white-space:nowrap;flex-shrink:0;margin-bottom:-1px;font-weight:500}.tabs button.on{color:var(--tx);border-color:var(--ac);font-weight:600}
+.cbody{padding:18px 22px;overflow:auto;min-height:0;flex:1}.mf{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px;border-top:1px solid var(--line);flex-shrink:0}
+.sh{font-size:13px;font-weight:600;color:var(--tx);margin:28px 0 10px;padding-top:16px;border-top:1px solid var(--line)}.cbody>.sh:first-child{margin-top:0;padding-top:0;border-top:0}
+label{display:block;font-size:13px;color:var(--mut);margin:16px 0 6px}.row2{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--tx);font-size:14px}
+input[type=text],input[type=password],.cbody textarea,.ed{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--tx);border-radius:var(--r);padding:9px 11px;font:inherit}
+input[type=text]:focus,input[type=password]:focus,.cbody textarea:focus,.ed:focus{border-color:var(--ac)}
+.cbody textarea{min-height:90px;display:block}.ed{min-height:80px;display:block;background:rgba(0,0,0,.18);color:inherit;border-color:rgba(255,255,255,.3)}
+.sel{width:100%;justify-content:space-between;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg);text-align:left}.sel span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seg{display:flex;border:1px solid var(--line);border-radius:var(--r);padding:2px;gap:2px}.seg button{flex:1;justify-content:center;padding:7px;border-radius:4px;color:var(--mut)}.seg button.on{background:var(--tx);color:var(--bg);font-weight:600}
+input[type=checkbox]{appearance:none;-webkit-appearance:none;width:36px;height:20px;border-radius:20px;background:var(--line);position:relative;cursor:pointer;flex-shrink:0;transition:background .15s}
+input[type=checkbox]::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .15s}
+input[type=checkbox]:checked{background:var(--ac)}input[type=checkbox]:checked::after{transform:translateX(16px)}
+input[type=range]{-webkit-appearance:none;appearance:none;height:4px;border-radius:4px;background:var(--line);width:100%;margin:10px 0}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--ac);border:3px solid var(--panel)}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--ac);border:3px solid var(--panel)}
+.btn{padding:8px 14px;border-radius:var(--r);background:transparent;border:1px solid var(--line);justify-content:center;font-weight:500}.btn:hover{border-color:var(--mut)}
+.btn.p{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:600}.btn.d{color:var(--err)}.btn.d:hover{border-color:var(--err)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.stat{padding:14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}.stat:nth-child(2n){border-right:0}.stat:nth-last-child(-n+2){border-bottom:0}
+.stat b{display:block;font:700 24px/1.1 'Bricolage Grotesque',Figtree,sans-serif;letter-spacing:-.02em;font-variant-numeric:tabular-nums}.stat span{font-size:12.5px;color:var(--mut)}
+.bar{height:4px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:6px}.bar i{display:block;height:100%;background:var(--ac)}
+.qc{border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-top:8px}.qc b{font:700 30px/1.1 'Bricolage Grotesque',Figtree,sans-serif;letter-spacing:-.02em;display:block;font-variant-numeric:tabular-nums}.qc small{color:var(--mut);display:block}
+.qr{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}.qr:last-child{border-bottom:0}.qr span:first-child{color:var(--mut)}.qr span:last-child{text-align:right;overflow-wrap:anywhere}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}td,th{padding:6px 4px;text-align:left;border-bottom:1px solid var(--line)}th{color:var(--mut);font-weight:500}.note{font-size:12.5px;color:var(--mut);margin-top:6px}
+.mi{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}.mi span{flex:1;min-width:0;overflow:hidden;word-break:break-word}.mi small{display:block;color:var(--mut);font-size:11.5px}.mi button{color:var(--mut);padding:4px}
+.lk{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--mut);border-radius:var(--r);padding:8px;font:12px ui-monospace,Menlo,monospace;word-break:break-all;resize:none;display:block;margin-top:10px}
+.pvw{background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:8px 10px;font-size:13px;color:var(--mut);max-height:160px;overflow:auto;margin-top:10px}.pvw p{margin:0 0 6px}
+.cm{border:1px solid var(--line);border-radius:var(--r);padding:12px;margin-bottom:8px}.cmh{display:flex;justify-content:space-between;align-items:center;gap:8px}.cmh b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cmh span{display:flex;gap:2px;flex-shrink:0}.cmh button{color:var(--mut);padding:5px 8px;border-radius:5px}.cmh button:hover{background:var(--panel2);color:var(--tx)}
+.cmd{font-size:12.5px;color:var(--mut);margin-top:5px;overflow-wrap:anywhere}.cmd b{color:var(--tx);font-weight:500}
+details.grp{border:1px solid var(--line);border-radius:var(--r);margin-bottom:8px}details.grp>summary{padding:11px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;list-style:none}details.grp>summary::-webkit-details-marker{display:none}details.grp>summary small{color:var(--mut);margin-left:4px}details.grp .rg{color:var(--al);font-size:12px;padding:3px 8px;border-radius:5px}details.grp .rg:hover{background:var(--panel2)}details.grp .gb{padding:0 12px 12px}
+.ba{display:flex;gap:6px;flex-shrink:0}.ba .btn{padding:5px 10px;font-size:13px}
+.kb{border:1px solid var(--line);border-radius:var(--r);padding:10px;margin-bottom:8px}.kb b{display:block;font-size:13px;margin-bottom:6px}.kb input+input{margin-top:6px}
+.us{border:1px solid var(--line);border-radius:var(--r);padding:10px;margin-top:8px}.uh{display:flex;justify-content:space-between;align-items:center}.uh span{display:flex;gap:4px}.uh button{color:var(--mut);padding:3px 9px;border-radius:5px}.uh button:hover{background:var(--panel2);color:var(--tx)}
 .uo{margin:8px 0 0;font:12px/1.5 ui-monospace,Menlo,monospace;color:var(--mut);white-space:pre-wrap;word-break:break-all;max-height:160px;overflow:auto}#dlg label+input{margin-top:0}
 .kr{display:flex;align-items:center;gap:10px;margin-bottom:8px}.kr span{width:78px;font-size:13px;color:var(--mut);flex-shrink:0}.kr input{flex:1}
-.pdfh{position:absolute;inset:0;overflow:auto;background:#525659;padding:12px;display:flex;flex-direction:column;align-items:center;gap:12px}.pdfh canvas{background:#fff;box-shadow:0 2px 10px #0006;max-width:100%}.pl{padding:20px;color:var(--mut)}
-.modal{position:fixed;inset:0;background:var(--ov);display:none;place-items:center;z-index:50;padding:16px}.modal.on{display:grid;grid-template-columns:minmax(0,1fr)}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;width:min(560px,100%);max-height:90vh;display:flex;flex-direction:column;justify-self:center}
-.card h2{font-size:19px;font-weight:700;padding:16px 20px 8px}
-.tabs{display:flex;gap:2px;padding:0 12px;border-bottom:1px solid var(--line);overflow-x:auto}.tabs button{padding:10px 12px;color:var(--mut);border-bottom:2px solid transparent;white-space:nowrap}.tabs button.on{color:var(--tx);border-color:var(--tx)}
-.cbody{padding:16px 20px;overflow:auto;min-height:0}.mf{display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid var(--line)}
-label{display:block;font-size:13px;color:var(--mut);margin:14px 0 6px}.row2{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--tx);font-size:14px}
-input[type=text],input[type=password],.cbody textarea,.ed{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--tx);border-radius:10px;padding:9px 11px;font:inherit}
-.cbody textarea{min-height:90px;display:block}.ed{min-height:80px;display:block}
-.sel{width:100%;justify-content:space-between;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);text-align:left}.sel span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.seg{display:flex;background:var(--panel2);border-radius:10px;padding:3px;gap:3px}.seg button{flex:1;justify-content:center;padding:7px;border-radius:8px;color:var(--mut)}.seg button.on{background:var(--panel);color:var(--tx);box-shadow:0 1px 2px var(--ov)}
-input[type=checkbox]{appearance:none;-webkit-appearance:none;width:38px;height:22px;border-radius:22px;background:var(--line);position:relative;cursor:pointer;flex-shrink:0;transition:background .15s}
-input[type=checkbox]::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .15s}
-input[type=checkbox]:checked{background:var(--ac)}input[type=checkbox]:checked::after{transform:translateX(16px)}
-input[type=range]{-webkit-appearance:none;appearance:none;height:4px;border-radius:4px;background:var(--line);width:100%;margin:8px 0}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--ac);border:2px solid var(--panel)}
-.btn{padding:8px 14px;border-radius:9px;background:var(--panel2);border:1px solid var(--line);justify-content:center}.btn.p{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:600}.btn.d{color:var(--err)}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px}.stat b{display:block;font-size:20px;font-weight:700}.stat span{font-size:12px;color:var(--mut)}
-.bar{height:6px;border-radius:6px;background:var(--panel2);overflow:hidden;margin-top:6px}.bar i{display:block;height:100%;background:var(--ac)}
-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}td,th{padding:6px 4px;text-align:left;border-bottom:1px solid var(--line)}th{color:var(--mut);font-weight:500}.note{font-size:12px;color:var(--mut);margin-top:6px}
-.mi{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}.mi span{flex:1;min-width:0;overflow:hidden;word-break:break-word}.mi small{display:block;color:var(--mut);font-size:11px}.mi button{color:var(--mut);padding:4px}
-.lk{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--mut);border-radius:10px;padding:8px;font:12px ui-monospace,Menlo,monospace;word-break:break-all;resize:none;display:block;margin-top:10px}
-.pvw{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;color:var(--mut);max-height:160px;overflow:auto;margin-top:10px}.pvw p{margin:0 0 6px}
-#acct{padding:8px 12px 0}#acct .ac{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mut)}#acct .ac span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#acct .ac button{color:var(--mut);padding:4px 8px;border-radius:7px}#acct .ac button:hover{background:var(--panel2);color:var(--tx)}#acct .btn{width:100%}#authm{z-index:60}
+#acct{padding:8px 14px 0}#acct .ac{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--mut)}#acct .ac span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#acct .ac button{color:var(--mut);padding:4px 8px;border-radius:5px}#acct .ac button:hover{background:var(--panel2);color:var(--tx)}#acct .btn{width:100%}#authm{z-index:60}
+#shw{z-index:85}#dlg{max-height:88vh;overflow:auto}
+
+/* sheet & dialog */
 .ov{position:fixed;inset:0;background:var(--ov);display:none;z-index:70}.ov.on{display:flex}#shw{align-items:flex-end;justify-content:center}#dlgw{align-items:center;justify-content:center;padding:16px}
-#sheet{background:var(--panel);width:100%;max-width:480px;max-height:72vh;border-radius:16px 16px 0 0;display:flex;flex-direction:column;border:1px solid var(--line);border-bottom:0}
-.sh-t{padding:14px 16px 8px;font-weight:600}.sh-l{overflow:auto;padding:0 8px 12px}.so{display:flex;width:100%;justify-content:space-between;padding:12px 10px;border-radius:9px;text-align:left}.so:hover{background:var(--panel2)}.so.on{color:var(--al);font-weight:600}
-#dlg{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;width:100%;max-width:360px}.dm{line-height:1.5}#dlg input{margin-top:12px}.dbt{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+#sheet{background:var(--panel);width:100%;max-width:480px;max-height:72vh;border-radius:var(--rl) var(--rl) 0 0;display:flex;flex-direction:column;border:1px solid var(--line);border-bottom:0}
+.sh-t{padding:16px 18px 8px;font:700 16px 'Bricolage Grotesque',Figtree,sans-serif}.sh-l{overflow:auto;padding:0 8px 14px}
+.so{display:flex;width:100%;justify-content:space-between;padding:12px 10px;border-radius:var(--r);text-align:left}.so:hover{background:var(--panel2)}.so.on{color:var(--al);font-weight:600}
+#dlg{background:var(--panel);border:1px solid var(--line);border-radius:var(--rl);padding:20px;width:100%;max-width:360px}.dm{line-height:1.5}#dlg input{margin-top:12px}.dbt{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
 #drop{position:fixed;inset:0;background:var(--ov);border:2px dashed var(--ac);display:none;place-items:center;font-size:20px;font-weight:600;z-index:80;pointer-events:none}
+/* ===== Ultracode: mode berpikir terdalam ===== */
+@property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
+:root{--uc1:#7c5cff;--uc2:#19d3ff;--uc3:#ff4fd8}
+[data-theme=light]{--uc1:#5b3df0;--uc2:#0aa5d6;--uc3:#d422b0}
+#emenu button[data-e=ultracode]{margin-top:4px;border-top:1px solid var(--line);border-radius:0 0 var(--r) var(--r)}
+#emenu button[data-e=ultracode]:not(.on){color:var(--tx)}
+#emenu button[data-e=ultracode] small{background:linear-gradient(90deg,var(--uc1),var(--uc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+html[data-fx=uc] #ebtn{background:linear-gradient(90deg,var(--uc1),var(--uc2),var(--uc3),var(--uc1));background-size:300% 100%;color:#fff;animation:ucslide 5s linear infinite;box-shadow:0 0 18px -2px var(--uc1)}
+html[data-fx=uc] #ebtn:hover{background-color:transparent}
+@keyframes ucslide{to{background-position:300% 0}}
+html[data-fx=uc] header{position:relative;border-bottom-color:transparent}
+html[data-fx=uc] header::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,transparent,var(--uc1),var(--uc2),var(--uc3),transparent);background-size:200% 100%;animation:ucline 3.5s linear infinite}
+@keyframes ucline{from{background-position:200% 0}to{background-position:-200% 0}}
+html[data-fx=uc] .box{border:1.5px solid transparent;background:linear-gradient(var(--panel),var(--panel)) padding-box,conic-gradient(from var(--ang),var(--uc1),var(--uc2),var(--uc3),var(--uc1)) border-box;animation:ucspin 4s linear infinite;box-shadow:0 0 28px -8px var(--uc1),0 0 60px -20px var(--uc2)}
+html[data-fx=uc] .box:focus-within{border-color:transparent}
+@keyframes ucspin{to{--ang:360deg}}
+html[data-fx=uc] #send{background:linear-gradient(135deg,var(--uc1),var(--uc2))}
+html[data-fx=uc] #msgs{background:radial-gradient(60% 40% at 50% 100%,color-mix(in srgb,var(--uc1) 14%,transparent),transparent 70%),radial-gradient(50% 30% at 90% 0%,color-mix(in srgb,var(--uc2) 10%,transparent),transparent 70%);animation:ucbreath 6s ease-in-out infinite alternate}
+@keyframes ucbreath{from{background-size:100% 100%,100% 100%;opacity:.92}to{background-size:120% 120%,130% 130%;opacity:1}}
+html[data-fx=uc] .msg.ai .bd{border-left:2px solid;border-image:linear-gradient(var(--uc1),var(--uc2),var(--uc3)) 1}
+html[data-fx=uc] .who{background:linear-gradient(90deg,var(--uc1),var(--uc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+html[data-fx=uc] .live b,html[data-fx=uc] .live .spin,html[data-fx=uc] .th summary .spin{color:var(--uc2)}
+html[data-fx=uc] .empty h1{background:linear-gradient(90deg,var(--tx),var(--uc2) 60%,var(--uc1));-webkit-background-clip:text;background-clip:text;color:transparent}
+html.ucin::after{content:"";position:fixed;inset:0;z-index:99;pointer-events:none;background:radial-gradient(circle at 80% 6%,var(--uc2),var(--uc1) 25%,transparent 60%);opacity:0;animation:ucburst 1.2s ease-out}
+html.ucout::after{content:"";position:fixed;inset:0;z-index:99;pointer-events:none;background:radial-gradient(circle at 80% 6%,var(--uc1),var(--uc2) 30%,transparent 62%);opacity:0;animation:ucback .95s cubic-bezier(.5,0,.8,.4)}
+@keyframes ucback{0%{opacity:.4;clip-path:circle(150% at 80% 6%)}70%{opacity:.6}100%{opacity:0;clip-path:circle(0 at 80% 6%)}}
+@keyframes ucburst{0%{opacity:.75;clip-path:circle(0 at 80% 6%)}60%{opacity:.35}100%{opacity:0;clip-path:circle(150% at 80% 6%)}}
 @media(hover:none){.ci button{opacity:1}}
 @media(max-width:820px){
-#side{position:fixed;inset:0 auto 0 0;z-index:40;transform:translateX(-100%);width:82vw;max-width:290px}#side.on{transform:none;box-shadow:0 0 0 100vmax var(--ov)}.hb{display:inline-flex}
+#side{position:fixed;inset:0 auto 0 0;z-index:40;transform:translateX(-100%);width:84vw;max-width:300px}#side.on{transform:none;box-shadow:0 0 0 100vmax var(--ov)}.hb{display:inline-flex}
 #panel.on{position:fixed;inset:0;width:100%;z-index:45}
-header{padding:8px 12px;gap:8px}#mbtn{max-width:50vw;overflow:hidden}
-#msgs{padding:14px 12px}.msg{margin-bottom:16px}.empty{margin-top:6vh}.empty h1{font-size:23px}.chips button{font-size:13px;padding:7px 11px}
-.comp{padding:6px 10px;padding-bottom:max(8px,env(safe-area-inset-bottom))}.hint{font-size:10.5px;margin-top:4px}
+header{padding:8px 12px;gap:6px}#mbtn{max-width:52vw;overflow:hidden}
+#msgs{padding:18px 14px}.msg{margin-bottom:22px}.empty{margin-top:6vh}
+.comp{padding:6px 12px;padding-bottom:max(10px,env(safe-area-inset-bottom))}.hint{font-size:11px;margin-top:5px}
 .cb pre{max-height:260px}.ph{overflow-x:auto}.ph b{min-width:70px;font-size:13px}.ph button{padding:4px 8px;font-size:12px}
-.card{border-radius:14px;max-height:92vh}.card h2{font-size:18px;padding:14px 16px 6px}.cbody{padding:12px 16px}.mf{padding:10px 16px}.stat b{font-size:18px}#pfull{display:none}}
+.modal{padding:10px}.card{max-height:94dvh}.card h2{font-size:20px;padding:16px 18px 10px}.cbody{padding:14px 18px}.mf{padding:10px 18px}.tabs{padding:0 8px}.stat b{font-size:20px}#pfull{display:none}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 <script src="/chat/config.js"></script>
@@ -189,11 +260,11 @@ header{padding:8px 12px;gap:8px}#mbtn{max-width:50vw;overflow:hidden}
 
 <script>
 const $=s=>document.querySelector(s);
-const EFF=[['low','Low','Cepat'],['medium','Medium','Seimbang'],['high','High','Mendalam'],['ultra','Ultra','Sangat mendalam'],['max','Max','Pikir maksimal']];
+const EFF=[['low','Low','Cepat'],['medium','Medium','Seimbang'],['high','High','Mendalam'],['ultra','Ultra','Sangat mendalam'],['max','Max','Pikir maksimal'],['ultracode','Ultracode','Rencana, tulis, lalu uji sendiri']];
 const mname=id=>String(id||'').replace(/^.*\|/,'');
 let S={chats:[],cur:null,set:{key:'',model:'gemini-2.5-flash',temp:0.7,ctx:20,mem:''},use:{req:0,inp:0,out:0,by:{}}};
 try{const r=JSON.parse(localStorage.getItem('chatbotai')||'null');if(r)S=Object.assign(S,r)}catch(e){}
-S.set=Object.assign({alias:{},web:true,persona:true,effort:'medium'},S.set);if(!S.set.webv){S.set.web=true;S.set.webv=1}
+S.set=Object.assign({alias:{},web:true,persona:true,effort:'medium',hid:[],cus:[]},S.set);if(!S.set.webv){S.set.web=true;S.set.webv=1}
 S.mems=S.mems||[];
 ['key','keys','bases','eps','cmods','cat','map','reals','real','usages','slots'].forEach(k=>{delete S.set[k]});
 if(!S.set.model||/\|/.test(S.set.model))S.set.model='';
@@ -268,8 +339,9 @@ async function chatMenu(c){const v=await pick({title:c.title.slice(0,40),options
  else if(v==='del'&&await confirmD('Hapus chat ini?')){stopGen(c,'stop');S.chats=S.chats.filter(x=>x.id!==c.id);if(S.cur===c.id)S.cur=null;save();renderAll()}}
 function mdl(){return modelOf(cur())}
 function renderModel(){const cm=mdl();$('#mbtn').innerHTML='<span>'+esc(cm?mname(cm):(mErr?'Pilih model':'Memuat model…'))+'</span>'+ic('chev',14);
- $('#mmenu').innerHTML=S.models.length?modelGroups().map(g=>`<div class="gh">${esc(g.g)}</div>`+g.m.map(id=>`<button data-m="${esc(id)}" class="${id===cm?'on':''}">${esc(id)}</button>`).join('')).join(''):(mErr?`<div class="gh" style="color:var(--err)">${esc(mErr)}</div><button data-r="1">Coba lagi</button>`:'<div class="gh">Memuat model…</div>');
+ $('#mmenu').innerHTML=ML().length?modelGroups().map(g=>`<div class="gh">${esc(g.g)}</div>`+g.m.map(id=>`<button data-m="${esc(id)}" class="${id===cm?'on':''}">${esc(id)}</button>`).join('')).join(''):(mErr?`<div class="gh" style="color:var(--err)">${esc(mErr)}</div><button data-r="1">Coba lagi</button>`:'<div class="gh">Memuat model…</div>');
  const e=EFF.find(x=>x[0]===S.set.effort)||EFF[1];$('#ebtn').innerHTML=ic('bolt',14)+'<span>'+e[1]+'</span>'+ic('chev',14);
+ document.documentElement.dataset.fx=S.set.effort==='ultracode'?'uc':'';
  $('#emenu').innerHTML=EFF.map(x=>`<button data-e="${x[0]}" class="${x[0]===e[0]?'on':''}">${x[1]}<small>${x[2]}</small></button>`).join('')}
 function steps(t){const o=[],p=t.split(/\*\*([^*\n]+)\*\*/);
  for(let i=1;i<p.length;i+=2){const x=p[i].trim();if(x)o.push(x)}
@@ -280,7 +352,7 @@ function thinkHtml(m,live){if(!m.think)return '';const st=steps(m.think),op=thOp
  return `<details class="th" ${op?'open':''}><summary>${lg()}<span>Thought Process${dur}</span></summary><ol><li>${lg()}<span>Thinking</span></li>${st.map(x=>`<li>${lg()}<span>${esc(x)}</span></li>`).join('')}</ol></details>`}
 function acts(m,i){const c=cur();if(editing===i||(!m.text&&!m.err)||isGenMsg(m))return '';
  const b=(k,t)=>`<button data-act="${k}" data-mi="${i}">${t}</button>`;
- return '<div class="act">'+(m.role==='user'?b('cpu','Salin prompt')+b('edit','Edit')+b('rs','Kirim ulang'):(m.err?'':b('cpa','Salin jawaban'))+b('rg','Ulangi'))+'</div>'}
+ return '<div class="act">'+(m.role==='user'?b('cpu','Salin prompt')+b('edit','Edit')+b('rs','Kirim ulang'):(m.err?'':b('cpa','Salin jawaban'))+(m.cut&&c&&i===c.msgs.length-1?b('ct','Lanjutkan'):'')+b('rg','Ulangi'))+'</div>'}
 function msgHtml(m,i){const a=m.role==='model',gm=a&&isGenMsg(m);
  const at=(m.att||[]).length?`<div class="att">${m.att.map(x=>`<span class="at">${esc(x.name)}</span>`).join('')}</div>`:'';
  return `<div class="msg ${a?'ai':'user'}"><div class="av">${a?'C':'K'}</div><div class="bd"><div class="who">${a?'MultiAI · '+esc(mname(m.model||mdl())):'Kamu'}</div>${at}${gm?'<div class="live"></div>':''}<div class="body">${(!a&&editing===i)?`<textarea class="ed">${esc(m.text)}</textarea><div class="act"><button data-act="save" data-mi="${i}">Simpan &amp; kirim</button><button data-act="cancel" data-mi="${i}">Batal</button></div>`:m.err?`<p class="err">${esc(m.text)}</p>`:thinkHtml(m,gm?!m.text:false)+(md(m.text)||(gm&&!m.think?spin():''))}</div>${m.src&&m.src.length?'<div class="att" style="margin-top:8px">'+m.src.map(s=>`<a class="at" href="${esc(s.u)}" target="_blank" rel="noopener">${esc(s.t)}</a>`).join('')+'</div>':''}${metaHtml(m)}${acts(m,i)}</div></div>`}
@@ -486,7 +558,7 @@ function memText(){let o='',n=0;const on=S.mems.filter(m=>m.on);
  const ps=on.filter(m=>m.t==='prompt');if(ps.length)o+='\n\nPrompt memori (selalu ikuti):\n'+ps.map(m=>'- '+m.txt).join('\n');
  on.filter(m=>m.t==='file'&&m.txt!=null).forEach(m=>{if(n<MEMCAP){const x=m.txt.slice(0,MEMCAP-n);n+=x.length;o+='\n\n[Berkas memori: '+m.name+']\n'+x}});
  return o}
-function sysPrompt(){return `${S.set.persona?`Kamu adalah ${mname(mdl())}, asisten AI di aplikasi MultiAI. Perkenalkan dirimu dengan nama itu.`:`Kamu adalah asisten AI di aplikasi MultiAI, dijalankan oleh model ${mname(mdl())}.`}${['ultra','max'].includes(S.set.effort)?' Pikirkan dengan sangat teliti dan periksa ulang jawabanmu sebelum menjawab.':''} Jika pengguna meminta link, video, artikel, atau sumber: tulis sebagai link Markdown [judul](url) hanya jika kamu yakin URL-nya asli dan jangan mengarang URL. Jika tidak menemukan link langsung, beri link pencarian, misalnya https://www.youtube.com/results?search_query=kata+kunci untuk video YouTube. Jawab dalam bahasa yang dipakai pengguna. Kamu bisa MEMBUAT FILE. Tulis tiap file sebagai satu blok kode dengan format \`\`\`bahasa namafile.ext; aplikasi akan mengubahnya jadi file yang bisa dilihat, diunduh, dan disalin. Jangan pernah bilang kamu tidak bisa membuat file. Jika isi file sendiri mengandung tanda tiga backtick, bungkus file itu dengan empat backtick. Pembuka dan penutup blok kode harus berada di barisnya sendiri. Format: html = satu file lengkap dengan CSS dan JS inline (langsung jalan di preview tanpa hosting); pptx = Markdown, tiap slide dipisah baris ---, slide pertama berisi "# Judul" dan "## Subjudul", slide lain "# Judul slide" lalu poin "- ..."; pdf dan docx = Markdown (#, ##, ###, daftar -, 1., **tebal**, tabel | a | b |); xlsx = isi CSV; py, js, css, json, md, txt, csv dan lainnya = isi file apa adanya. png, jpg, webp = gambar: kalau isi blok adalah kode SVG lengkap, aplikasi mengubahnya jadi gambar; kalau isinya deskripsi gambar (bahasa Inggris, rinci), aplikasi membuat gambarnya dengan model gambar. svg = kode SVG. zip, mcpack, mcaddon, mcworld, mctemplate = paket berisi banyak file: tulis tiap file diawali satu baris '=== path/nama-file' (contoh '=== BP/manifest.json') lalu isinya; untuk file biner tulis kata base64 setelah path lalu isi base64; jangan pakai baris yang diawali === di dalam isi file. Untuk Minecraft Bedrock: mcpack = satu pack dengan manifest.json di akar paket; mcaddon = beberapa pack dalam folder terpisah (misalnya BP/ dan RP/) yang masing-masing punya manifest.json; format_version 2, header.uuid dan uuid tiap module harus UUID acak berbeda satu sama lain, version berupa [1,0,0], min_engine_version sesuai versi game, dan hubungkan RP dengan BP lewat dependencies. Jenis file lain yang isinya teks boleh dibuat langsung dengan nama file berekstensi itu. Blok kode hanya untuk file atau kode panjang; jawaban biasa tetap teks.`+memText()+(S.set.mem.trim()?`\n\nCatatan memori dari pengguna:\n${S.set.mem}`:'')}
+function sysPrompt(){return `${S.set.persona?`Kamu adalah ${mname(mdl())}, asisten AI di aplikasi MultiAI. Perkenalkan dirimu dengan nama itu.`:`Kamu adalah asisten AI di aplikasi MultiAI, dijalankan oleh model ${mname(mdl())}.`}${['ultra','max'].includes(S.set.effort)?' Pikirkan dengan sangat teliti dan periksa ulang jawabanmu sebelum menjawab.':''}${S.set.effort==='ultracode'?' MODE ULTRACODE: bekerja sebagai insinyur senior yang sangat teliti. Sebelum menulis kode, pahami kebutuhan sampai ke detail, pecah menjadi langkah, bandingkan minimal dua pendekatan lalu pilih yang paling kuat, dan daftar kasus tepi serta sumber bug yang mungkin muncul. Setelah menulis, telusuri kodenya baris demi baris seolah-olah dijalankan: cari error sintaks, variabel yang salah, race condition, dan kasus tepi, lalu perbaiki semuanya sebelum menjawab. Kode harus utuh dan langsung jalan, tanpa placeholder atau komentar "sisanya sama". Untuk pertanyaan non-kode tetap berpikir sedalam itu. Jawaban akhir: kode lengkap, lalu penjelasan singkat tentang keputusan penting dan hal yang perlu diuji.':''} Jika pengguna meminta link, video, artikel, atau sumber: tulis sebagai link Markdown [judul](url) hanya jika kamu yakin URL-nya asli dan jangan mengarang URL. Jika tidak menemukan link langsung, beri link pencarian, misalnya https://www.youtube.com/results?search_query=kata+kunci untuk video YouTube. Jawab dalam bahasa yang dipakai pengguna. Selesaikan jawaban sampai tuntas dan tutup semua blok kode; jangan berhenti di tengah, kalau panjang buat lebih ringkas daripada terpotong. Kamu bisa MEMBUAT FILE. Tulis tiap file sebagai satu blok kode dengan format \`\`\`bahasa namafile.ext; aplikasi akan mengubahnya jadi file yang bisa dilihat, diunduh, dan disalin. Jangan pernah bilang kamu tidak bisa membuat file. Jika isi file sendiri mengandung tanda tiga backtick, bungkus file itu dengan empat backtick. Pembuka dan penutup blok kode harus berada di barisnya sendiri. Format: html = satu file lengkap dengan CSS dan JS inline (langsung jalan di preview tanpa hosting); pptx = Markdown, tiap slide dipisah baris ---, slide pertama berisi "# Judul" dan "## Subjudul", slide lain "# Judul slide" lalu poin "- ..."; pdf dan docx = Markdown (#, ##, ###, daftar -, 1., **tebal**, tabel | a | b |); xlsx = isi CSV; py, js, css, json, md, txt, csv dan lainnya = isi file apa adanya. png, jpg, webp = gambar: kalau isi blok adalah kode SVG lengkap, aplikasi mengubahnya jadi gambar; kalau isinya deskripsi gambar (bahasa Inggris, rinci), aplikasi membuat gambarnya dengan model gambar. svg = kode SVG. zip, mcpack, mcaddon, mcworld, mctemplate = paket berisi banyak file: tulis tiap file diawali satu baris '=== path/nama-file' (contoh '=== BP/manifest.json') lalu isinya; untuk file biner tulis kata base64 setelah path lalu isi base64; jangan pakai baris yang diawali === di dalam isi file. Untuk Minecraft Bedrock: mcpack = satu pack dengan manifest.json di akar paket; mcaddon = beberapa pack dalam folder terpisah (misalnya BP/ dan RP/) yang masing-masing punya manifest.json; format_version 2, header.uuid dan uuid tiap module harus UUID acak berbeda satu sama lain, version berupa [1,0,0], min_engine_version sesuai versi game, dan hubungkan RP dengan BP lewat dependencies. Jenis file lain yang isinya teks boleh dibuat langsung dengan nama file berekstensi itu. Blok kode hanya untuk file atau kode panjang; jawaban biasa tetap teks.`+memText()+(S.set.mem.trim()?`\n\nCatatan memori dari pengguna:\n${S.set.mem}`:'')}
 const needKey=()=>false;
 const slug=t=>String(t).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,24);
 const nf=n=>Number(n||0).toLocaleString('id');
@@ -503,16 +575,29 @@ async function errText(r){let e='';try{const t=await r.text();try{const j=JSON.p
  return httpErr(r.status,String(e||'permintaan gagal').slice(0,400))}
 const FAM=[[/^claude/i,'Claude'],[/^(gpt|o\d|chatgpt)/i,'GPT'],[/^(gemini|gemma)/i,'Gemini'],[/^deepseek/i,'DeepSeek'],[/^(kimi|moonshot)/i,'Kimi'],[/^(llama|meta)/i,'Meta'],[/^qwen/i,'Qwen'],[/^grok/i,'Grok'],[/^(mistral|mixtral|codestral)/i,'Mistral'],[/^glm/i,'GLM']];
 const famOf=id=>{const x=FAM.find(f=>f[0].test(id));return x?x[1]:'Lainnya'};
-function modelGroups(list){const m={},ord=[];(list||S.models.map(x=>x.id)).forEach(id=>{const g=famOf(id);if(!m[g]){m[g]=[];ord.push(g)}m[g].push(id)});
+function modelGroups(list){const m={},ord=[];(list||ML()).forEach(id=>{const g=famOf(id);if(!m[g]){m[g]=[];ord.push(g)}m[g].push(id)});
  ord.sort((a,b)=>a==='Lainnya'?1:b==='Lainnya'?-1:0);return ord.map(g=>({g,m:m[g]}))}
-function modelOf(c){const m=c?c.model:S.set.model;if(m&&!/\|/.test(m)&&(!S.models.length||S.models.some(x=>x.id===m)))return m;return S.set.model||(S.models[0]&&S.models[0].id)||''}
+function modelOf(c){const m=c?c.model:S.set.model;if(m&&!/\|/.test(m)&&(!ML().length||ML().includes(m)))return m;return S.set.model||ML()[0]||''}
+const ML=()=>{const hid=new Set(S.set.hid||[]),cus=S.set.cus||[];return[...new Set(S.models.map(x=>x.id).filter(id=>!hid.has(id)).concat(cus))]};
 let mLoad=null,mErr='';
+async function probeModel(id){let name='max_tokens';
+ for(let k=0;k<2;k++){const ac=new AbortController(),to=setTimeout(()=>ac.abort(),60000);
+  try{const body={model:id,messages:[{role:'user',content:'Balas dengan satu kata: ok'}],stream:false};body[name]=32;
+   const r=await dfetch('chat/completions',{method:'POST',signal:ac.signal,headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(body)});
+   if(!r.ok)throw await errText(r);
+   const t=await r.text();let j;try{j=JSON.parse(t)}catch(_){if(/^\s*(data:|:)/.test(t)&&/"choices"/.test(t)&&!/"error"/.test(t.slice(0,300)))return;throw new Error('Respons bukan JSON')}
+   if(j.error)throw httpErr(j.error.status||500,typeof j.error==='string'?j.error:(j.error.message||'gagal'));
+   if(!(j.choices&&j.choices.length)&&!j.content&&!j.output)throw new Error('Respons kosong');return}
+  catch(e){if(k===0&&name==='max_tokens'&&/max_completion_tokens/.test(e&&e.message||'')){name='max_completion_tokens';continue}
+   if(e&&e.name==='AbortError')throw new Error('Tidak merespons dalam 60 detik');throw e}
+  finally{clearTimeout(to)}}}
+
 function loadModels(force){if(mLoad)return mLoad;if(!force&&S.models.length&&Date.now()-S.mt<600000)return Promise.resolve();
  mLoad=(async()=>{try{mErr='';const r=await dfetch('models',{headers:{Accept:'application/json'}});if(!r.ok)throw await errText(r);
    const j=await r.json(),a=(j.data||j.models||(Array.isArray(j)?j:[])).map(m=>typeof m==='string'?m:(m&&(m.id||m.name))).filter(Boolean);
    if(!a.length)throw new Error('Daftar model kosong.');
    S.models=[...new Set(a)].map(id=>({id}));S.mt=Date.now();
-   if(!S.models.some(m=>m.id===S.set.model))S.set.model=S.models[0].id;persist()}
+   if(!ML().includes(S.set.model))S.set.model=ML()[0]||'';persist()}
   catch(e){mErr=/Error 404/.test(e.message||'')?'Proxy /api/dattio belum terpasang di server.':(e.message||'Gagal memuat model')}
   finally{mLoad=null;renderModel();if($('#modal').classList.contains('on')&&tab==='mdl')drawTab()}})();return mLoad}
 
@@ -570,23 +655,24 @@ async function streamOnce(body,ai,draw,noThink){const g=draw.g;
  else{const t=await r.text();g.last=Date.now();t.split('\n').forEach(take)}
  if(!saw&&raw.trim()){try{onData(raw.trim());out.done=true;if(!out.finish)out.finish='stop'}catch(e){if(e.status)throw e}}
  draw();return out}
-async function callDattio(model,c,ai,hist,draw){const g=draw.g,eff=S.set.effort,effv={low:'low',medium:'medium',high:'high',ultra:'high',max:'high'}[eff]||'medium';
+async function callDattio(model,c,ai,hist,draw){const g=draw.g,eff=S.set.effort,effv={low:'low',medium:'medium',high:'high',ultra:'high',max:'high',ultracode:'high'}[eff]||'medium';
  const msgs=[{role:'system',content:sysPrompt()}];
  hist.forEach(h=>{const role=h.role==='model'?'assistant':'user',tx=h.parts.filter(q=>q.text!=null).map(q=>q.text).join('\n'),
   imgs=role==='user'?h.parts.filter(q=>q.inlineData&&/^image\//.test(q.inlineData.mimeType)):[],
   skip=h.parts.filter(q=>q.inlineData).length-imgs.length,text=tx+((skip&&role==='user')?'\n\n[Lampiran biner tidak didukung dan diabaikan]':'');
   msgs.push({role,content:imgs.length?[{type:'text',text}].concat(imgs.map(q=>({type:'image_url',image_url:{url:'data:'+q.inlineData.mimeType+';base64,'+q.inlineData.data}}))):text})});
- const MT=[32000,16000,8192,0];let mti=0,mtName='max_tokens',skipTemp=false,skipEff=false,seg=0,fails=0,empty=0,tin=0,tout=0,base0=0;
+ const MT=[32000,16000,8192,0];let mti=0,mtName='max_tokens',skipTemp=false,skipEff=false,seg=0,fails=0,empty=0,tin=0,tout=0,base0=0,fixes=0;
  for(;;){
   const m2=msgs.slice();
   if(ai.text&&seg>0){base0=ai.text.length;m2.push({role:'assistant',content:ai.text},{role:'user',content:'Jawabanmu di atas terpotong. Lanjutkan persis dari kata terakhir, tanpa mengulang bagian sebelumnya dan tanpa pembukaan. Jika jawabanmu sebenarnya sudah lengkap, balas hanya dengan [SELESAI].'})}
   else{ai.think='';ai.text='';base0=0}
   const body={model,messages:m2,stream:true,stream_options:{include_usage:true}};
   if(MT[mti])body[mtName]=MT[mti];if(!skipEff)body.reasoning_effort=effv;if(S.set.tuser&&!skipTemp)body.temperature=+S.set.temp;
-  let res;
+  let res;const before=ai.text.length;
   try{res=await streamOnce(body,ai,draw,seg>0)}
   catch(e){
-   if(g.retry){g.retry=false;g.ac=new AbortController();g.last=Date.now();continue}
+   if(ai.text.length>before)fails=0;
+   if(g.retry){g.retry=false;g.ac=new AbortController();g.last=Date.now();if(ai.text)seg++;continue}
    if(g.reason||g.dead)throw e;
    if(e.status===400){const msg=String(e.message);
     if(/max_completion_tokens/.test(msg)&&mtName==='max_tokens'){mtName='max_completion_tokens';continue}
@@ -597,14 +683,16 @@ async function callDattio(model,c,ai,hist,draw){const g=draw.g,eff=S.set.effort,
     if(mti<MT.length-1){mti++;continue}
     throw e}
    const transient=!e.status||e.status>=500||e.status===429||e.status===408;
-   if(transient&&fails<3){fails++;g.tries=fails;await sleep(1200*fails);if(g.reason)throw e;if(ai.text)seg++;g.last=Date.now();continue}
+   if(transient&&fails<8){fails++;g.tries=Math.max(g.tries,fails);await sleep(Math.min(1200*fails,6000));if(g.reason)throw e;if(ai.text)seg++;g.last=Date.now();continue}
    throw e}
   tin+=res.in||0;tout+=res.out||0;if(tin)ai.uIn=tin;if(tout)ai.uOut=tout;
   if(seg>0&&/^\s*\[SELESAI/.test(ai.text.slice(base0))){ai.text=ai.text.slice(0,base0);break}
-  const fin=res.finish||'',cut=/length|max_tokens/i.test(fin)||(!fin&&!res.done);
+  if(seg>0){const prev=ai.text.slice(0,base0),add=ai.text.slice(base0);for(let k=Math.min(400,prev.length,add.length);k>=15;k--){if(prev.endsWith(add.slice(0,k))){ai.text=prev+add.slice(k);break}}}
+  const fin=res.finish||'';let cut=/length|max_tokens/i.test(fin)||(!fin&&!res.done);
+  if(!cut&&!g.reason&&ai.text&&fixes<2&&fences(ai.text).some(x=>x.t==='c'&&!x.closed)){fixes++;cut=true}
   if(!cut||g.reason)break;
   if(!ai.text){if(/length|max_tokens/i.test(fin)){ai.cut=1;break}if(++empty>2)break;continue}
-  if(seg>=6){ai.cut=1;break}
+  if(seg>=25){ai.cut=1;break}
   seg++}
  return{in:tin,out:tout}}
 /* ---------- form, usage ---------- */
@@ -640,13 +728,13 @@ async function gen(c){if(isGen(c))return;if(!user){openAuth();return}
  draw.g=g;
  const tick=()=>{const m=viewMsg(),lv=m&&m.querySelector('.live');if(!lv)return;const idle=Math.round((Date.now()-g.last)/1000);
   lv.innerHTML=spin()+fmtDur(Date.now()-ai.t0)+(ai.uIn?' · masuk '+nf(ai.uIn):'')+(ai.uOut?' · keluar '+nf(ai.uOut):'')+(g.tries?' · mencoba ulang':'')+(idle>=20?' · <span class="idle">menunggu respons '+idle+' d</span>':'')};
- const iv=setInterval(()=>{tick();if(g.reason||g.retry)return;if(Date.now()-g.last>(+S.set.timeout||300)*1000){
-  if(!ai.text&&!ai.think&&g.tries<2){g.retry=true;g.tries++;g.last=Date.now();try{g.ac.abort()}catch(_){}}else stopGen(c,'timeout')}},100);tick();
+ const iv=setInterval(()=>{tick();if(g.reason||g.retry)return;if(Date.now()-g.last>(+S.set.timeout||300)*1000*(S.set.effort==='ultracode'?1.5:1)){
+  if(g.tries<(ai.text?6:2)){g.retry=true;g.tries++;g.last=Date.now();try{g.ac.abort()}catch(_){}}else stopGen(c,'timeout')}},100);tick();
  const killP=new Promise((_,rej)=>{g.kill=rej});killP.catch(()=>{});
  try{await Promise.race([callDattio(model,c,ai,hist,draw),killP]);
   if(g.reason==='timeout')throw new Error('ABORT');
   if(!ai.text){if(g.reason==='stop')ai.text='(dihentikan)';else{ai.err=1;ai.text=ai.cut?'Token output habis sebelum jawaban muncul (terpakai untuk berpikir). Turunkan Effort lalu ulangi.':'Model tidak mengirim jawaban (mungkin diblokir filter keamanan). Coba ubah pertanyaan atau ulangi.'}}
-  else if(ai.cut)ai.text+='\n\n*⚠ Jawaban terpotong oleh server. Tap "Ulangi" atau ketik "lanjutkan".*'
+  else if(ai.cut)ai.text+='\n\n*⚠ Jawaban terpotong oleh server. Tekan "Lanjutkan" di bawah jawaban.*'
  }catch(e){
   if(g.reason||(e&&e.name==='AbortError')){
    if(g.reason==='timeout'){const mm='Tidak ada respons dari server selama '+Math.round((Date.now()-g.last)/1000)+' detik, jadi permintaan dihentikan. Coba kirim ulang, turunkan Effort, atau naikkan batas waktu di Pengaturan → Umum.';if(ai.text)ai.text+='\n\n'+mm;else{ai.err=1;ai.text=mm}}
@@ -655,7 +743,7 @@ async function gen(c){if(isGen(c))return;if(!user){openAuth();return}
    if(ai.text)ai.text+='\n\n*⚠ '+m+hint+'*';else{ai.err=1;ai.text=m+hint}}}
  clearInterval(iv);g.dead=true;ai.ms=Date.now()-ai.t0;
  let uin=0,uout=0;if(!ai.err){uin=ai.uIn||0;uout=ai.uOut||0}else{delete ai.uIn;delete ai.uOut}
- S.use.req++;S.use.inp+=uin;S.use.out+=uout;const b=S.use.by[model]=S.use.by[model]||{req:0,inp:0,out:0};b.req++;b.inp+=uin;b.out+=uout;
+ S.use.req++;S.use.inp+=uin;S.use.out+=uout;
  gens.delete(c.id);save();renderSide();if(S.cur===c.id)renderChat();else syncSend()}
 $('#send').onclick=send;
 const grow=()=>{const t=$('#inp');t.style.height='auto';t.style.height=Math.min(t.scrollHeight,200)+'px'};
@@ -666,22 +754,23 @@ $('#menu').onclick=()=>$('#side').classList.toggle('on');
 $('#mbtn').onclick=e=>{e.stopPropagation();$('#emenu').classList.remove('on');$('#mmenu').classList.toggle('on');loadModels()};
 $('#ebtn').onclick=e=>{e.stopPropagation();$('#mmenu').classList.remove('on');$('#emenu').classList.toggle('on')};
 document.addEventListener('click',()=>$('#emenu').classList.remove('on'));
-$('#emenu').onclick=e=>{const b=e.target.closest('button');if(!b)return;S.set.effort=b.dataset.e;save();renderModel()};
+$('#emenu').onclick=e=>{const b=e.target.closest('button');if(!b)return;const was=S.set.effort;S.set.effort=b.dataset.e;save();renderModel();
+ const h=document.documentElement,fx=c=>{h.classList.remove('ucin','ucout');void h.offsetWidth;h.classList.add(c);setTimeout(()=>h.classList.remove(c),1300)};
+ if(b.dataset.e==='ultracode'&&was!=='ultracode')fx('ucin');else if(was==='ultracode'&&b.dataset.e!=='ultracode')fx('ucout')};
 document.addEventListener('click',()=>$('#mmenu').classList.remove('on'));
 $('#mmenu').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.r){e.stopPropagation();loadModels(true);return}const c=cur();if(c)c.model=b.dataset.m;else S.set.model=b.dataset.m;save();renderModel()};
 
 /* ---------- settings ---------- */
 let tab='usage';
 function openSettings(t){tab=t||'usage';$('#modal').classList.add('on');drawTab()}
-let mqv='';
+let mqv='',tRes={},tRun=false,tStop=false,tTot=0,tDone=0,tSel=new Set(),tFlt='all';
 function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));const c=$('#cb');c.onclick=null;c.onchange=null;
  if(tab==='usage'){const tot=S.chats.reduce((n,x)=>n+x.msgs.length,0);let sz=0;try{sz=(localStorage.getItem('chatbotai')||'').length}catch(e){}
   c.innerHTML=`<div class="sh" style="margin-top:0">Sisa kuota DattioAI</div><div id="qbox"></div><button class="btn" id="qre" style="margin-top:8px">Muat ulang kuota</button>
   <div class="sh">Pemakaian di aplikasi ini (token asli dari server)</div>
   <div class="grid"><div class="stat"><b>${S.use.req}</b><span>Permintaan</span></div><div class="stat"><b>${S.chats.length}</b><span>Chat tersimpan</span></div><div class="stat"><b>${S.use.inp.toLocaleString('id')}</b><span>Token masuk</span></div><div class="stat"><b>${S.use.out.toLocaleString('id')}</b><span>Token keluar</span></div></div>
   <label>Memori konteks: ${S.set.ctx} pesan terakhir dikirim ke model</label><div class="bar"><i style="width:${Math.min(100,S.set.ctx/60*100)}%"></i></div>
-  <label>Penyimpanan lokal: ${(sz/1024).toFixed(1)} KB dari sekitar 5.000 KB · ${tot} pesan</label><div class="bar"><i style="width:${Math.min(100,sz/5120)}%"></i></div>
-  <table><tr><th>Model</th><th>Req</th><th>Masuk</th><th>Keluar</th></tr>${Object.keys(S.use.by).map(k=>`<tr><td>${esc(mname(k))}</td><td>${S.use.by[k].req}</td><td>${S.use.by[k].inp}</td><td>${S.use.by[k].out}</td></tr>`).join('')||'<tr><td colspan=4>Belum ada data</td></tr>'}</table>`;
+  <label>Penyimpanan lokal: ${(sz/1024).toFixed(1)} KB dari sekitar 5.000 KB · ${tot} pesan</label><div class="bar"><i style="width:${Math.min(100,sz/5120)}%"></i></div>`;
   quotaLoad($('#qbox'));$('#qre').onclick=()=>quotaLoad($('#qbox'))}
  else if(tab==='gen'){c.innerHTML=`<div class="sh" style="margin-top:0">Tampilan</div><div class="seg" id="sth"><button data-t="dark" class="${themeOf()==='dark'?'on':''}">Gelap</button><button data-t="light" class="${themeOf()==='light'?'on':''}">Terang</button></div>
   <div class="sh">Koneksi</div><div class="mi"><span>DattioAI<small>https://bandelbanget.xyz/v1 · API key dibaca server dari environment variable DattioAI</small></span></div>
@@ -694,14 +783,63 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
   $('#stemp').oninput=e=>$('#tv').textContent=e.target.value;$('#sctx').oninput=e=>$('#cv').textContent=e.target.value;$('#stimeout').oninput=e=>$('#tov').textContent=e.target.value;
   $('#sth').onclick=e=>{const b=e.target.closest('button');if(b){collect();setTheme(b.dataset.t);drawTab()}};
   $('#smod').onclick=async()=>{const b=$('#smod'),v=await pick({title:'Model bawaan chat baru',value:b.dataset.v,groups:modelGroups().map(g=>({g:g.g,o:g.m.map(id=>({v:id,l:id}))}))});if(v!=null){b.dataset.v=v;b.firstChild.textContent=mname(v)}}}
- else if(tab==='mdl'){c.innerHTML=`<div class="sh" style="margin-top:0">Model dari DattioAI</div><p class="note" style="margin:0 0 10px">Daftar diambil langsung dari server (${S.models.length} model).${mLoad?' Memuat…':''}${mErr?' <span style="color:var(--err)">'+esc(mErr)+'</span>':''}</p>
-  <button class="btn" id="mre">Muat ulang daftar</button><input type="text" id="mq" placeholder="Cari model…" style="margin-top:10px" value="${esc(mqv)}" autocomplete="off"><div id="mlist" style="margin-top:6px"></div>
+ else if(tab==='mdl'){const nm=ML().length,nc=(S.set.cus||[]).length,nh=(S.set.hid||[]).length;
+  c.innerHTML=`<div class="sh" style="margin-top:0">Daftar model</div><p class="note" style="margin:0 0 10px">${nm} model aktif${nh?' · '+nh+' disembunyikan':''}${nc?' · '+nc+' ditambah manual':''}.${mLoad?' Memuat…':''}${mErr?' <span style="color:var(--err)">'+esc(mErr)+'</span>':''}</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="mre">Muat ulang dari server</button><button class="btn d" id="mrst"${nh||nc?'':' disabled style="opacity:.5"'}>Reset ke awal</button></div>
+  <label>Tambah model manual</label><div style="display:flex;gap:6px"><input type="text" id="mnewm" placeholder="Nama model persis seperti di server" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="btn p" id="maddm">Tambah</button></div>
+  <input type="text" id="mq" placeholder="Cari model…" style="margin-top:14px" value="${esc(mqv)}" autocomplete="off"><div id="mlist" style="margin-top:6px"></div>
+  <div class="sh">Test model</div><div id="tbox"></div>
   <div class="sh">Pembuat gambar</div><label style="margin-top:0">Model gambar (opsional)</label><input type="text" id="simg" value="${esc(S.set.imgModel||'')}" placeholder="nama model gambar di DattioAI">`;
-  const list=()=>{const q=mqv.toLowerCase(),a=S.models.map(x=>x.id).filter(id=>!q||id.toLowerCase().includes(q));
-   $('#mlist').innerHTML=a.length?modelGroups(a).map(g=>`<div class="gh">${esc(g.g)}</div>`+g.m.map(id=>`<div class="mi"><span>${esc(id)}</span><button class="btn mdef" data-id="${esc(id)}" ${id===S.set.model?'disabled style="opacity:.6"':''}>${id===S.set.model?'Bawaan':'Pakai'}</button></div>`).join('')).join(''):'<p class="note">Tidak ada model yang cocok.</p>'};
+  const list=()=>{const q=mqv.toLowerCase(),a=ML().filter(id=>!q||id.toLowerCase().includes(q)),cu=S.set.cus||[];
+   $('#mlist').innerHTML=a.length?modelGroups(a).map(g=>`<div class="gh">${esc(g.g)}</div>`+g.m.map(id=>`<div class="mi"><span>${esc(id)}${cu.includes(id)?'<small>Ditambah manual</small>':''}</span><button class="btn mdef" data-id="${esc(id)}" ${id===S.set.model?'disabled style="opacity:.6"':''}>${id===S.set.model?'Bawaan':'Pakai'}</button><button class="mdel" data-id="${esc(id)}" aria-label="Hapus model ${esc(id)}" title="Hapus dari daftar">${ic('trash',16)}</button></div>`).join('')).join(''):'<p class="note">Tidak ada model yang cocok.</p>'};
   list();$('#mq').oninput=e=>{mqv=e.target.value;list()};
   $('#mre').onclick=()=>{collect();loadModels(true)};
-  c.onclick=e=>{const b=e.target.closest('.mdef');if(!b||b.disabled)return;S.set.model=b.dataset.id;save();list();renderModel()}}
+  const addM=()=>{const v=$('#mnewm').value.trim();if(!v)return;if(/[\s|]/.test(v)){note('Nama model tidak boleh mengandung spasi atau tanda |.');return}
+   collect();S.set.hid=(S.set.hid||[]).filter(x=>x!==v);if(!ML().includes(v)&&!S.models.some(x=>x.id===v))S.set.cus=(S.set.cus||[]).concat(v);
+   if(!S.set.model)S.set.model=v;save();renderModel();drawTab()};
+  $('#maddm').onclick=addM;$('#mnewm').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();addM()}};
+  $('#mrst').onclick=async()=>{if(!(await confirmD('Kembalikan daftar model ke awal? Model yang dihapus muncul lagi dan model manual dibuang.')))return;
+   collect();S.set.hid=[];S.set.cus=[];if(!ML().includes(S.set.model))S.set.model=ML()[0]||'';save();renderModel();drawTab()};
+    const tpaint=()=>{const box=$('#tbox');if(!box)return;
+   const all=S.models.map(x=>x.id),ex=new Set(ML()),nNew=all.filter(id=>!ex.has(id)).length,keys=Object.keys(tRes).filter(id=>tRes[id].s!=='wait'&&all.includes(id)),
+    ok=keys.filter(id=>tRes[id].s==='ok'),fail=keys.filter(id=>tRes[id].s==='fail');
+   let h=`<p class="note" style="margin:0 0 10px">Ambil daftar model terbaru dari DattioAI, lalu uji satu per satu untuk cari mana yang benar-benar bisa dipakai. Setiap model memakai satu permintaan kecil.</p>`;
+   h+=`<div style="display:flex;gap:8px;flex-wrap:wrap">${tRun?'<button class="btn d" id="tstop">Hentikan test</button>':`<button class="btn p" id="tall">Cari &amp; test semua${all.length?' ('+all.length+')':''}</button><button class="btn" id="tnew"${nNew?'':' disabled style="opacity:.5"'}>Test yang belum ada (${nNew})</button>`}</div>`;
+   if(tRun)h+=`<div class="bar" style="margin-top:12px"><i style="width:${tTot?Math.round(tDone/tTot*100):0}%"></i></div><p class="note">Menguji ${tDone}/${tTot} · ${ok.length} bisa dipakai · ${fail.length} gagal</p>`;
+   else if(keys.length)h+=`<p class="note" style="margin-top:12px"><b style="color:var(--tx)">${ok.length}</b> bisa dipakai · ${fail.length} gagal</p>`;
+   if(keys.length){h+=`<div class="seg" id="tflt" style="margin-top:10px">${[['all','Semua'],['ok','Bisa dipakai'],['fail','Gagal']].map(x=>`<button data-f="${x[0]}" class="${tFlt===x[0]?'on':''}">${x[1]}</button>`).join('')}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn" id="tsall">Pilih semua</button><button class="btn" id="tsnone">Batal pilih</button></div><div id="tlist" style="margin-top:6px"></div><button class="btn p" id="tadd" style="width:100%;margin-top:14px"></button>${fail.some(id=>ex.has(id))&&!tRun?`<button class="btn d" id="tdel" style="width:100%;margin-top:8px">Hapus ${fail.filter(id=>ex.has(id)).length} model gagal dari daftar</button>`:''}`}
+   box.innerHTML=h;tlist()};
+  const tlist=()=>{const L=$('#tlist');if(!L)return;const all=S.models.map(x=>x.id),ex=new Set(ML());
+   const rank=id=>({ok:0,run:1,fail:2}[tRes[id].s]);
+   const a=all.filter(id=>tRes[id]&&tRes[id].s!=='wait'&&(tFlt==='all'||(tFlt==='ok'&&tRes[id].s==='ok')||(tFlt==='fail'&&tRes[id].s==='fail'))).sort((x,y)=>rank(x)-rank(y));
+   L.innerHTML=a.length?a.map(id=>{const r=tRes[id],has=ex.has(id),can=r.s==='ok'&&!has;
+    const st=r.s==='run'?spin():r.s==='fail'?'<small style="white-space:nowrap;color:var(--err)">Gagal</small>':has?'<small style="white-space:nowrap">[Sudah ada]</small>':'<small style="white-space:nowrap">'+(r.ms/1000).toFixed(1).replace('.',',')+' d</small>';
+    return `<div class="mi tr" data-id="${esc(id)}"${can?' style="cursor:pointer"':r.s==='ok'?' style="opacity:.6"':''}>${r.s==='ok'?`<input type="checkbox" tabindex="-1" style="pointer-events:none"${can?(tSel.has(id)?' checked':''):' disabled'}>`:''}<span>${esc(id)}${r.s==='fail'?'<small style="color:var(--err)">'+esc(String(r.msg||'').slice(0,90))+'</small>':''}</span>${st}</div>`}).join(''):'<p class="note">Tidak ada model di kategori ini.</p>';
+   const n=tSel.size,b=$('#tadd');if(b){b.textContent=n?'Tambah '+n+' model ke daftar':'Pilih model dulu';b.disabled=!n;b.style.opacity=n?'':'.5'}};
+  const runTest=async ids=>{if(tRun||!ids.length)return;tRun=true;tStop=false;tTot=ids.length;tDone=0;tSel.clear();ids.forEach(id=>tRes[id]={s:'wait'});tpaint();
+   let i=0;const worker=async()=>{while(!tStop&&i<ids.length){const id=ids[i++];tRes[id]={s:'run'};tpaint();const t0=Date.now();
+     try{await probeModel(id);tRes[id]={s:'ok',ms:Date.now()-t0}}catch(e){tRes[id]={s:'fail',msg:String(e&&e.message||e)}}tDone++;tpaint()}};
+   await Promise.all([worker(),worker(),worker(),worker()]);ids.forEach(id=>{if(tRes[id]&&tRes[id].s==='wait')delete tRes[id]});tRun=false;tpaint()};
+  const tClick=e=>{const all=S.models.map(x=>x.id),ex=new Set(ML());
+   if(e.target.closest('#tall')){(async()=>{if(tRun)return;const b=$('#tall');if(b){b.disabled=true;b.textContent='Mengambil daftar model…'}await loadModels(true);if(!S.models.length){tpaint();note(mErr||'Daftar model dari DattioAI belum bisa diambil.');return}runTest(S.models.map(x=>x.id))})();return true}
+   if(e.target.closest('#tnew')){runTest(all.filter(id=>!ex.has(id)));return true}
+   if(e.target.closest('#tstop')){tStop=true;return true}
+   const f=e.target.closest('#tflt button');if(f){tFlt=f.dataset.f;tpaint();return true}
+   if(e.target.closest('#tsall')){all.filter(id=>tRes[id]&&tRes[id].s==='ok'&&!ex.has(id)).forEach(id=>tSel.add(id));tlist();return true}
+   if(e.target.closest('#tsnone')){tSel.clear();tlist();return true}
+   const r=e.target.closest('.tr');if(r){const id=r.dataset.id;if(tRes[id]&&tRes[id].s==='ok'&&!ex.has(id)){tSel.has(id)?tSel.delete(id):tSel.add(id);tlist()}return true}
+   if(e.target.closest('#tdel')){(async()=>{const bad=all.filter(id=>tRes[id]&&tRes[id].s==='fail'&&ex.has(id));if(!bad.length||!(await confirmD('Hapus '+bad.length+' model yang gagal dari daftar? Bisa dikembalikan lewat Reset ke awal.')))return;
+     S.set.hid=[...new Set((S.set.hid||[]).concat(bad))];if(!ML().includes(S.set.model))S.set.model=ML()[0]||'';save();renderModel();list();tpaint()})();return true}
+   if(e.target.closest('#tadd')){let n=0;tSel.forEach(id=>{if(ex.has(id))return;S.set.hid=(S.set.hid||[]).filter(x=>x!==id);n++});tSel.clear();
+    if(!S.set.model)S.set.model=ML()[0]||'';save();renderModel();list();tpaint();if(n)note(n+' model ditambahkan ke daftar.');return true}
+   return false};
+  tpaint();
+  c.onclick=async e=>{if(tClick(e))return;const b=e.target.closest('.mdef');if(b&&!b.disabled){S.set.model=b.dataset.id;save();list();renderModel();return}
+   const d=e.target.closest('.mdel');if(!d)return;const id=d.dataset.id;
+   if(!(await confirmD('Hapus model "'+id+'" dari daftar?')))return;
+   collect();if((S.set.cus||[]).includes(id))S.set.cus=S.set.cus.filter(x=>x!==id);else S.set.hid=(S.set.hid||[]).concat(id);
+   if(S.set.model===id)S.set.model=ML()[0]||'';save();renderModel();drawTab()}}
  else if(tab==='mem'){const tot=S.mems.filter(m=>m.on).reduce((n,m)=>n+(m.txt?m.txt.length:Math.round((m.b64||'').length*.5)),0);
   c.innerHTML=`<label style="margin-top:0">Instruksi umum</label><textarea id="smem" placeholder="Contoh: Namaku Budi, aku programmer web. Jawab singkat dan santai.">${esc(S.set.mem)}</textarea>
   <label>Tambah prompt ke memori</label><div style="display:flex;gap:6px"><input type="text" id="mnew" placeholder="Contoh: Selalu jawab dalam bahasa Indonesia"><button class="btn p" id="madd">Tambah</button></div>
@@ -745,6 +883,7 @@ $('#wrap').addEventListener('click',e=>{const b=e.target.closest('button[data-ac
  if(a==='edit'){editing=i;renderChat();setTimeout(()=>{const t=document.querySelector('.ed');if(t){t.focus();t.setSelectionRange(t.value.length,t.value.length)}},0)}
  else if(a==='save'){const t=document.querySelector('.ed').value.trim();if(!t)return;m.text=t;editing=null;resend(i)}
  else if(a==='rs')resend(i);
+ else if(a==='ct'){delete m.cut;c.msgs.push({role:'user',text:'Lanjutkan jawabanmu persis dari kata terakhir, tanpa mengulang bagian sebelumnya dan tanpa pembukaan.'});save();gen(c)}
  else if(a==='rg'){let j=i;while(j>0&&c.msgs[j].role!=='user')j--;resend(j)}});
 $('#wrap').addEventListener('click',e=>{const f=e.target.closest('.fc');if(!f)return;const i=+f.dataset.i;openPanel(i,PV.includes(store[i].lang)?'p':'c')});
 const LOGO='<svg viewBox="0 0 1024 1024"><g transform="translate(512 512) scale(.93)"><ellipse rx="490" ry="68"/><ellipse rx="435" ry="62" transform="rotate(90)"/><ellipse rx="445" ry="62" transform="rotate(-46)"/><ellipse rx="375" ry="62" transform="rotate(52)"/></g></svg>';
@@ -826,7 +965,7 @@ function applyRemote(d,union){applying=true;const lc=S.chats||[],lm=S.mems||[],l
  if(union){const ci=new Set(chats.map(c=>c.id)),mi=new Set(mems.map(m=>m.id));chats=chats.concat(lc.filter(c=>!ci.has(c.id)));mems=mems.concat(lm.filter(m=>!mi.has(m.id)))}
  else mems=mems.concat(lm.filter(m=>m.b64));
  S.chats=chats;S.mems=mems;S.cur=chats.some(c=>c.id===d.cur)?d.cur:(chats.some(c=>c.id===S.cur)?S.cur:null);
- S.set=Object.assign({},S.set,d.set||{});['key','keys','bases','eps','cmods','cat','map','reals','real','usages'].forEach(k=>{delete S.set[k]});if(!S.set.model||/\|/.test(S.set.model))S.set.model=(S.models[0]&&S.models[0].id)||'';S.use=d.use||S.use;applying=false}
+ S.set=Object.assign({},S.set,d.set||{});['key','keys','bases','eps','cmods','cat','map','reals','real','usages'].forEach(k=>{delete S.set[k]});if(!S.set.model||/\|/.test(S.set.model))S.set.model=ML()[0]||'';S.use=d.use||S.use;applying=false}
 async function pullSync(merge){if(!sb||!user||(syncT&&!merge)||gens.size)return;
  try{const r=await sb.from('user_state').select('data,version').eq('user_id',user.id).maybeSingle();if(r.error)return;
   if(!r.data){sv=0;await pushSync();return}
