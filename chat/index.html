@@ -24,7 +24,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;displa
 .brand{display:flex;align-items:center;gap:10px;padding:18px 18px 10px;font:700 19px/1 'Bricolage Grotesque',Figtree,sans-serif;letter-spacing:-.02em}
 .logo{width:28px;height:28px;border-radius:7px;background:#000;display:grid;place-items:center;padding:4px;flex-shrink:0}.logo svg{width:100%;height:100%;stroke:#fff;fill:none;stroke-width:56}
 .logo.big{width:56px;height:56px;border-radius:14px;padding:8px;margin:0 0 22px}.logo.big svg{stroke-width:32}
-.newb{margin:10px 14px 8px;padding:10px 12px;border-radius:var(--r);border:1px solid var(--tx);color:var(--tx);font-weight:600;justify-content:flex-start;transition:background .15s,color .15s}
+.newb{margin:6px 14px 8px;padding:10px 12px;gap:11px;font-size:16.5px;border-radius:var(--r);border:1px solid var(--tx);color:var(--tx);font-weight:600;justify-content:flex-start;transition:background .15s,color .15s}
 .newb:hover{background:var(--tx);color:var(--bg)}
 #list{flex:1;overflow:auto;padding:4px 10px}
 .ci{display:flex;align-items:center;gap:6px;padding:8px 10px;border-radius:var(--r);cursor:pointer;color:var(--mut);border-left:2px solid transparent}
@@ -99,6 +99,8 @@ textarea:focus-visible{outline:none!important}
 .hint{text-align:center;font-size:12px;color:var(--mut);margin-top:7px}
 
 /* panel preview */
+.artb{margin:10px 14px 0;width:calc(100% - 28px);padding:10px 12px;border-radius:var(--r);color:var(--tx);justify-content:flex-start;gap:11px;font-size:16.5px;font-weight:600}.artb:hover{background:var(--panel2)}.artn{margin-left:auto;font-size:13px;font-weight:500;font-variant-numeric:tabular-nums;color:var(--mut)}
+#artq{margin-bottom:6px}.ar{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.ar:last-child{border-bottom:0}.am{min-width:0;flex:1}.am .fs{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fa{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.fa button{padding:3px 10px;border:1px solid var(--line);border-radius:5px;font-size:12.5px;color:var(--mut);background:var(--bg)}.fa button:hover{color:var(--tx);border-color:var(--mut)}
 #panel{width:0;overflow:hidden;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;transition:width .25s;flex-shrink:0}#panel.on{width:min(48vw,640px)}
 .ph{display:flex;align-items:center;gap:2px;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}.ph b{flex:1;overflow:hidden;text-overflow:ellipsis;font-weight:600}
@@ -207,7 +209,8 @@ header{padding:8px 12px;gap:6px}#mbtn{max-width:52vw;overflow:hidden}
 <body>
 <aside id="side">
   <div class="brand"><span class="logo"><svg viewBox="0 0 1024 1024"><g transform="translate(512 512) scale(.93)"><ellipse rx="490" ry="68"/><ellipse rx="435" ry="62" transform="rotate(90)"/><ellipse rx="445" ry="62" transform="rotate(-46)"/><ellipse rx="375" ry="62" transform="rotate(52)"/></g></svg></span><span>MultiAI</span></div>
-  <button class="newb" id="newb"><span class="i" data-ic="plus" data-s="16"></span>Chat baru</button>
+  <button class="artb" id="artb"><span class="i" data-ic="files" data-s="21"></span>Artifact<span class="artn" id="artn"></span></button>
+  <button class="newb" id="newb"><span class="i" data-ic="compose" data-s="21"></span>Chat baru</button>
   <div id="list"></div>
   <div id="acct"></div>
   <div class="sfoot"><button id="setb"><span class="i" data-ic="settings" data-s="17"></span>Pengaturan</button><button id="thb" title="Ganti tema"><span class="i" id="thi"></span></button></div>
@@ -243,6 +246,11 @@ header{padding:8px 12px;gap:6px}#mbtn{max-width:52vw;overflow:hidden}
   <div class="tabs"><button data-t="usage" class="on">Penggunaan</button><button data-t="gen">Umum</button><button data-t="mdl">Model</button><button data-t="mem">Memori</button><button data-t="data">Data</button></div>
   <div class="cbody" id="cb"></div>
   <div class="mf"><button class="btn" id="mclose">Tutup</button><button class="btn p" id="msave">Simpan</button></div>
+</div></div>
+<div class="modal" id="artm"><div class="card">
+  <h2>Artifact</h2>
+  <div class="cbody" id="artbody"><input type="text" id="artq" placeholder="Cari file atau chat…" autocomplete="off"><div id="artl"></div></div>
+  <div class="mf"><button class="btn" id="artx">Tutup</button></div>
 </div></div>
 <div class="modal" id="authm"><div class="card" style="width:min(400px,100%)">
   <h2 id="authT">Masuk ke MultiAI</h2>
@@ -347,7 +355,7 @@ function renderSide(){const l=$('#list');l.innerHTML='';
   d.onclick=()=>{S.cur=c.id;save();renderAll();$('#side').classList.remove('on')};
   d.querySelector('button').onclick=e=>{e.stopPropagation();chatMenu(c)};l.appendChild(d)};
  const lab=t=>{const h=document.createElement('div');h.className='gh';h.textContent=t;l.appendChild(h)};
- if(pins.length){lab('Disematkan');pins.forEach(add);if(rest.length)lab('Chat')}rest.forEach(add)}
+ if(pins.length){lab('Disematkan');pins.forEach(add);if(rest.length)lab('Chat')}rest.forEach(add);updateArtN()}
 async function chatMenu(c){const v=await pick({title:c.title.slice(0,40),options:[{v:'pin',l:c.pin?'Lepas sematan':'Sematkan'},{v:'share',l:'Bagikan chat'},{v:'ren',l:'Ganti nama'},{v:'del',l:'Hapus chat'}]});
  if(v==='pin'){c.pin=!c.pin;save();renderSide()}
  else if(v==='share')shareChat(c);
@@ -357,7 +365,7 @@ function mdl(){return modelOf(cur())}
 function renderModel(){const cm=mdl();$('#mbtn').innerHTML='<span>'+esc(cm?mname(cm):(mErr?'Pilih model':'Memuat model…'))+'</span>'+ic('chev',14);
  $('#mmenu').innerHTML=ML().length?modelGroups().map(g=>`<div class="gh">${esc(g.g)}</div>`+g.m.map(id=>`<button data-m="${esc(id)}" class="${id===cm?'on':''}">${esc(id)}</button>`).join('')).join(''):(mErr?`<div class="gh" style="color:var(--err)">${esc(mErr)}</div><button data-r="1">Coba lagi</button>`:'<div class="gh">Memuat model…</div>');
  const e=EFF.find(x=>x[0]===S.set.effort)||EFF[1];$('#ebtn').innerHTML=ic('bolt',14)+'<span>'+e[1]+'</span>'+ic('chev',14);
- document.documentElement.dataset.fx=S.set.effort==='ultracode'?'uc':'';
+ document.documentElement.dataset.fx=S.set.effort==='ultracode'&&S.set.ucfx!==false?'uc':'';
  $('#emenu').innerHTML=EFF.map(x=>`<button data-e="${x[0]}" class="${x[0]===e[0]?'on':''}">${x[1]}<small>${x[2]}</small></button>`).join('')}
 function steps(t){const o=[],p=t.split(/\*\*([^*\n]+)\*\*/);
  for(let i=1;i<p.length;i+=2){const x=p[i].trim();if(x)o.push(x)}
@@ -384,7 +392,8 @@ function saveBlob(blob,name){if(window.Android&&window.Android.saveFile){const r
  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
 function download(name,text){saveBlob(new Blob([text],{type:'text/plain'}),name)}
 async function copy(t){try{await navigator.clipboard.writeText(t)}catch(e){const x=document.createElement('textarea');x.value=t;document.body.appendChild(x);x.select();document.execCommand('copy');x.remove()}}
-function openPanel(i,mode){pf=store[i];pmode=mode;$('#panel').classList.add('on');$('#pt').textContent=pf.name;drawPanel()}
+function openPanel(i,mode){openFile(store[i],mode)}
+function openFile(f,mode){pf=f;pmode=mode;$('#panel').classList.add('on');$('#pt').textContent=pf.name;drawPanel()}
 const PV=['html','svg','pptx','pdf','docx','md','markdown','csv','xlsx'].concat(IMGK,ZIPK);
 const cl=x=>x.replace(/\*\*([^*]+)\*\*/g,'$1').replace(/`([^`]+)`/g,'$1').replace(/\[([^\]]+)\]\([^)]*\)/g,'$1');
 function parseDoc(t){const o=[],L=t.replace(/\r/g,'').split('\n');let i=0;
@@ -779,7 +788,7 @@ $('#ebtn').onclick=e=>{e.stopPropagation();$('#mmenu').classList.remove('on');$(
 document.addEventListener('click',()=>$('#emenu').classList.remove('on'));
 $('#emenu').onclick=e=>{const b=e.target.closest('button');if(!b)return;const was=S.set.effort;S.set.effort=b.dataset.e;save();renderModel();
  const h=document.documentElement,fx=c=>{h.classList.remove('ucin','ucout');void h.offsetWidth;h.classList.add(c);setTimeout(()=>h.classList.remove(c),1300)};
- if(b.dataset.e==='ultracode'&&was!=='ultracode')fx('ucin');else if(was==='ultracode'&&b.dataset.e!=='ultracode')fx('ucout')};
+ if(S.set.ucfx!==false){if(b.dataset.e==='ultracode'&&was!=='ultracode')fx('ucin');else if(was==='ultracode'&&b.dataset.e!=='ultracode')fx('ucout')}};
 document.addEventListener('click',()=>$('#mmenu').classList.remove('on'));
 $('#mmenu').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.r){e.stopPropagation();loadModels(true);return}const c=cur();if(c)c.model=b.dataset.m;else S.set.model=b.dataset.m;save();renderModel()};
 
@@ -796,6 +805,7 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
   <label>Penyimpanan lokal: ${(sz/1024).toFixed(1)} KB dari sekitar 5.000 KB · ${tot} pesan</label><div class="bar"><i style="width:${Math.min(100,sz/5120)}%"></i></div>`;
   quotaLoad($('#qbox'));$('#qre').onclick=()=>quotaLoad($('#qbox'))}
  else if(tab==='gen'){c.innerHTML=`<div class="sh" style="margin-top:0">Tampilan</div><div class="seg" id="sth"><button data-t="dark" class="${themeOf()==='dark'?'on':''}">Gelap</button><button data-t="light" class="${themeOf()==='light'?'on':''}">Terang</button></div>
+  <label class="row2" style="margin-top:16px"><span>Efek visual saat mode Ultracode<small style="display:block;color:var(--mut);font-size:12px">Bingkai berputar, garis bercahaya, dan kilatan saat masuk atau keluar mode. Matikan kalau terasa berat.</small></span><input type="checkbox" id="sucfx" ${S.set.ucfx!==false?'checked':''}></label>
   <div class="sh">Koneksi</div><div class="mi"><span>DattioAI<small>https://bandelbanget.xyz/v1 · API key dibaca server dari environment variable DattioAI</small></span></div>
   <div class="sh">Chat</div><label style="margin-top:0">Model bawaan chat baru</label><button class="sel" id="smod" data-v="${esc(S.set.model)}"><span>${esc(mname(S.set.model)||'Pilih model')}</span>${ic('chev',16)}</button>
   <label>Kreativitas (temperature): <span id="tv">${S.set.temp}</span></label><input type="range" id="stemp" min="0" max="2" step="0.1" value="${S.set.temp}" style="width:100%"><p class="note">Baru dikirim setelah kamu menggeser slider ini. Model yang menolak parameter ini otomatis dilewati.</p>
@@ -803,7 +813,7 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
   <label>Batas waktu tanpa respons: <span id="tov">${S.set.timeout||300}</span> detik</label><input type="range" id="stimeout" min="30" max="600" step="10" value="${S.set.timeout||300}" style="width:100%"><p class="note">Kalau server tidak mengirim data sama sekali selama itu, permintaan diulang otomatis (maksimal 2 kali) lalu dihentikan.</p>
   <label class="row2" style="margin-top:16px"><span>AI memperkenalkan diri sesuai nama model yang dipilih</span><input type="checkbox" id="spers" ${S.set.persona?'checked':''}></label>
   <div class="sh">Bagikan chat</div><label style="margin-top:0">Alamat web MultiAI (untuk link bagikan chat)</label><input type="text" id="sbase" value="${esc(S.set.shareBase||'')}" placeholder="Kosongkan = otomatis">`;
-  $('#stemp').oninput=e=>$('#tv').textContent=e.target.value;$('#sctx').oninput=e=>$('#cv').textContent=e.target.value;$('#stimeout').oninput=e=>$('#tov').textContent=e.target.value;
+  $('#sucfx').onchange=e=>{S.set.ucfx=e.target.checked;save();renderModel()};$('#stemp').oninput=e=>$('#tv').textContent=e.target.value;$('#sctx').oninput=e=>$('#cv').textContent=e.target.value;$('#stimeout').oninput=e=>$('#tov').textContent=e.target.value;
   $('#sth').onclick=e=>{const b=e.target.closest('button');if(b){collect();setTheme(b.dataset.t);drawTab()}};
   $('#smod').onclick=async()=>{const b=$('#smod'),v=await pick({title:'Model bawaan chat baru',value:b.dataset.v,groups:modelGroups().map(g=>({g:g.g,o:g.m.map(id=>({v:id,l:id}))}))});if(v!=null){b.dataset.v=v;b.firstChild.textContent=mname(v)}}}
  else if(tab==='mdl'){const nm=ML().length,nc=(S.set.cus||[]).length,nh=(S.set.hid||[]).length;
@@ -891,7 +901,7 @@ function collect(){const g=id=>document.getElementById(id);
  if(g('smod'))S.set.model=g('smod').dataset.v;
  if(g('stemp')){const v=+g('stemp').value;if(v!==S.set.temp)S.set.tuser=true;S.set.temp=v}
  if(g('sctx'))S.set.ctx=+g('sctx').value;if(g('stimeout'))S.set.timeout=+g('stimeout').value;if(g('smem'))S.set.mem=g('smem').value;if(g('sbase'))S.set.shareBase=g('sbase').value.trim();if(g('simg'))S.set.imgModel=g('simg').value.trim();
- if(g('spers'))S.set.persona=g('spers').checked}
+ if(g('spers'))S.set.persona=g('spers').checked;if(g('sucfx'))S.set.ucfx=g('sucfx').checked}
 $('#setb').onclick=()=>{$('#side').classList.remove('on');openSettings('usage')};
 $('#mclose').onclick=()=>$('#modal').classList.remove('on');
 $('#msave').onclick=()=>{collect();save();$('#modal').classList.remove('on');renderModel()};
@@ -910,7 +920,32 @@ $('#wrap').addEventListener('click',e=>{const b=e.target.closest('button[data-ac
  else if(a==='rg'){let j=i;while(j>0&&c.msgs[j].role!=='user')j--;resend(j)}});
 $('#wrap').addEventListener('click',e=>{if(e.target.closest('button[data-a]'))return;const f=e.target.closest('.fc');if(!f)return;const i=+f.dataset.i;openPanel(i,PV.includes(store[i].lang)?'p':'c')});
 const LOGO='<svg viewBox="0 0 1024 1024"><g transform="translate(512 512) scale(.93)"><ellipse rx="490" ry="68"/><ellipse rx="435" ry="62" transform="rotate(90)"/><ellipse rx="445" ry="62" transform="rotate(-46)"/><ellipse rx="375" ry="62" transform="rotate(52)"/></g></svg>';
-const IC={menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',plus:'<path d="M12 5v14M5 12h14"/>',arrow:'<path d="M12 19V5M5 12l7-7 7 7"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/>',globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3"/>',chev:'<path d="M6 9l6 6 6-6"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',settings:'<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',bolt:'<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/>',expand:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',shrink:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>',check:'<path d="M5 12l5 5 9-10"/>',edit:'<path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"/>',dots:'<circle cx="5" cy="12" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><circle cx="19" cy="12" r="1.7" fill="currentColor"/>',pin:'<path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6zM12 15v6"/>'};
+/* ---------- Artifact: daftar file buatan AI ---------- */
+const artCache=new Map();
+function fileInfo(sg){if(!sg.closed)return null;const head=sg.head.split(/\s+/).filter(Boolean);let lang=(head[0]||'text').toLowerCase();if(lang==='jpeg')lang='jpg';
+ let name=head[1]||((IMGK.includes(lang)?'gambar':ZIPK.includes(lang)?'paket':DOCK.includes(lang)?'dokumen':'kode')+'.'+(EXT[lang]||'txt'));
+ if(DOCK.includes(lang)&&!name.toLowerCase().endsWith('.'+lang))name=name.replace(/\.\w+$/,'')+'.'+lang;
+ return head[1]||DOCK.includes(lang)||lang==='html'||lang==='svg'||sg.code.split('\n').length>12?{lang,code:sg.code,name}:null}
+function artsOfChat(c){const ms=c.msgs.filter(m=>m.role==='model'&&!m.err&&m.text),sig=ms.length+':'+ms.reduce((n,m)=>n+m.text.length,0),h=artCache.get(c.id);if(h&&h.sig===sig)return h.list;
+ const seen=new Map();ms.forEach(m=>fences(m.text).forEach(sg=>{if(sg.t!=='c')return;const f=fileInfo(sg);if(f)seen.set(f.name.toLowerCase(),{f,c,t:m.t0||c.t})}));
+ const list=[...seen.values()].reverse();artCache.set(c.id,{sig,list});return list}
+const allArts=()=>S.chats.flatMap(artsOfChat).sort((a,b)=>b.t-a.t);
+function updateArtN(){const n=S.chats.reduce((k,c)=>k+artsOfChat(c).length,0),e=$('#artn');if(e)e.textContent=n||''}
+let artItems=[];
+function artDraw(){const q=($('#artq').value||'').trim().toLowerCase();
+ artItems=allArts().filter(a=>!q||(a.f.name+' '+a.c.title+' '+a.f.lang).toLowerCase().includes(q));
+ $('#artl').innerHTML=artItems.length?artItems.map((a,k)=>{const f=a.f,kk=KL[f.lang]||['Kode',(f.lang||'txt').toUpperCase(),'#6b7194'],ext=(f.name.split('.').pop()||'').toUpperCase().slice(0,4),d=new Date(a.t).toLocaleDateString('id-ID',{day:'numeric',month:'short'});
+  return `<div class="ar"><div class="fi" style="background:${kk[2]}">${DOCK.includes(f.lang)||f.lang==='csv'?ext:'&lt;/&gt;'}</div><div class="am"><div class="fn">${esc(f.name)}</div><div class="fs">${kk[0]} · ${kk[1]} · ${esc(a.c.title)} · ${d}</div><div class="fa">${PV.includes(f.lang)?`<button data-ar="run" data-k="${k}">Preview</button>`:''}<button data-ar="open" data-k="${k}">Kode</button><button data-ar="copy" data-k="${k}">Salin</button><button data-ar="dl" data-k="${k}">Unduh</button><button data-ar="chat" data-k="${k}">Buka chat</button></div></div></div>`}).join('')
+  :`<p class="note" style="padding:18px 0">${q?'Tidak ada file yang cocok.':'Belum ada file. File yang dibuat AI akan muncul di sini.'}</p>`}
+function openArt(){$('#side').classList.remove('on');$('#artq').value='';artDraw();$('#artm').classList.add('on')}
+$('#artb').onclick=openArt;$('#artx').onclick=()=>$('#artm').classList.remove('on');
+$('#artm').onclick=e=>{if(e.target.id==='artm')$('#artm').classList.remove('on')};$('#artq').oninput=artDraw;
+$('#artl').addEventListener('click',e=>{const b=e.target.closest('button[data-ar]');if(!b)return;const a=artItems[+b.dataset.k];if(!a)return;const k=b.dataset.ar;
+ if(k==='copy'){copy(a.f.code);b.textContent='Tersalin';setTimeout(()=>b.textContent='Salin',1200)}
+ else if(k==='dl')dlFile(a.f);
+ else if(k==='chat'){S.cur=a.c.id;save();renderAll();$('#artm').classList.remove('on')}
+ else{$('#artm').classList.remove('on');openFile(a.f,k==='run'?'p':'c')}});
+const IC={compose:'<path d="M12 3.5H6.5A2.5 2.5 0 0 0 4 6v12a2.5 2.5 0 0 0 2.5 2.5h10a2 2 0 0 0 2-2V14"/><path d="M4 18a2.5 2.5 0 0 1 2.5-2.5H10"/><path d="M7.5 7.5h3M7.5 10.5h2"/><path d="M20.3 3.9a1.7 1.7 0 0 1 0 2.4L12.6 14l-3.2.8.8-3.2 7.7-7.7a1.7 1.7 0 0 1 2.4 0z"/>',files:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>',menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',plus:'<path d="M12 5v14M5 12h14"/>',arrow:'<path d="M12 19V5M5 12l7-7 7 7"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/>',globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3"/>',chev:'<path d="M6 9l6 6 6-6"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',settings:'<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',bolt:'<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/>',expand:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',shrink:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>',check:'<path d="M5 12l5 5 9-10"/>',edit:'<path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"/>',dots:'<circle cx="5" cy="12" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><circle cx="19" cy="12" r="1.7" fill="currentColor"/>',pin:'<path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6zM12 15v6"/>'};
 const ic=(n,z=18)=>`<svg class="ic" width="${z}" height="${z}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${IC[n]||''}</svg>`;
 const spin=()=>'<span class="spin" role="status" aria-label="Memuat" style="animation-delay:-'+(Date.now()%1600)+'ms">'+LOGO+'</span>';
 const themeOf=()=>S.set.theme==='light'?'light':'dark';
