@@ -3,25 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<script>try{document.documentElement.dataset.theme=JSON.parse(localStorage.getItem('chatbotai')).set.theme==='light'?'light':'dark'}catch(e){document.documentElement.dataset.theme='dark'}</script>
 <title>MultiAI</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%201024%201024%22%3E%3Crect%20width%3D%221024%22%20height%3D%221024%22%20rx%3D%22220%22%20fill%3D%22%23000%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2256%22%3E%3Cg%20transform%3D%22translate%28512%20512%29%20scale%28.8%29%22%3E%3Cellipse%20rx%3D%22490%22%20ry%3D%2268%22/%3E%3Cellipse%20rx%3D%22435%22%20ry%3D%2262%22%20transform%3D%22rotate%2890%29%22/%3E%3Cellipse%20rx%3D%22445%22%20ry%3D%2262%22%20transform%3D%22rotate%28-46%29%22/%3E%3Cellipse%20rx%3D%22375%22%20ry%3D%2262%22%20transform%3D%22rotate%2852%29%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E">
 <style>
-/* MultiAI — tinta & kertas. Satu aksen (biru kobalt), bentuk tegas, tipografi Bricolage + Figtree. */
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap');
-:root,[data-theme=dark]{--bg:#0e0f12;--panel:#15171b;--panel2:#1d2025;--line:#272a31;--tx:#e9e7e2;--mut:#898d96;--ac:#3b6cff;--al:#8aa6ff;--ac2:#8aa6ff;--err:#ff7a70;--cbg:#0a0b0d;--ov:rgba(4,5,8,.62);--r:6px;--rl:12px;color-scheme:dark}
-[data-theme=light]{--bg:#f3f1ec;--panel:#fbfaf7;--panel2:#e9e6df;--line:#d9d5cb;--tx:#1b1c1f;--mut:#6c6f76;--ac:#1f4fe0;--al:#1f4fe0;--ac2:#1f4fe0;--err:#c8321f;--cbg:#ece9e1;--ov:rgba(27,28,31,.4);--r:6px;--rl:12px;color-scheme:light}
+/* MultiAI — Modern Dark. Efek Ultracode ada di blok bawah. */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap');
+:root{--bg:#0e1015;--panel:#151821;--panel2:#1d2131;--line:#262b3c;--tx:#e8eaf2;--mut:#8c93ab;--ac:#6d7cff;--al:#9aa5ff;--ac2:#9aa5ff;--err:#ff6b81;--cbg:#0b0d12;--ov:rgba(4,6,12,.72);--r:12px;--rl:18px;--mgr:linear-gradient(135deg,#6d7cff,#a06bff);--msh:inset 0 1px 0 rgba(255,255,255,.04),0 10px 26px -14px rgba(0,0,0,.7);color-scheme:dark}
 *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}*:focus{outline:none}
 *:focus-visible{outline:2px solid var(--al)!important;outline-offset:2px}
 html,body{height:100%}
-body{background:var(--bg);color:var(--tx);font:15px/1.6 Figtree,system-ui,"Segoe UI",sans-serif;-webkit-text-size-adjust:100%;display:flex;overflow:hidden;height:100dvh}
+body{background:var(--bg);color:var(--tx);font:15px/1.6 Geist,system-ui,"Segoe UI",sans-serif;-webkit-text-size-adjust:100%;display:flex;overflow:hidden;height:100dvh}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;display:inline-flex;align-items:center;gap:6px}button:active{opacity:.6}
 .i{display:inline-flex}.ic{flex-shrink:0}
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px}::-webkit-scrollbar-track{background:transparent}
 
 /* sidebar */
 #side{width:268px;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;flex-shrink:0;transition:transform .25s}
-.brand{display:flex;align-items:center;gap:10px;padding:18px 18px 10px;font:700 19px/1 'Bricolage Grotesque',Figtree,sans-serif;letter-spacing:-.02em}
+.brand{display:flex;align-items:center;gap:10px;padding:18px 18px 10px;font:700 19px/1 Geist,system-ui,sans-serif;letter-spacing:-.02em}
 .logo{width:28px;height:28px;border-radius:7px;background:#000;display:grid;place-items:center;padding:4px;flex-shrink:0}.logo svg{width:100%;height:100%;stroke:#fff;fill:none;stroke-width:56}
 .logo.big{width:56px;height:56px;border-radius:14px;padding:8px;margin:0 0 22px}.logo.big svg{stroke-width:32}
 .newb{margin:6px 14px 8px;padding:10px 12px;gap:11px;font-size:16.5px;border-radius:var(--r);border:1px solid var(--tx);color:var(--tx);font-weight:600;justify-content:flex-start;transition:background .15s,color .15s}
@@ -41,7 +39,7 @@ header{display:flex;align-items:center;gap:8px;padding:10px 18px;padding-top:max
 .hb{display:none;padding:6px;margin-left:-6px}.mp{position:relative}header .mp:last-child{margin-left:auto}
 #mbtn,#ebtn{padding:6px 10px;border-radius:var(--r);font-weight:600;white-space:nowrap;color:var(--tx)}
 #mbtn:hover,#ebtn:hover{background:var(--panel2)}
-#mbtn{font-family:'Bricolage Grotesque',Figtree,sans-serif;font-size:16px;letter-spacing:-.01em}
+#mbtn{font-family:Geist,system-ui,sans-serif;font-size:16px;letter-spacing:-.01em}
 #ebtn{color:var(--al);font-size:13px}
 #mmenu,#emenu{position:absolute;top:calc(100% + 6px);left:0;z-index:30;width:310px;max-width:86vw;max-height:62vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:var(--rl);padding:6px;display:none;box-shadow:0 18px 40px var(--ov)}
 #emenu{width:220px;left:auto;right:0}#mmenu.on,#emenu.on{display:block}
@@ -52,7 +50,7 @@ header{display:flex;align-items:center;gap:8px;padding:10px 18px;padding-top:max
 /* chat */
 #msgs{flex:1;overflow:auto;padding:28px 18px}.wrap{max-width:740px;margin:auto}
 .empty{margin-top:12vh;text-align:left;max-width:560px}
-.empty h1{font:700 clamp(28px,5vw,40px)/1.1 'Bricolage Grotesque',Figtree,sans-serif;letter-spacing:-.03em;margin-bottom:10px}
+.empty h1{font:700 clamp(28px,5vw,40px)/1.1 Geist,system-ui,sans-serif;letter-spacing:-.03em;margin-bottom:10px}
 .empty p{color:var(--mut);max-width:44ch}
 .chips{display:flex;flex-direction:column;align-items:flex-start;gap:0;margin-top:28px;border-top:1px solid var(--line);width:100%}
 .chips button{width:100%;padding:13px 2px;border-bottom:1px solid var(--line);color:var(--tx);text-align:left;justify-content:space-between;border-radius:0}
@@ -64,14 +62,14 @@ header{display:flex;align-items:center;gap:8px;padding:10px 18px;padding-top:max
 .msg.user .bd a{color:#fff}.msg.user .at{background:rgba(255,255,255,.16);border-color:transparent;color:#fff}
 .who{font-size:12.5px;color:var(--mut);margin-bottom:5px;font-weight:600}.msg.user .who{display:none}
 .msg.ai .bd{padding-left:14px;border-left:2px solid var(--line)}
-.bd p{margin:0 0 11px;overflow-wrap:anywhere}.bd h3,.bd h4{margin:18px 0 6px;font-family:'Bricolage Grotesque',Figtree,sans-serif;letter-spacing:-.01em}.bd ul,.bd ol{margin:0 0 11px 22px}.bd li{margin-bottom:3px}.bd a{color:var(--al)}
+.bd p{margin:0 0 11px;overflow-wrap:anywhere}.bd h3,.bd h4{margin:18px 0 6px;font-family:Geist,system-ui,sans-serif;letter-spacing:-.01em}.bd ul,.bd ol{margin:0 0 11px 22px}.bd li{margin-bottom:3px}.bd a{color:var(--al)}
 .bd code.i{background:var(--panel2);padding:1px 6px;border-radius:4px;font:12.5px ui-monospace,Menlo,Consolas,monospace}
 .cb{border:1px solid var(--line);border-radius:var(--r);background:var(--cbg);margin:12px 0;overflow:hidden}
 .ch{display:flex;align-items:center;gap:4px;padding:5px 8px 5px 12px;border-bottom:1px solid var(--line);font-size:12px;color:var(--mut)}.ch b{flex:1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ch button{padding:3px 9px;border-radius:5px}.ch button:hover{background:var(--panel2);color:var(--tx)}
 .cb pre{padding:12px;overflow:auto;max-height:340px;font:12.5px/1.55 ui-monospace,Menlo,Consolas,monospace;tab-size:2}
 .fc{display:flex;gap:12px;align-items:center;border:1px solid var(--line);background:var(--panel);border-radius:var(--r);padding:9px;margin:12px 0;cursor:pointer;max-width:420px}.fc:hover{border-color:var(--mut)}
-.fi{width:40px;height:44px;border-radius:5px;display:grid;place-items:center;font:700 11px Figtree,sans-serif;flex-shrink:0;color:#fff}
+.fi{width:40px;height:44px;border-radius:5px;display:grid;place-items:center;font:700 11px Geist,sans-serif;flex-shrink:0;color:#fff}
 .fn{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fs{font-size:12px;color:var(--mut)}
 .att{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}.at{padding:2px 9px;border-radius:5px;background:var(--panel2);border:1px solid var(--line);font-size:12px;color:var(--mut)}a.at{text-decoration:none}a.at:hover{color:var(--tx)}
 .bd a.yt{display:flex;gap:10px;align-items:center;max-width:380px;margin:6px 0;padding:6px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel);color:var(--tx);text-decoration:none}.yt img{width:112px;aspect-ratio:16/9;object-fit:cover;border-radius:4px;flex-shrink:0;background:var(--panel2)}.yt span{min-width:0;font-weight:500;overflow-wrap:anywhere}.yt small{display:block;color:var(--mut);font-weight:400;font-size:12px}
@@ -118,7 +116,7 @@ textarea:focus-visible{outline:none!important}
 /* pengaturan */
 .modal{position:fixed;inset:0;background:var(--ov);display:none;place-items:center;z-index:50;padding:16px}.modal.on{display:grid;grid-template-columns:minmax(0,1fr)}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--rl);width:min(580px,100%);max-height:90vh;max-height:90dvh;display:flex;flex-direction:column;justify-self:center;overflow:hidden;box-shadow:0 24px 60px var(--ov)}
-.card h2{font:700 22px/1.1 'Bricolage Grotesque',Figtree,sans-serif;letter-spacing:-.02em;padding:20px 22px 12px;flex-shrink:0}
+.card h2{font:700 22px/1.1 Geist,system-ui,sans-serif;letter-spacing:-.02em;padding:20px 22px 12px;flex-shrink:0}
 .tabs{display:flex;gap:2px;padding:0 14px;border-bottom:1px solid var(--line);overflow-x:auto;flex-shrink:0;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
 .tabs button{padding:10px 12px;color:var(--mut);border-bottom:2px solid transparent;white-space:nowrap;flex-shrink:0;margin-bottom:-1px;font-weight:500}.tabs button.on{color:var(--tx);border-color:var(--ac);font-weight:600}
 .cbody{padding:18px 22px;overflow:auto;min-height:0;flex:1}.mf{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px;border-top:1px solid var(--line);flex-shrink:0}
@@ -139,9 +137,9 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .btn.p{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:600}.btn.d{color:var(--err)}.btn.d:hover{border-color:var(--err)}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
 .stat{padding:14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}.stat:nth-child(2n){border-right:0}.stat:nth-last-child(-n+2){border-bottom:0}
-.stat b{display:block;font:700 24px/1.1 'Bricolage Grotesque',Figtree,sans-serif;letter-spacing:-.02em;font-variant-numeric:tabular-nums}.stat span{font-size:12.5px;color:var(--mut)}
+.stat b{display:block;font:700 24px/1.1 Geist,system-ui,sans-serif;letter-spacing:-.02em;font-variant-numeric:tabular-nums}.stat span{font-size:12.5px;color:var(--mut)}
 .bar{height:4px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:6px}.bar i{display:block;height:100%;background:var(--ac)}
-.qc{border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-top:8px}.qc b{font:700 30px/1.1 'Bricolage Grotesque',Figtree,sans-serif;letter-spacing:-.02em;display:block;font-variant-numeric:tabular-nums}.qc small{color:var(--mut);display:block}
+.qc{border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-top:8px}.qc b{font:700 30px/1.1 Geist,system-ui,sans-serif;letter-spacing:-.02em;display:block;font-variant-numeric:tabular-nums}.qc small{color:var(--mut);display:block}
 .qr{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}.qr:last-child{border-bottom:0}.qr span:first-child{color:var(--mut)}.qr span:last-child{text-align:right;overflow-wrap:anywhere}
 table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}td,th{padding:6px 4px;text-align:left;border-bottom:1px solid var(--line)}th{color:var(--mut);font-weight:500}.note{font-size:12.5px;color:var(--mut);margin-top:6px}
 .mi{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}.mi span{flex:1;min-width:0;overflow:hidden;word-break:break-word}.mi small{display:block;color:var(--mut);font-size:11.5px}.mi button{color:var(--mut);padding:4px}
@@ -161,14 +159,92 @@ details.grp{border:1px solid var(--line);border-radius:var(--r);margin-bottom:8p
 /* sheet & dialog */
 .ov{position:fixed;inset:0;background:var(--ov);display:none;z-index:70}.ov.on{display:flex}#shw{align-items:flex-end;justify-content:center}#dlgw{align-items:center;justify-content:center;padding:16px}
 #sheet{background:var(--panel);width:100%;max-width:480px;max-height:72vh;border-radius:var(--rl) var(--rl) 0 0;display:flex;flex-direction:column;border:1px solid var(--line);border-bottom:0}
-.sh-t{padding:16px 18px 8px;font:700 16px 'Bricolage Grotesque',Figtree,sans-serif}.sh-l{overflow:auto;padding:0 8px 14px}
+.sh-t{padding:16px 18px 8px;font:700 16px Geist,system-ui,sans-serif}.sh-l{overflow:auto;padding:0 8px 14px}
 .so{display:flex;width:100%;justify-content:space-between;padding:12px 10px;border-radius:var(--r);text-align:left}.so:hover{background:var(--panel2)}.so.on{color:var(--al);font-weight:600}
 #dlg{background:var(--panel);border:1px solid var(--line);border-radius:var(--rl);padding:20px;width:100%;max-width:360px}.dm{line-height:1.5}#dlg input{margin-top:12px}.dbt{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
 #drop{position:fixed;inset:0;background:var(--ov);border:2px dashed var(--ac);display:none;place-items:center;font-size:20px;font-weight:600;z-index:80;pointer-events:none}
+/* ===== Minimalis: lapisan penyederhanaan ===== */
+body{font-size:15px;letter-spacing:-.003em}
+.cb pre,.bd code.i,.lk,.uo,#pb pre,.qr span:last-child{font-family:"Geist Mono",ui-monospace,Menlo,Consolas,monospace}
+#side{background:var(--bg)}
+.brand{font-weight:600;font-size:16px;letter-spacing:-.01em;padding:20px 18px 4px}
+.logo{background:transparent;border-radius:0;padding:0;width:22px;height:22px}.logo svg{stroke:var(--tx)}
+.logo.big{width:34px;height:34px;margin:0 auto 22px;padding:0;background:transparent}.logo.big svg{stroke-width:28}
+.newb,.artb{border:0;background:transparent;color:var(--tx);padding:9px 12px;font-size:16px;font-weight:500;gap:12px}
+.newb:hover,.artb:hover{background:var(--panel2);color:var(--tx)}
+.ci{border-left:0;border-radius:var(--r)}.ci.on{border-left:0;border-radius:var(--r);background:var(--panel2);color:var(--tx)}
+.gh{font-size:12px;font-weight:500;letter-spacing:.01em}
+header{border-bottom:0;background:transparent}
+#mbtn{font-size:15px;font-weight:500;letter-spacing:-.01em}
+#ebtn{font-size:13px;font-weight:500;color:var(--mut);border:1px solid var(--line);border-radius:99px;padding:5px 12px}
+#ebtn:hover{color:var(--tx);background:transparent;border-color:var(--mut)}
+#mmenu,#emenu{border-radius:var(--rl);box-shadow:0 10px 30px -10px rgba(0,0,0,.4)}
+#mmenu button.on,#emenu button.on{color:var(--tx);background:var(--panel2);font-weight:500}
+.empty{text-align:center;margin:18vh auto 0}.empty h1{font-size:clamp(24px,4.6vw,30px);font-weight:600;letter-spacing:-.03em}.empty p{margin:0 auto}
+.chips{margin:32px auto 0;max-width:460px;border-top:0}.chips button{border-bottom:0;border-radius:var(--r);padding:11px 12px;color:var(--mut);font-size:14.5px}.chips button:hover{background:var(--panel2);color:var(--tx)}.chips button::after{display:none}
+.msg.user .bd{background:var(--panel2);color:var(--tx);border-radius:18px 18px 4px 18px;padding:9px 15px}
+.msg.user .bd a{color:var(--tx)}.msg.user .at{background:var(--bg);border-color:var(--line);color:var(--mut)}
+.msg.user .act button{color:var(--mut)}.msg.user .act button:hover{background:var(--line);color:var(--tx)}
+.msg.ai .bd{border-left:0;padding-left:0}
+.who{font-weight:500}
+.bd a{color:var(--tx);text-decoration:underline;text-decoration-color:var(--mut);text-underline-offset:3px}
+.bd h3,.bd h4{font-weight:600;letter-spacing:-.01em}
+.fi{background:var(--panel2)!important;color:var(--mut)!important;border:1px solid var(--line);border-radius:8px}
+.fc{background:transparent;border-radius:var(--r)}.fc:hover{background:var(--panel)}
+.box{background:var(--panel2);border:1px solid transparent;border-radius:24px;padding:8px 10px}.box:focus-within{border-color:var(--line)}
+.ib{border-radius:50%}
+#send{background:var(--tx);color:var(--bg);border-radius:50%;width:36px;min-width:36px}#send:hover{background:var(--tx);color:var(--bg);filter:none;opacity:.85}
+.hint{opacity:.8}
+.card{box-shadow:none}.card h2{font-size:18px;font-weight:600}
+.tabs button{font-weight:500}.tabs button.on{border-color:var(--tx);font-weight:500}
+.sh{font-weight:500;color:var(--mut);font-size:12.5px;letter-spacing:.01em}
+.btn{border-color:var(--line);font-weight:500}.btn:hover{border-color:var(--mut);background:transparent}
+.btn.p{background:var(--tx);border-color:var(--tx);color:var(--bg)}.btn.p:hover{opacity:.85}
+input[type=checkbox]:checked{background:var(--tx)}input[type=checkbox]:checked::after{background:var(--bg)}
+input[type=range]::-webkit-slider-thumb{background:var(--tx)}input[type=range]::-moz-range-thumb{background:var(--tx)}
+.bar i{background:var(--tx)}
+.stat b,.qc b{font-weight:600}
+.seg button.on{font-weight:500}
+.gd{background:var(--tx)}.live b,.live .spin,.th summary .spin{color:var(--mut)}
+.so.on{font-weight:500}
+html[data-fx=uc] #ebtn{border-color:transparent;color:#fff}
+html[data-fx=uc] #send{color:#fff}
+/* ===== Modern Dark: lapisan gelap berbayang, aksen gradasi indigo ===== */
+html #side{background:#0b0d12;border-right:1px solid var(--line)}
+html .newb{background:var(--mgr);color:#fff;border-radius:12px;font-weight:600;box-shadow:0 8px 22px -10px rgba(109,124,255,.8)}html .newb:hover{background:var(--mgr);color:#fff;filter:brightness(1.08)}
+html .artb{border-radius:12px}
+html .ci{border-radius:10px}html .ci.on{background:var(--panel2);box-shadow:inset 2px 0 0 var(--ac);border-radius:10px}
+html header{background:rgba(14,16,21,.8);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+html #ebtn{background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--al);box-shadow:var(--msh)}
+html #mmenu,html #emenu,html #sheet,html #dlg{background:var(--panel);border:1px solid var(--line);border-radius:var(--rl);box-shadow:var(--msh),0 20px 50px -20px #000}
+html #mmenu button.on,html #emenu button.on{background:var(--panel2);color:var(--al)}
+html .box{background:var(--panel);border:1px solid var(--line);border-radius:20px;box-shadow:var(--msh)}html .box:focus-within{border-color:var(--ac);box-shadow:0 0 0 3px rgba(109,124,255,.2)}
+html #send{background:var(--mgr);color:#fff;border-radius:12px}html #send:hover{background:var(--mgr);color:#fff;opacity:1;filter:brightness(1.1)}
+html .msg.user .bd{background:var(--mgr);color:#fff;border-radius:18px 18px 4px 18px;box-shadow:0 10px 24px -14px rgba(109,124,255,.9)}html .msg.user .bd a{color:#fff}
+html .msg.user .act button{color:rgba(255,255,255,.85)}html .msg.user .act button:hover{background:rgba(255,255,255,.2);color:#fff}
+html .msg.user .at{background:rgba(255,255,255,.2);border:0;color:#fff}
+html .cb{background:var(--cbg);border:1px solid var(--line);border-radius:12px}
+html .fc{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--msh)}html .fc:hover{background:var(--panel2)}
+html .fi{background:var(--mgr)!important;color:#fff!important;border:0;border-radius:10px}
+html :is(.fa button,.at){background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--tx)}html .fa button:hover{border-color:var(--ac)}
+html .chips button{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-bottom:8px;color:var(--tx);box-shadow:var(--msh)}html .chips button:hover{border-color:var(--ac);background:var(--panel)}
+html .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--rl);box-shadow:var(--msh),0 30px 70px -24px #000}
+html .tabs button{border-bottom:0;border-radius:8px;margin:6px 0}html .tabs button.on{background:var(--panel2);color:var(--tx)}
+html :where(input[type=text],input[type=password],.cbody textarea,.ed,.lk,.pvw,.sel){background:var(--bg);border:1px solid var(--line);border-radius:10px}
+html :where(input[type=text],input[type=password],.cbody textarea,.ed):focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(109,124,255,.2)}
+html .seg{background:var(--bg);border-radius:12px}html .seg button{border-radius:9px}html .seg button.on{background:var(--panel2);color:var(--al);box-shadow:var(--msh)}
+html .btn{background:var(--panel2);border:1px solid var(--line);border-radius:10px;font-weight:500}html .btn:hover{border-color:var(--ac);background:var(--panel2)}
+html .btn.p{background:var(--mgr);border-color:transparent;color:#fff}html .btn.p:hover{opacity:1;filter:brightness(1.1)}html .btn.d{color:var(--err)}
+html input[type=checkbox]{background:#2a3044}html input[type=checkbox]:checked{background:var(--ac)}html input[type=checkbox]::after,html input[type=checkbox]:checked::after{background:#fff}
+html input[type=range]::-webkit-slider-thumb{background:#fff;border-color:var(--ac)}html input[type=range]::-moz-range-thumb{background:#fff;border-color:var(--ac)}
+html .bar i{background:var(--mgr)}
+html :where(.qc,.cm,.kb,.us,details.grp){background:var(--panel);border:1px solid var(--line);border-radius:12px}
+html .grid{border-radius:12px;border-color:var(--line)}
+html .logo svg{stroke:var(--al)}
+header{position:relative;z-index:20}
 /* ===== Ultracode: mode berpikir terdalam ===== */
 @property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
 :root{--uc1:#7c5cff;--uc2:#19d3ff;--uc3:#ff4fd8}
-[data-theme=light]{--uc1:#5b3df0;--uc2:#0aa5d6;--uc3:#d422b0}
 #emenu button[data-e=ultracode]{margin-top:4px;border-top:1px solid var(--line);border-radius:0 0 var(--r) var(--r)}
 #emenu button[data-e=ultracode]:not(.on){color:var(--tx)}
 #emenu button[data-e=ultracode] small{background:linear-gradient(90deg,var(--uc1),var(--uc2));-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -213,7 +289,7 @@ header{padding:8px 12px;gap:6px}#mbtn{max-width:52vw;overflow:hidden}
   <button class="newb" id="newb"><span class="i" data-ic="compose" data-s="21"></span>Chat baru</button>
   <div id="list"></div>
   <div id="acct"></div>
-  <div class="sfoot"><button id="setb"><span class="i" data-ic="settings" data-s="17"></span>Pengaturan</button><button id="thb" title="Ganti tema"><span class="i" id="thi"></span></button></div>
+  <div class="sfoot"><button id="setb"><span class="i" data-ic="settings" data-s="17"></span>Pengaturan</button></div>
 </aside>
 <div id="main">
   <header>
@@ -273,7 +349,7 @@ const EFF=[['low','Low','Cepat'],['medium','Medium','Seimbang'],['high','High','
 const mname=id=>String(id||'').replace(/^.*\|/,'');
 let S={chats:[],cur:null,set:{key:'',model:'gemini-2.5-flash',temp:0.7,ctx:20,mem:''},use:{req:0,inp:0,out:0,by:{}}};
 try{const r=JSON.parse(localStorage.getItem('chatbotai')||'null');if(r)S=Object.assign(S,r)}catch(e){}
-S.set=Object.assign({alias:{},web:true,persona:true,effort:'medium',hid:[],cus:[]},S.set);if(!S.set.webv){S.set.web=true;S.set.webv=1}
+S.set=Object.assign({alias:{},web:true,persona:true,effort:'medium',hid:[],cus:[],mbud:96},S.set);if(!S.set.webv){S.set.web=true;S.set.webv=1}
 S.mems=S.mems||[];
 ['key','keys','bases','eps','cmods','cat','map','reals','real','usages','slots'].forEach(k=>{delete S.set[k]});
 if(!S.set.model||/\|/.test(S.set.model))S.set.model='';
@@ -583,7 +659,7 @@ function memText(){let o='',n=0;const on=S.mems.filter(m=>m.on);
  const ps=on.filter(m=>m.t==='prompt');if(ps.length)o+='\n\nPrompt memori (selalu ikuti):\n'+ps.map(m=>'- '+m.txt).join('\n');
  on.filter(m=>m.t==='file'&&m.txt!=null).forEach(m=>{if(n<MEMCAP){const x=m.txt.slice(0,MEMCAP-n);n+=x.length;o+='\n\n[Berkas memori: '+m.name+']\n'+x}});
  return o}
-function sysPrompt(){return `${S.set.persona?`Kamu adalah ${mname(mdl())}, asisten AI di aplikasi MultiAI. Perkenalkan dirimu dengan nama itu.`:`Kamu adalah asisten AI di aplikasi MultiAI, dijalankan oleh model ${mname(mdl())}.`}${['ultra','max'].includes(S.set.effort)?' Pikirkan dengan sangat teliti dan periksa ulang jawabanmu sebelum menjawab.':''}${S.set.effort==='ultracode'?' MODE ULTRACODE: bekerja sebagai insinyur senior yang sangat teliti. Sebelum menulis kode, pahami kebutuhan sampai ke detail, pecah menjadi langkah, bandingkan minimal dua pendekatan lalu pilih yang paling kuat, dan daftar kasus tepi serta sumber bug yang mungkin muncul. Setelah menulis, telusuri kodenya baris demi baris seolah-olah dijalankan: cari error sintaks, variabel yang salah, race condition, dan kasus tepi, lalu perbaiki semuanya sebelum menjawab. Kode harus utuh dan langsung jalan, tanpa placeholder atau komentar "sisanya sama". Untuk pertanyaan non-kode tetap berpikir sedalam itu. Jawaban akhir: kode lengkap, lalu penjelasan singkat tentang keputusan penting dan hal yang perlu diuji.':''} Jika pengguna meminta link, video, artikel, atau sumber: tulis sebagai link Markdown [judul](url) hanya jika kamu yakin URL-nya asli dan jangan mengarang URL. Jika tidak menemukan link langsung, beri link pencarian, misalnya https://www.youtube.com/results?search_query=kata+kunci untuk video YouTube. Jawab dalam bahasa yang dipakai pengguna. Selesaikan jawaban sampai tuntas dan tutup semua blok kode; jangan berhenti di tengah, kalau panjang buat lebih ringkas daripada terpotong. Kode HTML, CSS, atau JavaScript yang panjang SELALU harus berada di dalam blok kode berpagar; jangan pernah menulis kodenya sebagai teks biasa di luar blok. Kamu bisa MEMBUAT FILE. Tulis tiap file sebagai satu blok kode dengan format \`\`\`bahasa namafile.ext; aplikasi akan mengubahnya jadi file yang bisa dilihat, diunduh, dan disalin. Jangan pernah bilang kamu tidak bisa membuat file. Jika isi file sendiri mengandung tanda tiga backtick, bungkus file itu dengan empat backtick. Pembuka dan penutup blok kode harus berada di barisnya sendiri. Format: html = satu file lengkap dengan CSS dan JS inline (langsung jalan di preview tanpa hosting); pptx = Markdown, tiap slide dipisah baris ---, slide pertama berisi "# Judul" dan "## Subjudul", slide lain "# Judul slide" lalu poin "- ..."; pdf dan docx = Markdown (#, ##, ###, daftar -, 1., **tebal**, tabel | a | b |); xlsx = isi CSV; py, js, css, json, md, txt, csv dan lainnya = isi file apa adanya. png, jpg, webp = gambar: kalau isi blok adalah kode SVG lengkap, aplikasi mengubahnya jadi gambar; kalau isinya deskripsi gambar (bahasa Inggris, rinci), aplikasi membuat gambarnya dengan model gambar. svg = kode SVG. zip, mcpack, mcaddon, mcworld, mctemplate = paket berisi banyak file: tulis tiap file diawali satu baris '=== path/nama-file' (contoh '=== BP/manifest.json') lalu isinya; untuk file biner tulis kata base64 setelah path lalu isi base64; jangan pakai baris yang diawali === di dalam isi file. Untuk Minecraft Bedrock: mcpack = satu pack dengan manifest.json di akar paket; mcaddon = beberapa pack dalam folder terpisah (misalnya BP/ dan RP/) yang masing-masing punya manifest.json; format_version 2, header.uuid dan uuid tiap module harus UUID acak berbeda satu sama lain, version berupa [1,0,0], min_engine_version sesuai versi game, dan hubungkan RP dengan BP lewat dependencies. Jenis file lain yang isinya teks boleh dibuat langsung dengan nama file berekstensi itu. Blok kode hanya untuk file atau kode panjang; jawaban biasa tetap teks.`+memText()+(S.set.mem.trim()?`\n\nCatatan memori dari pengguna:\n${S.set.mem}`:'')}
+function sysPrompt(){return `${S.set.persona?`Kamu adalah ${mname(mdl())}, asisten AI di aplikasi MultiAI. Perkenalkan dirimu dengan nama itu.`:`Kamu adalah asisten AI di aplikasi MultiAI, dijalankan oleh model ${mname(mdl())}.`}${['ultra','max'].includes(S.set.effort)?' Pikirkan dengan sangat teliti dan periksa ulang jawabanmu sebelum menjawab.':''}${S.set.effort==='ultracode'?' MODE ULTRACODE: bekerja sebagai insinyur senior yang sangat teliti. Sebelum menulis kode, pahami kebutuhan sampai ke detail, pecah menjadi langkah, bandingkan minimal dua pendekatan lalu pilih yang paling kuat, dan daftar kasus tepi serta sumber bug yang mungkin muncul. Setelah menulis, telusuri kodenya baris demi baris seolah-olah dijalankan: cari error sintaks, variabel yang salah, race condition, dan kasus tepi, lalu perbaiki semuanya sebelum menjawab. Kode harus utuh dan langsung jalan, tanpa placeholder atau komentar "sisanya sama". Untuk pertanyaan non-kode tetap berpikir sedalam itu. Jawaban akhir: kode lengkap, lalu penjelasan singkat tentang keputusan penting dan hal yang perlu diuji.':''} Jika pengguna meminta link, video, artikel, atau sumber: tulis sebagai link Markdown [judul](url) hanya jika kamu yakin URL-nya asli dan jangan mengarang URL. Jika tidak menemukan link langsung, beri link pencarian, misalnya https://www.youtube.com/results?search_query=kata+kunci untuk video YouTube. Jawab dalam bahasa yang dipakai pengguna. Selesaikan jawaban sampai tuntas dan tutup semua blok kode; jangan berhenti di tengah, kalau panjang buat lebih ringkas daripada terpotong. Kamu punya ingatan lengkap atas chat ini: riwayat pesan, RINGKASAN bagian lama, dan BERKAS versi terbaru dikirim bersama setiap permintaan. Cek semuanya sebelum menjawab dan rujuk isi pesan atau file sebelumnya dengan tepat. Jangan pernah bilang kamu lupa atau tidak bisa melihat pesan sebelumnya; kalau pengguna merujuk sesuatu, cari di riwayat, ringkasan, atau berkas. Saat mengubah file yang sudah ada, mulai dari versi terbarunya, jangan menulis ulang dari nol dan jangan menghilangkan bagian yang tidak diminta diubah. Kode HTML, CSS, atau JavaScript yang panjang SELALU harus berada di dalam blok kode berpagar; jangan pernah menulis kodenya sebagai teks biasa di luar blok. Kamu bisa MEMBUAT FILE. Tulis tiap file sebagai satu blok kode dengan format \`\`\`bahasa namafile.ext; aplikasi akan mengubahnya jadi file yang bisa dilihat, diunduh, dan disalin. Jangan pernah bilang kamu tidak bisa membuat file. Jika isi file sendiri mengandung tanda tiga backtick, bungkus file itu dengan empat backtick. Pembuka dan penutup blok kode harus berada di barisnya sendiri. Format: html = satu file lengkap dengan CSS dan JS inline (langsung jalan di preview tanpa hosting); pptx = Markdown, tiap slide dipisah baris ---, slide pertama berisi "# Judul" dan "## Subjudul", slide lain "# Judul slide" lalu poin "- ..."; pdf dan docx = Markdown (#, ##, ###, daftar -, 1., **tebal**, tabel | a | b |); xlsx = isi CSV; py, js, css, json, md, txt, csv dan lainnya = isi file apa adanya. png, jpg, webp = gambar: kalau isi blok adalah kode SVG lengkap, aplikasi mengubahnya jadi gambar; kalau isinya deskripsi gambar (bahasa Inggris, rinci), aplikasi membuat gambarnya dengan model gambar. svg = kode SVG. zip, mcpack, mcaddon, mcworld, mctemplate = paket berisi banyak file: tulis tiap file diawali satu baris '=== path/nama-file' (contoh '=== BP/manifest.json') lalu isinya; untuk file biner tulis kata base64 setelah path lalu isi base64; jangan pakai baris yang diawali === di dalam isi file. Untuk Minecraft Bedrock: mcpack = satu pack dengan manifest.json di akar paket; mcaddon = beberapa pack dalam folder terpisah (misalnya BP/ dan RP/) yang masing-masing punya manifest.json; format_version 2, header.uuid dan uuid tiap module harus UUID acak berbeda satu sama lain, version berupa [1,0,0], min_engine_version sesuai versi game, dan hubungkan RP dengan BP lewat dependencies. Jenis file lain yang isinya teks boleh dibuat langsung dengan nama file berekstensi itu. Blok kode hanya untuk file atau kode panjang; jawaban biasa tetap teks.`+memText()+(S.set.mem.trim()?`\n\nCatatan memori dari pengguna:\n${S.set.mem}`:'')}
 const needKey=()=>false;
 const slug=t=>String(t).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,24);
 const nf=n=>Number(n||0).toLocaleString('id');
@@ -680,13 +756,13 @@ async function streamOnce(body,ai,draw,noThink){const g=draw.g;
  else{const t=await r.text();g.last=Date.now();t.split('\n').forEach(take)}
  if(!saw&&raw.trim()){try{onData(raw.trim());out.done=true;if(!out.finish)out.finish='stop'}catch(e){if(e.status)throw e}}
  draw();return out}
-async function callDattio(model,c,ai,hist,draw){const g=draw.g,eff=S.set.effort,effv={low:'low',medium:'medium',high:'high',ultra:'high',max:'high',ultracode:'high'}[eff]||'medium';
- const lastU=[...hist].reverse().find(h=>h.role==='user'),wf=!!lastU&&wantsFile(lastU.parts.filter(q=>q.text!=null).map(q=>q.text).join(' '));
- const msgs=[{role:'system',content:sysPrompt()+(wf?' PERMINTAAN TERAKHIR PENGGUNA MENYANGKUT FILE ATAU KODE: hasilnya WAJIB berupa blok file berpagar dengan format ```bahasa namafile.ext (nama file harus ditulis, isi lengkap dan siap jalan). Jangan menempelkan kode atau isi dokumen sebagai teks biasa di luar blok. Cukup satu kalimat pengantar singkat, lalu blok filenya.':'')}];
- hist.forEach(h=>{const role=h.role==='model'?'assistant':'user',tx=h.parts.filter(q=>q.text!=null).map(q=>q.text).join('\n'),
+async function callDattio(model,c,ai,mem,draw){if(Array.isArray(mem))mem={hist:mem,sys:'',bud:0};const g=draw.g,eff=S.set.effort,effv={low:'low',medium:'medium',high:'high',ultra:'high',max:'high',ultracode:'high'}[eff]||'medium';
+ const lastU=[...mem.hist].reverse().find(h=>h.role==='user'),wf=!!lastU&&wantsFile(lastU.parts.filter(q=>q.text!=null).map(q=>q.text).join(' '));
+ const mk=()=>{const msgs=[{role:'system',content:sysPrompt()+(mem.sys?'\n\n'+mem.sys+'\n\n':'')+(wf?' PERMINTAAN TERAKHIR PENGGUNA MENYANGKUT FILE ATAU KODE: hasilnya WAJIB berupa blok file berpagar dengan format ```bahasa namafile.ext (nama file harus ditulis, isi lengkap dan siap jalan). Jangan menempelkan kode atau isi dokumen sebagai teks biasa di luar blok. Cukup satu kalimat pengantar singkat, lalu blok filenya.':'')}];
+ mem.hist.forEach(h=>{const role=h.role==='model'?'assistant':'user',tx=h.parts.filter(q=>q.text!=null).map(q=>q.text).join('\n'),
   imgs=role==='user'?h.parts.filter(q=>q.inlineData&&/^image\//.test(q.inlineData.mimeType)):[],
   skip=h.parts.filter(q=>q.inlineData).length-imgs.length,text=tx+((skip&&role==='user')?'\n\n[Lampiran biner tidak didukung dan diabaikan]':'');
-  msgs.push({role,content:imgs.length?[{type:'text',text}].concat(imgs.map(q=>({type:'image_url',image_url:{url:'data:'+q.inlineData.mimeType+';base64,'+q.inlineData.data}}))):text})});
+  msgs.push({role,content:imgs.length?[{type:'text',text}].concat(imgs.map(q=>({type:'image_url',image_url:{url:'data:'+q.inlineData.mimeType+';base64,'+q.inlineData.data}}))):text})});return msgs};let msgs=mk();
  const MT=[32000,16000,8192,0];let mti=0,mtName='max_tokens',skipTemp=false,skipEff=false,seg=0,fails=0,empty=0,tin=0,tout=0,base0=0,fixes=0;
  for(;;){
   const m2=msgs.slice();
@@ -700,6 +776,8 @@ async function callDattio(model,c,ai,hist,draw){const g=draw.g,eff=S.set.effort,
    if(ai.text.length>before)fails=0;
    if(g.retry){g.retry=false;g.ac=new AbortController();g.last=Date.now();if(ai.text)seg++;continue}
    if(g.reason||g.dead)throw e;
+   if(c&&mem.bud>8&&(mem.shrunk||0)<5&&(e.status===400||e.status===413||e.status===422)&&/context length|context window|maximum context|context_length|too long|prompt.{0,40}(exceed|too)|exceeds? the|reduce the length|input.{0,20}too/i.test(String(e.message))&&!/max_tokens.{0,30}too large/i.test(String(e.message))){
+    const sh=(mem.shrunk||0)+1;mem=buildMem(c,Math.round(mem.bud*.55),true);mem.shrunk=sh;msgs=mk();continue}
    if(e.status===400){const msg=String(e.message);
     if(/max_completion_tokens/.test(msg)&&mtName==='max_tokens'){mtName='max_completion_tokens';continue}
     if(/max_tokens|max_completion|too large|context|output/i.test(msg)&&mti<MT.length-1){mti++;continue}
@@ -739,6 +817,66 @@ function formD(title,fs,ok){return new Promise(res=>{
   const b=e.target.closest('button[data-k]');if(!b)return;if(b.dataset.k==='0')return fin(null);
   const o={};fs.forEach(f=>{if(f.opts){const on=$('#dlg .fseg[data-id="'+f.id+'"] .on');o[f.id]=on?on.dataset.v:f.opts[0][0]}else if(f.sel)o[f.id]=$('#ff_'+f.id).dataset.v;else o[f.id]=$('#ff_'+f.id).value.trim()});fin(o)};
  $('#dlgw').onclick=e=>{if(e.target.id==='dlgw')fin(null)}})}
+/* ---------- Memori percakapan: anggaran token, ringkasan bergulir, berkas terbaru ---------- */
+const estTok=t=>Math.ceil(String(t||'').length/3);
+const attTok=m=>(m.att||[]).reduce((n,a)=>n+(a.kind==='text'?estTok(a.data)+20:(a.data&&/^image\//.test(a.mime||'')?1200:10)),0);
+const mbud=()=>Math.max(8,+S.set.mbud||96);
+function stubOld(m,i,latest){
+ if(m.role!=='model'||!m.text||(m.text.indexOf('```')<0&&!/<!doctype html|<html/i.test(m.text)))return m.text;
+ let ch=false;const out=fences(m.text).map(sg=>{if(sg.t==='x')return sg.s;const f=fileInfo(sg);
+  if(f&&latest.get(f.name.toLowerCase())!==i&&f.code.length>1200){ch=true;return '[Berkas '+f.name+' versi lama: isi dipadatkan untuk menghemat memori, versi terbaru ada di pesan berikutnya]'}
+  const fn=sg.code.indexOf('```')>=0?'````':'```';return fn+sg.head+'\n'+sg.code+(sg.closed?'\n'+fn:'')});
+ return ch?out.join('\n'):m.text}
+function memLine(m,lim){let t=m.text||'';
+ if(m.role==='model'&&(t.indexOf('```')>=0||/<!doctype html/i.test(t)))t=fences(t).map(sg=>{if(sg.t==='x')return sg.s;const f=fileInfo(sg);return f?'[berkas '+f.name+', '+sg.code.split('\n').length+' baris]':sg.code.slice(0,300)}).join('\n');
+ (m.att||[]).forEach(a=>{t+='\n[lampiran: '+a.name+']'});return (m.role==='user'?'[Pengguna] ':'[AI] ')+t.slice(0,lim||3500)}
+/* withPh=true: pesan terakhir di c.msgs adalah placeholder jawaban AI yang sedang dibuat */
+function buildMem(c,bud,withPh=true){
+ bud=Math.max(8,+bud||96);const all=(withPh?c.msgs.slice(0,-1):c.msgs.slice()).filter(m=>!m.err&&(m.text||(m.att&&m.att.length)));
+ const latest=new Map();
+ all.forEach((m,i)=>{if(m.role==='model'&&m.text)fences(m.text).forEach(sg=>{if(sg.t==='c'){const f=fileInfo(sg);if(f)latest.set(f.name.toLowerCase(),i)}});(m.att||[]).forEach(a=>{if(a.kind==='text'&&a.data)latest.set(String(a.name).toLowerCase(),i)})});
+ const view=all.map((m,i)=>m.role==='model'?stubOld(m,i,latest):m.text),tokens=bud*1000,msgBud=tokens*.7;
+ let used=0,start=all.length;
+ for(let i=all.length-1;i>=0;i--){const cst=estTok(view[i])+attTok(all[i])+8;if(start<all.length&&used+cst>msgBud)break;used+=cst;start=i}
+ while(start<all.length-1&&all[start].role==='model')start++;
+ const keep=all.slice(start),dropped=all.slice(0,start);
+ const hist=keep.map((m,k)=>({role:m.role,parts:toParts(Object.assign({},m,{text:view[start+k]}))}));
+ const mb=S.mems.filter(m=>m.on&&m.t==='file'&&m.b64);if(mb.length&&hist.length)hist[0].parts=[{text:'Berkas memori (selalu jadikan konteks):'}].concat(mb.map(m=>({inlineData:{mimeType:m.mime,data:m.b64}})),hist[0].parts);
+ const sys=[];let cutoff=0;
+ if(start>0&&keep.length){
+  cutoff=c.msgs.indexOf(keep[0]);const sN=c.sumN||0;
+  if(c.sum)sys.push('RINGKASAN BAGIAN AWAL PERCAKAPAN (pesan lama yang tidak lagi dikirim utuh; anggap ini ingatanmu):\n'+c.sum);
+  const gap=dropped.filter(m=>c.msgs.indexOf(m)>=sN);
+  if(gap.length)sys.push('PESAN LAMA YANG BELUM DIRINGKAS (dipersingkat):\n'+gap.slice(-40).map(m=>memLine(m,500)).join('\n').slice(-16000));
+  const files=[];latest.forEach((i,key)=>{if(i<start)files.push([i,key])});files.sort((a,b)=>b[0]-a[0]);
+  let room=Math.round(tokens*.25*3),txt=[];
+  for(const [i,key] of files){const m=all[i];let name=key,body='',who='';
+   if(m.role==='model'){fences(m.text).forEach(sg=>{if(sg.t==='c'){const f=fileInfo(sg);if(f&&f.name.toLowerCase()===key){name=f.name;body=f.code;who='dibuat AI'}}})}
+   else(m.att||[]).forEach(a=>{if(a.kind==='text'&&String(a.name).toLowerCase()===key){name=a.name;body=a.data;who='dilampirkan pengguna'}});
+   if(!body)continue;if(body.length>50000)body=body.slice(0,50000)+'\n…(dipotong)';
+   if(body.length>room)break;room-=body.length;txt.push('<<<BERKAS '+name+' ('+who+')>>>\n'+body+'\n<<<AKHIR BERKAS>>>')}
+  if(txt.length)sys.push('BERKAS DARI BAGIAN PERCAKAPAN YANG SUDAH TIDAK ADA DI RIWAYAT (versi terbaru; rujuk atau ubah dari sini, jangan menulis ulang dari nol):\n'+txt.join('\n\n'))}
+ return{hist,sys:sys.join('\n\n'),bud,cutoff,dropped:dropped.length}}
+async function summarizeChunk(c,part){
+ const model=modelOf(c)||S.set.model;
+ const prompt='RINGKASAN SEBELUMNYA:\n'+(c.sum||'(belum ada)')+'\n\nPESAN BARU YANG HARUS DIGABUNG:\n'+part+'\n\nTugas: perbarui ringkasan dengan menggabungkan ringkasan sebelumnya dan pesan baru. Pertahankan secara akurat: tujuan dan permintaan pengguna, keputusan, fakta/angka/nama penting, preferensi (bahasa, gaya, format), nama berkas beserta apa yang sudah dibuat atau diubah di tiap berkas, masalah yang sudah dan belum beres, dan tugas yang belum selesai. Tulis padat dalam poin-poin Bahasa Indonesia, maksimal sekitar 700 kata. Jangan menambah hal yang tidak ada. Keluarkan hanya ringkasannya.';
+ let name='max_tokens';
+ for(let k=0;k<2;k++){
+  const body={model,messages:[{role:'system',content:'Kamu bertugas merangkum percakapan supaya bisa dilanjutkan tanpa kehilangan konteks.'},{role:'user',content:prompt}],stream:false};body[name]=3000;
+  const r=await dfetch('chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(body)});
+  if(!r.ok){const e=await errText(r);if(k===0&&/max_completion_tokens/.test(e.message||'')){name='max_completion_tokens';continue}throw e}
+  const j=JSON.parse(await r.text());return String((j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content)||'').trim()}
+ return ''}
+async function memUpdate(c){
+ if(c.sumBusy)return;const m=buildMem(c,mbud(),false);if(!m.cutoff)return;
+ if((c.sumN||0)>c.msgs.length){c.sum='';c.sumN=0}
+ const from=c.sumN||0;if(m.cutoff<=from)return;
+ c.sumBusy=true;
+ try{const chunk=c.msgs.slice(from,m.cutoff).filter(x=>!x.err&&(x.text||(x.att&&x.att.length)));let i=0;
+  while(i<chunk.length){let n=0;const part=[];while(i<chunk.length&&(n<45000||!part.length)){const t=memLine(chunk[i++]);part.push(t);n+=t.length}
+   const sm=await summarizeChunk(c,part.join('\n\n'));if(!sm)throw new Error('ringkasan kosong');c.sum=sm}
+  c.sumN=m.cutoff;save()}
+ catch(e){}finally{c.sumBusy=false}}
 function toParts(m){const p=[];let t=m.text;
  (m.att||[]).forEach(a=>{if(a.kind==='text')t+=`\n\n[File: ${a.name}]\n${a.data}`;else if(a.data)p.push({inlineData:{mimeType:a.mime,data:a.data}})});
  p.unshift({text:t});return p}
@@ -753,7 +891,7 @@ async function gen(c){if(isGen(c))return;if(!user){openAuth();return}
  const ai={role:'model',text:'',model:model,t0:Date.now()};c.msgs.push(ai);c.t=Date.now();
  const g={ai,ac:new AbortController(),last:Date.now(),reason:'',rd:null,dead:false,sbase:null,kill:null,retry:false,tries:0};gens.set(c.id,g);
  renderSide();if(S.cur===c.id)renderChat();else syncSend();
- let hs=c.msgs.slice(0,-1).filter(m=>!m.err).slice(-Math.max(1,S.set.ctx));while(hs.length>1&&hs[0].role==='model')hs.shift();const hist=hs.map(m=>({role:m.role,parts:toParts(m)}));const mb=S.mems.filter(m=>m.on&&m.t==='file'&&m.b64);if(mb.length&&hist.length)hist[0].parts=[{text:'Berkas memori (selalu jadikan konteks):'}].concat(mb.map(m=>({inlineData:{mimeType:m.mime,data:m.b64}})),hist[0].parts);
+ let mem=buildMem(c,mbud(),true);
  const viewMsg=()=>S.cur===c.id?document.querySelector('#wrap .msg:last-child'):null;
  const draw=()=>{const m=viewMsg(),body=m&&m.querySelector('.body');if(!body)return;if(g.sbase!=null)store.length=g.sbase;
   body.innerHTML=thinkHtml(ai,!ai.text)+(md(ai.text)||(ai.think?'':spin()));scrollEnd()};
@@ -763,7 +901,7 @@ async function gen(c){if(isGen(c))return;if(!user){openAuth();return}
  const iv=setInterval(()=>{tick();if(g.reason||g.retry)return;if(Date.now()-g.last>(+S.set.timeout||300)*1000*(S.set.effort==='ultracode'?1.5:1)){
   if(g.tries<(ai.text?6:2)){g.retry=true;g.tries++;g.last=Date.now();try{g.ac.abort()}catch(_){}}else stopGen(c,'timeout')}},100);tick();
  const killP=new Promise((_,rej)=>{g.kill=rej});killP.catch(()=>{});
- try{await Promise.race([callDattio(model,c,ai,hist,draw),killP]);
+ try{await Promise.race([callDattio(model,c,ai,mem,draw),killP]);
   if(g.reason==='timeout')throw new Error('ABORT');
   if(!ai.text){if(g.reason==='stop')ai.text='(dihentikan)';else{ai.err=1;ai.text=ai.cut?'Token output habis sebelum jawaban muncul (terpakai untuk berpikir). Turunkan Effort lalu ulangi.':'Model tidak mengirim jawaban (mungkin diblokir filter keamanan). Coba ubah pertanyaan atau ulangi.'}}
   else if(ai.cut)ai.text+='\n\n*⚠ Jawaban terpotong oleh server. Tekan "Lanjutkan" di bawah jawaban.*'
@@ -776,7 +914,8 @@ async function gen(c){if(isGen(c))return;if(!user){openAuth();return}
  clearInterval(iv);g.dead=true;ai.ms=Date.now()-ai.t0;
  let uin=0,uout=0;if(!ai.err){uin=ai.uIn||0;uout=ai.uOut||0}else{delete ai.uIn;delete ai.uOut}
  S.use.req++;S.use.inp+=uin;S.use.out+=uout;
- gens.delete(c.id);save();renderSide();if(S.cur===c.id)renderChat();else syncSend()}
+ gens.delete(c.id);save();renderSide();if(S.cur===c.id)renderChat();else syncSend();
+ if(!ai.err)memUpdate(c).catch(()=>{})}
 $('#send').onclick=send;
 const grow=()=>{const t=$('#inp');t.style.height='auto';t.style.height=Math.min(t.scrollHeight,200)+'px'};
 $('#inp').addEventListener('input',grow);
@@ -801,20 +940,18 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
   c.innerHTML=`<div class="sh" style="margin-top:0">Sisa kuota DattioAI</div><div id="qbox"></div><button class="btn" id="qre" style="margin-top:8px">Muat ulang kuota</button>
   <div class="sh">Pemakaian di aplikasi ini (token asli dari server)</div>
   <div class="grid"><div class="stat"><b>${S.use.req}</b><span>Permintaan</span></div><div class="stat"><b>${S.chats.length}</b><span>Chat tersimpan</span></div><div class="stat"><b>${S.use.inp.toLocaleString('id')}</b><span>Token masuk</span></div><div class="stat"><b>${S.use.out.toLocaleString('id')}</b><span>Token keluar</span></div></div>
-  <label>Memori konteks: ${S.set.ctx} pesan terakhir dikirim ke model</label><div class="bar"><i style="width:${Math.min(100,S.set.ctx/60*100)}%"></i></div>
+  <label>Memori konteks: sampai ${mbud()} rb token dikirim ke model</label><div class="bar"><i style="width:${Math.min(100,mbud()/400*100)}%"></i></div>
   <label>Penyimpanan lokal: ${(sz/1024).toFixed(1)} KB dari sekitar 5.000 KB · ${tot} pesan</label><div class="bar"><i style="width:${Math.min(100,sz/5120)}%"></i></div>`;
   quotaLoad($('#qbox'));$('#qre').onclick=()=>quotaLoad($('#qbox'))}
- else if(tab==='gen'){c.innerHTML=`<div class="sh" style="margin-top:0">Tampilan</div><div class="seg" id="sth"><button data-t="dark" class="${themeOf()==='dark'?'on':''}">Gelap</button><button data-t="light" class="${themeOf()==='light'?'on':''}">Terang</button></div>
-  <label class="row2" style="margin-top:16px"><span>Efek visual saat mode Ultracode<small style="display:block;color:var(--mut);font-size:12px">Bingkai berputar, garis bercahaya, dan kilatan saat masuk atau keluar mode. Matikan kalau terasa berat.</small></span><input type="checkbox" id="sucfx" ${S.set.ucfx!==false?'checked':''}></label>
+ else if(tab==='gen'){c.innerHTML=`<div class="sh" style="margin-top:0">Tampilan</div><label class="row2"><span>Efek visual saat mode Ultracode<small style="display:block;color:var(--mut);font-size:12px">Bingkai berputar, garis bercahaya, dan kilatan saat masuk atau keluar mode. Matikan kalau terasa berat.</small></span><input type="checkbox" id="sucfx" ${S.set.ucfx!==false?'checked':''}></label>
   <div class="sh">Koneksi</div><div class="mi"><span>DattioAI<small>https://bandelbanget.xyz/v1 · API key dibaca server dari environment variable DattioAI</small></span></div>
   <div class="sh">Chat</div><label style="margin-top:0">Model bawaan chat baru</label><button class="sel" id="smod" data-v="${esc(S.set.model)}"><span>${esc(mname(S.set.model)||'Pilih model')}</span>${ic('chev',16)}</button>
   <label>Kreativitas (temperature): <span id="tv">${S.set.temp}</span></label><input type="range" id="stemp" min="0" max="2" step="0.1" value="${S.set.temp}" style="width:100%"><p class="note">Baru dikirim setelah kamu menggeser slider ini. Model yang menolak parameter ini otomatis dilewati.</p>
-  <label>Batas memori (pesan terakhir yang dikirim): <span id="cv">${S.set.ctx}</span></label><input type="range" id="sctx" min="2" max="60" step="2" value="${S.set.ctx}" style="width:100%">
+  <label>Memori percakapan: <span id="cv">${mbud()}</span> rb token</label><input type="range" id="sctx" min="16" max="400" step="8" value="${mbud()}" style="width:100%"><p class="note">Seluruh riwayat dikirim selama muat. Pesan yang melewati batas diringkas otomatis, dan versi terbaru tiap berkas tetap dikirim. Kalau model menolak karena terlalu panjang, batasnya diturunkan otomatis.</p>
   <label>Batas waktu tanpa respons: <span id="tov">${S.set.timeout||300}</span> detik</label><input type="range" id="stimeout" min="30" max="600" step="10" value="${S.set.timeout||300}" style="width:100%"><p class="note">Kalau server tidak mengirim data sama sekali selama itu, permintaan diulang otomatis (maksimal 2 kali) lalu dihentikan.</p>
   <label class="row2" style="margin-top:16px"><span>AI memperkenalkan diri sesuai nama model yang dipilih</span><input type="checkbox" id="spers" ${S.set.persona?'checked':''}></label>
   <div class="sh">Bagikan chat</div><label style="margin-top:0">Alamat web MultiAI (untuk link bagikan chat)</label><input type="text" id="sbase" value="${esc(S.set.shareBase||'')}" placeholder="Kosongkan = otomatis">`;
-  $('#sucfx').onchange=e=>{S.set.ucfx=e.target.checked;save();renderModel()};$('#stemp').oninput=e=>$('#tv').textContent=e.target.value;$('#sctx').oninput=e=>$('#cv').textContent=e.target.value;$('#stimeout').oninput=e=>$('#tov').textContent=e.target.value;
-  $('#sth').onclick=e=>{const b=e.target.closest('button');if(b){collect();setTheme(b.dataset.t);drawTab()}};
+    $('#sucfx').onchange=e=>{S.set.ucfx=e.target.checked;save();renderModel()};$('#stemp').oninput=e=>$('#tv').textContent=e.target.value;$('#sctx').oninput=e=>$('#cv').textContent=e.target.value;$('#stimeout').oninput=e=>$('#tov').textContent=e.target.value;
   $('#smod').onclick=async()=>{const b=$('#smod'),v=await pick({title:'Model bawaan chat baru',value:b.dataset.v,groups:modelGroups().map(g=>({g:g.g,o:g.m.map(id=>({v:id,l:id}))}))});if(v!=null){b.dataset.v=v;b.firstChild.textContent=mname(v)}}}
  else if(tab==='mdl'){const nm=ML().length,nc=(S.set.cus||[]).length,nh=(S.set.hid||[]).length;
   c.innerHTML=`<div class="sh" style="margin-top:0">Daftar model</div><p class="note" style="margin:0 0 10px">${nm} model aktif${nh?' · '+nh+' disembunyikan':''}${nc?' · '+nc+' ditambah manual':''}.${mLoad?' Memuat…':''}${mErr?' <span style="color:var(--err)">'+esc(mErr)+'</span>':''}</p>
@@ -900,7 +1037,7 @@ document.querySelector('.tabs').onclick=e=>{const b=e.target.closest('button');i
 function collect(){const g=id=>document.getElementById(id);
  if(g('smod'))S.set.model=g('smod').dataset.v;
  if(g('stemp')){const v=+g('stemp').value;if(v!==S.set.temp)S.set.tuser=true;S.set.temp=v}
- if(g('sctx'))S.set.ctx=+g('sctx').value;if(g('stimeout'))S.set.timeout=+g('stimeout').value;if(g('smem'))S.set.mem=g('smem').value;if(g('sbase'))S.set.shareBase=g('sbase').value.trim();if(g('simg'))S.set.imgModel=g('simg').value.trim();
+ if(g('sctx'))S.set.mbud=+g('sctx').value;if(g('stimeout'))S.set.timeout=+g('stimeout').value;if(g('smem'))S.set.mem=g('smem').value;if(g('sbase'))S.set.shareBase=g('sbase').value.trim();if(g('simg'))S.set.imgModel=g('simg').value.trim();
  if(g('spers'))S.set.persona=g('spers').checked;if(g('sucfx'))S.set.ucfx=g('sucfx').checked}
 $('#setb').onclick=()=>{$('#side').classList.remove('on');openSettings('usage')};
 $('#mclose').onclick=()=>$('#modal').classList.remove('on');
@@ -948,9 +1085,6 @@ $('#artl').addEventListener('click',e=>{const b=e.target.closest('button[data-ar
 const IC={compose:'<path d="M12 3.5H6.5A2.5 2.5 0 0 0 4 6v12a2.5 2.5 0 0 0 2.5 2.5h10a2 2 0 0 0 2-2V14"/><path d="M4 18a2.5 2.5 0 0 1 2.5-2.5H10"/><path d="M7.5 7.5h3M7.5 10.5h2"/><path d="M20.3 3.9a1.7 1.7 0 0 1 0 2.4L12.6 14l-3.2.8.8-3.2 7.7-7.7a1.7 1.7 0 0 1 2.4 0z"/>',files:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>',menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',plus:'<path d="M12 5v14M5 12h14"/>',arrow:'<path d="M12 19V5M5 12l7-7 7 7"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/>',globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3"/>',chev:'<path d="M6 9l6 6 6-6"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',settings:'<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',bolt:'<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/>',expand:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',shrink:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>',check:'<path d="M5 12l5 5 9-10"/>',edit:'<path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"/>',dots:'<circle cx="5" cy="12" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><circle cx="19" cy="12" r="1.7" fill="currentColor"/>',pin:'<path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6zM12 15v6"/>'};
 const ic=(n,z=18)=>`<svg class="ic" width="${z}" height="${z}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${IC[n]||''}</svg>`;
 const spin=()=>'<span class="spin" role="status" aria-label="Memuat" style="animation-delay:-'+(Date.now()%1600)+'ms">'+LOGO+'</span>';
-const themeOf=()=>S.set.theme==='light'?'light':'dark';
-function applyTheme(){document.documentElement.dataset.theme=themeOf();const b=$('#thi');if(b)b.innerHTML=ic(themeOf()==='dark'?'sun':'moon',17)}
-function setTheme(t){S.set.theme=t;save();applyTheme()}
 function pick(o){return new Promise(res=>{let h='<div class="sh-t">'+esc(o.title||'')+'</div><div class="sh-l">';
  (o.groups||[{g:'',o:o.options}]).forEach(g=>{if(g.g)h+='<div class="gh">'+esc(g.g)+'</div>';g.o.forEach(x=>{const on=x.v===o.value;h+=`<button class="so${on?' on':''}" data-v="${esc(x.v)}"><span>${esc(x.l)}</span>${on?ic('check',18):''}</button>`})});
  $('#sheet').innerHTML=h+'</div>';$('#shw').classList.add('on');
@@ -964,7 +1098,7 @@ function dlg(o){return new Promise(res=>{$('#dlg').innerHTML=`<div class="dm">${
  $('#dlgw').onclick=e=>{if(e.target.id==='dlgw')fin(o.input?null:false)}})}
 const note=m=>dlg({msg:m}),confirmD=m=>dlg({msg:m,cancel:1,ok:'Ya'}),promptD=(m,ph,val,ok)=>dlg({msg:m,input:1,cancel:1,ph,val,ok:ok||'Tambah'});
 document.querySelectorAll('[data-ic]').forEach(e=>{e.innerHTML=ic(e.dataset.ic,+e.dataset.s||18)});
-$('#send').innerHTML=ic('arrow',18);applyTheme();$('#thb').onclick=()=>setTheme(themeOf()==='dark'?'light':'dark');
+$('#send').innerHTML=ic('arrow',18);
 document.addEventListener('click',e=>{const a=e.target.closest('a[href^="http"]');if(a&&window.Android&&window.Android.openUrl){e.preventDefault();window.Android.openUrl(a.href)}});
 /* ---------- bagikan chat ---------- */
 const b64u=u=>{let t='';u.forEach(b=>t+=String.fromCharCode(b));return btoa(t).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')};
@@ -1028,7 +1162,7 @@ async function pullSync(merge){if(!sb||!user||(syncT&&!merge)||gens.size)return;
  try{const r=await sb.from('user_state').select('data,version').eq('user_id',user.id).maybeSingle();if(r.error)return;
   if(!r.data){sv=0;await pushSync();return}
   const first=!!merge||S.syncUid!==user.id;if(!first&&r.data.version===sv)return;
-  applyRemote(r.data.data||{},first);sv=r.data.version;S.sv=sv;S.syncUid=user.id;persist();applyTheme();renderAll();
+  applyRemote(r.data.data||{},first);sv=r.data.version;S.sv=sv;S.syncUid=user.id;persist();renderAll();
   if(first)queuePush()}catch(e){}}
 async function logout(){if(!await confirmD('Keluar dari akun?'))return;
  try{await pushNow()}catch(_){}try{await sb.auth.signOut()}catch(_){}try{localStorage.removeItem('chatbotai')}catch(_){}location.href='/chat/'}
