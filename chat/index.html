@@ -255,6 +255,25 @@ header{position:relative;z-index:20}
 #ivs.z{cursor:zoom-out;align-items:flex-start;justify-content:flex-start;touch-action:pan-x pan-y pinch-zoom}#ivs.z #ivimg{max-width:none;max-height:none;width:240%;height:auto}
 .iv-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;justify-content:center}.iv-nav:hover{background:rgba(255,255,255,.22)}#ivp{left:10px}#ivn{right:10px}
 #ivnote{position:absolute;left:0;right:0;bottom:0;z-index:2;text-align:center;font-size:12px;color:#b6bbd0;padding:10px 14px;padding-bottom:max(10px,env(safe-area-inset-bottom));pointer-events:none}
+/* mode suara */
+select{width:100%;background:var(--bg);color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit}
+#vmode{position:fixed;inset:0;z-index:90;display:flex;flex-direction:column;background:radial-gradient(60% 45% at 50% 36%,rgba(109,124,255,.24),transparent 70%),#0a0c12;color:var(--tx)}#vmode[hidden]{display:none}
+.vm-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;padding-top:max(14px,env(safe-area-inset-top));font-weight:500;color:var(--mut)}.vm-top span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#vmx,#vmmute,#vmskip{border-radius:50%;background:var(--panel2);color:var(--tx);justify-content:center;flex-shrink:0}#vmx{width:40px;height:40px}#vmmute,#vmskip{width:58px;height:58px}
+#vmmute.off{background:var(--err);color:#fff}
+.vm-mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:0 24px;text-align:center;min-height:0;overflow:hidden}
+#vmorb{position:relative;width:176px;height:176px;border-radius:50%;padding:0;justify-content:center;background:none;--lv:0;margin-bottom:10px}
+#vmorb b{position:absolute;inset:20px;border-radius:50%;background:var(--mgr);box-shadow:0 0 60px rgba(109,124,255,.55);transform:scale(calc(1 + var(--lv)*.22));transition:transform .09s,filter .3s,opacity .3s}
+#vmorb i{position:absolute;inset:8px;border-radius:50%;border:2px solid rgba(154,165,255,.4);opacity:0}
+#vmode[data-st=listening] #vmorb i{animation:vmring 2.6s ease-out infinite}#vmode[data-st=listening] #vmorb i:nth-child(2){animation-delay:.85s}#vmode[data-st=listening] #vmorb i:nth-child(3){animation-delay:1.7s}
+#vmode[data-st=speaking] #vmorb b{animation:vmspeak .8s ease-in-out infinite alternate}#vmode[data-st=speaking] #vmorb i{animation:vmring 1.5s ease-out infinite}#vmode[data-st=speaking] #vmorb i:nth-child(2){animation-delay:.5s}
+#vmode[data-st=thinking] #vmorb b{opacity:.55;filter:saturate(.7)}
+#vmode[data-st=thinking] #vmorb i:nth-child(1){opacity:1;inset:0;border:0;background:conic-gradient(from 0deg,transparent 0 55%,var(--al));-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));animation:vmspin 1.1s linear infinite}
+#vmode[data-st=muted] #vmorb b{filter:grayscale(1);opacity:.35;box-shadow:none}
+#vmode[data-st=error] #vmorb b{background:linear-gradient(135deg,#ff6b81,#ff9a6b);box-shadow:0 0 50px rgba(255,107,129,.45)}
+@keyframes vmring{0%{transform:scale(.8);opacity:.7}100%{transform:scale(1.55);opacity:0}}@keyframes vmspeak{from{transform:scale(.94)}to{transform:scale(1.12)}}@keyframes vmspin{to{transform:rotate(360deg)}}
+#vmst{font-size:18px;font-weight:600}#vmtx{font-size:17px;line-height:1.45;min-height:26px;max-width:520px;max-height:30vh;overflow:auto}#vmai{font-size:15px;color:var(--mut);line-height:1.45;max-width:520px;max-height:22vh;overflow:auto}#vmerr{font-size:13px;color:var(--err);max-width:420px}
+.vm-bot{display:flex;justify-content:center;gap:22px;padding:16px;padding-bottom:max(28px,env(safe-area-inset-bottom))}
 /* ===== Ultracode: mode berpikir terdalam ===== */
 @property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
 :root{--uc1:#7c5cff;--uc2:#19d3ff;--uc3:#ff4fd8}
@@ -318,6 +337,7 @@ header{padding:8px 12px;gap:6px}#mbtn{max-width:52vw;overflow:hidden}
         <button class="ib" id="attb" title="Tambah file"><span class="i" data-ic="plus"></span></button>
         <button class="ib" id="webb" title="Pencarian web"><span class="i" data-ic="globe" data-s="16"></span><b>Web</b></button>
         <textarea id="inp" rows="1" placeholder="Tulis pesan…"></textarea>
+        <button class="ib" id="vbtn" title="Mode suara"><span class="i" data-ic="wave" data-s="20"></span></button>
         <button class="ib" id="send" title="Kirim"></button>
       </div>
     </div>
@@ -336,6 +356,11 @@ header{padding:8px 12px;gap:6px}#mbtn{max-width:52vw;overflow:hidden}
   <div class="cbody" id="cb"></div>
   <div class="mf"><button class="btn" id="mclose">Tutup</button><button class="btn p" id="msave">Simpan</button></div>
 </div></div>
+<div id="vmode" hidden data-st="">
+  <div class="vm-top"><span id="vmtitle">Mode suara</span><button id="vmx" aria-label="Tutup mode suara"></button></div>
+  <div class="vm-mid"><button id="vmorb" aria-label="Lingkaran suara"><i></i><i></i><i></i><b></b></button><div id="vmst">Siap</div><div id="vmtx"></div><div id="vmai"></div><div id="vmerr"></div></div>
+  <div class="vm-bot"><button id="vmmute" aria-label="Matikan mikrofon"></button><button id="vmskip" aria-label="Potong dan bicara"></button></div>
+</div>
 <div id="ivw" hidden><div class="iv-top"><span id="ivc"></span><span id="ivt"></span><button id="ivdl">Unduh</button><button id="ivx" aria-label="Tutup"></button></div><div id="ivs"><img id="ivimg" alt=""></div><button class="iv-nav" id="ivp" aria-label="Sebelumnya"></button><button class="iv-nav" id="ivn" aria-label="Berikutnya"></button><div id="ivnote"></div></div>
 <div class="modal" id="artm"><div class="card">
   <h2>Artifact</h2>
@@ -682,7 +707,7 @@ function memText(){let o='',n=0;const on=S.mems.filter(m=>m.on);
  const ps=on.filter(m=>m.t==='prompt');if(ps.length)o+='\n\nPrompt memori (selalu ikuti):\n'+ps.map(m=>'- '+m.txt).join('\n');
  on.filter(m=>m.t==='file'&&m.txt!=null).forEach(m=>{if(n<MEMCAP){const x=m.txt.slice(0,MEMCAP-n);n+=x.length;o+='\n\n[Berkas memori: '+m.name+']\n'+x}});
  return o}
-function sysPrompt(){return `${S.set.persona?`Kamu adalah ${mname(mdl())}, asisten AI di aplikasi MultiAI. Perkenalkan dirimu dengan nama itu.`:`Kamu adalah asisten AI di aplikasi MultiAI, dijalankan oleh model ${mname(mdl())}.`}${['ultra','max'].includes(S.set.effort)?' Pikirkan dengan sangat teliti dan periksa ulang jawabanmu sebelum menjawab.':''}${S.set.effort==='ultracode'?' MODE ULTRACODE: bekerja sebagai insinyur senior yang sangat teliti. Sebelum menulis kode, pahami kebutuhan sampai ke detail, pecah menjadi langkah, bandingkan minimal dua pendekatan lalu pilih yang paling kuat, dan daftar kasus tepi serta sumber bug yang mungkin muncul. Setelah menulis, telusuri kodenya baris demi baris seolah-olah dijalankan: cari error sintaks, variabel yang salah, race condition, dan kasus tepi, lalu perbaiki semuanya sebelum menjawab. Kode harus utuh dan langsung jalan, tanpa placeholder atau komentar "sisanya sama". Untuk pertanyaan non-kode tetap berpikir sedalam itu. Jawaban akhir: kode lengkap, lalu penjelasan singkat tentang keputusan penting dan hal yang perlu diuji.':''} Jika pengguna meminta link, video, artikel, atau sumber: tulis sebagai link Markdown [judul](url) hanya jika kamu yakin URL-nya asli dan jangan mengarang URL. Jika tidak menemukan link langsung, beri link pencarian, misalnya https://www.youtube.com/results?search_query=kata+kunci untuk video YouTube. Jawab dalam bahasa yang dipakai pengguna. Selesaikan jawaban sampai tuntas dan tutup semua blok kode; jangan berhenti di tengah, kalau panjang buat lebih ringkas daripada terpotong. Kamu punya ingatan lengkap atas chat ini: riwayat pesan, RINGKASAN bagian lama, dan BERKAS versi terbaru dikirim bersama setiap permintaan. Cek semuanya sebelum menjawab dan rujuk isi pesan atau file sebelumnya dengan tepat. Jangan pernah bilang kamu lupa atau tidak bisa melihat pesan sebelumnya; kalau pengguna merujuk sesuatu, cari di riwayat, ringkasan, atau berkas. Saat mengubah file yang sudah ada, mulai dari versi terbarunya, jangan menulis ulang dari nol dan jangan menghilangkan bagian yang tidak diminta diubah. Kode HTML, CSS, atau JavaScript yang panjang SELALU harus berada di dalam blok kode berpagar; jangan pernah menulis kodenya sebagai teks biasa di luar blok. Kamu bisa MEMBUAT FILE. Tulis tiap file sebagai satu blok kode dengan format \`\`\`bahasa namafile.ext; aplikasi akan mengubahnya jadi file yang bisa dilihat, diunduh, dan disalin. Jangan pernah bilang kamu tidak bisa membuat file. Jika isi file sendiri mengandung tanda tiga backtick, bungkus file itu dengan empat backtick. Pembuka dan penutup blok kode harus berada di barisnya sendiri. Format: html = satu file lengkap dengan CSS dan JS inline (langsung jalan di preview tanpa hosting); pptx = Markdown, tiap slide dipisah baris ---, slide pertama berisi "# Judul" dan "## Subjudul", slide lain "# Judul slide" lalu poin "- ..."; pdf dan docx = Markdown (#, ##, ###, daftar -, 1., **tebal**, tabel | a | b |); xlsx = isi CSV; py, js, css, json, md, txt, csv dan lainnya = isi file apa adanya. png, jpg, webp = gambar: kalau isi blok adalah kode SVG lengkap, aplikasi mengubahnya jadi gambar; kalau isinya deskripsi gambar (bahasa Inggris, rinci), aplikasi membuat gambarnya dengan model gambar. svg = kode SVG. zip, mcpack, mcaddon, mcworld, mctemplate = paket berisi banyak file: tulis tiap file diawali satu baris '=== path/nama-file' (contoh '=== BP/manifest.json') lalu isinya; untuk file biner tulis kata base64 setelah path lalu isi base64; jangan pakai baris yang diawali === di dalam isi file. Untuk Minecraft Bedrock: mcpack = satu pack dengan manifest.json di akar paket; mcaddon = beberapa pack dalam folder terpisah (misalnya BP/ dan RP/) yang masing-masing punya manifest.json; format_version 2, header.uuid dan uuid tiap module harus UUID acak berbeda satu sama lain, version berupa [1,0,0], min_engine_version sesuai versi game, dan hubungkan RP dengan BP lewat dependencies. Jenis file lain yang isinya teks boleh dibuat langsung dengan nama file berekstensi itu. Blok kode hanya untuk file atau kode panjang; jawaban biasa tetap teks.`+memText()+(S.set.mem.trim()?`\n\nCatatan memori dari pengguna:\n${S.set.mem}`:'')}
+function sysPrompt(){return `${S.set.persona?`Kamu adalah ${mname(mdl())}, asisten AI di aplikasi MultiAI. Perkenalkan dirimu dengan nama itu.`:`Kamu adalah asisten AI di aplikasi MultiAI, dijalankan oleh model ${mname(mdl())}.`}${['ultra','max'].includes(S.set.effort)?' Pikirkan dengan sangat teliti dan periksa ulang jawabanmu sebelum menjawab.':''}${S.set.effort==='ultracode'?' MODE ULTRACODE: bekerja sebagai insinyur senior yang sangat teliti. Sebelum menulis kode, pahami kebutuhan sampai ke detail, pecah menjadi langkah, bandingkan minimal dua pendekatan lalu pilih yang paling kuat, dan daftar kasus tepi serta sumber bug yang mungkin muncul. Setelah menulis, telusuri kodenya baris demi baris seolah-olah dijalankan: cari error sintaks, variabel yang salah, race condition, dan kasus tepi, lalu perbaiki semuanya sebelum menjawab. Kode harus utuh dan langsung jalan, tanpa placeholder atau komentar "sisanya sama". Untuk pertanyaan non-kode tetap berpikir sedalam itu. Jawaban akhir: kode lengkap, lalu penjelasan singkat tentang keputusan penting dan hal yang perlu diuji.':''} Jika pengguna meminta link, video, artikel, atau sumber: tulis sebagai link Markdown [judul](url) hanya jika kamu yakin URL-nya asli dan jangan mengarang URL. Jika tidak menemukan link langsung, beri link pencarian, misalnya https://www.youtube.com/results?search_query=kata+kunci untuk video YouTube. Jawab dalam bahasa yang dipakai pengguna. Selesaikan jawaban sampai tuntas dan tutup semua blok kode; jangan berhenti di tengah, kalau panjang buat lebih ringkas daripada terpotong.${vm.on?' MODE SUARA AKTIF: jawabanmu akan dibacakan keras-keras. Jawab singkat dan natural seperti mengobrol, maksimal sekitar 4 kalimat kecuali diminta detail. Jangan pakai markdown, daftar, tabel, atau emoji. Kalau perlu menulis kode atau membuat file, tulis di blok kode seperti biasa lalu ucapkan hanya satu kalimat ringkas tentang isinya.':''} Kamu punya ingatan lengkap atas chat ini: riwayat pesan, RINGKASAN bagian lama, dan BERKAS versi terbaru dikirim bersama setiap permintaan. Cek semuanya sebelum menjawab dan rujuk isi pesan atau file sebelumnya dengan tepat. Jangan pernah bilang kamu lupa atau tidak bisa melihat pesan sebelumnya; kalau pengguna merujuk sesuatu, cari di riwayat, ringkasan, atau berkas. Saat mengubah file yang sudah ada, mulai dari versi terbarunya, jangan menulis ulang dari nol dan jangan menghilangkan bagian yang tidak diminta diubah. Kode HTML, CSS, atau JavaScript yang panjang SELALU harus berada di dalam blok kode berpagar; jangan pernah menulis kodenya sebagai teks biasa di luar blok. Kamu bisa MEMBUAT FILE. Tulis tiap file sebagai satu blok kode dengan format \`\`\`bahasa namafile.ext; aplikasi akan mengubahnya jadi file yang bisa dilihat, diunduh, dan disalin. Jangan pernah bilang kamu tidak bisa membuat file. Jika isi file sendiri mengandung tanda tiga backtick, bungkus file itu dengan empat backtick. Pembuka dan penutup blok kode harus berada di barisnya sendiri. Format: html = satu file lengkap dengan CSS dan JS inline (langsung jalan di preview tanpa hosting); pptx = Markdown, tiap slide dipisah baris ---, slide pertama berisi "# Judul" dan "## Subjudul", slide lain "# Judul slide" lalu poin "- ..."; pdf dan docx = Markdown (#, ##, ###, daftar -, 1., **tebal**, tabel | a | b |); xlsx = isi CSV; py, js, css, json, md, txt, csv dan lainnya = isi file apa adanya. png, jpg, webp = gambar: kalau isi blok adalah kode SVG lengkap, aplikasi mengubahnya jadi gambar; kalau isinya deskripsi gambar (bahasa Inggris, rinci), aplikasi membuat gambarnya dengan model gambar. svg = kode SVG. zip, mcpack, mcaddon, mcworld, mctemplate = paket berisi banyak file: tulis tiap file diawali satu baris '=== path/nama-file' (contoh '=== BP/manifest.json') lalu isinya; untuk file biner tulis kata base64 setelah path lalu isi base64; jangan pakai baris yang diawali === di dalam isi file. Untuk Minecraft Bedrock: mcpack = satu pack dengan manifest.json di akar paket; mcaddon = beberapa pack dalam folder terpisah (misalnya BP/ dan RP/) yang masing-masing punya manifest.json; format_version 2, header.uuid dan uuid tiap module harus UUID acak berbeda satu sama lain, version berupa [1,0,0], min_engine_version sesuai versi game, dan hubungkan RP dengan BP lewat dependencies. Jenis file lain yang isinya teks boleh dibuat langsung dengan nama file berekstensi itu. Blok kode hanya untuk file atau kode panjang; jawaban biasa tetap teks.`+memText()+(S.set.mem.trim()?`\n\nCatatan memori dari pengguna:\n${S.set.mem}`:'')}
 const needKey=()=>false;
 const slug=t=>String(t).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,24);
 const nf=n=>Number(n||0).toLocaleString('id');
@@ -908,6 +933,114 @@ async function memUpdate(c){
 function toParts(m){const p=[];let t=m.text;
  (m.att||[]).forEach(a=>{if(a.kind==='text')t+=`\n\n[File: ${a.name}]\n${a.data}`;else if(a.data)p.push({inlineData:{mimeType:a.mime,data:a.data}})});
  p.unshift({text:t});return p}
+/* ---------- Mode suara: ngobrol bergantian dengan AI (hands-free) ---------- */
+const vm={on:false,cid:null,state:'',muted:false,eng:null,rawPos:0,q:0,genDone:true,recog:null,stream:null,ctx:null,src:null,proc:null,zg:null,fails:0,interim:'',wake:null,wd:null};
+const SRC=window.SpeechRecognition||window.webkitSpeechRecognition;
+const vSet=()=>({stt:S.set.vstt||'auto',lang:S.set.vlang||'id-ID',voice:S.set.vvoice||'',rate:+S.set.vrate||1,sil:+S.set.vsil||1200,model:(S.set.vmodel||'whisper-1').trim()||'whisper-1'});
+const ttsOK=()=>typeof speechSynthesis!=='undefined'&&typeof SpeechSynthesisUtterance!=='undefined';
+function pickVoice(){const v=vSet(),all=ttsOK()?speechSynthesis.getVoices():[];if(v.voice){const f=all.find(x=>x.voiceURI===v.voice||x.name===v.voice);if(f)return f}
+ const pre=v.lang.slice(0,2).toLowerCase();return all.find(x=>x.lang&&x.lang.toLowerCase().startsWith(pre)&&x.default)||all.find(x=>x.lang&&x.lang.toLowerCase().startsWith(pre))||null}
+function speechClean(t){return String(t).replace(/```[\s\S]*?(```|$)/g,' (kode ada di layar) ').replace(/`([^`]*)`/g,'$1').replace(/!\[[^\]]*\]\([^)]*\)/g,' ').replace(/\[([^\]]*)\]\([^)]*\)/g,'$1').replace(/https?:\/\/\S+/g,' tautan ').replace(/^\s{0,3}#{1,6}\s*/gm,'').replace(/^\s*[-*+]\s+/gm,'').replace(/^\s*\d+[.)]\s+/gm,'').replace(/[*_~>|]/g,' ').replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu,' ').replace(/\s+/g,' ').trim()}
+const VM_ST={listening:'Mendengarkan…',thinking:'Berpikir…',speaking:'Berbicara…',muted:'Mikrofon dimatikan',error:'Ada masalah. Ketuk lingkaran untuk coba lagi.',ready:'Siap'};
+function vmSetState(st){vm.state=st;const w=$('#vmode');if(!w)return;w.dataset.st=st;$('#vmst').textContent=VM_ST[st]||'';
+ $('#vmmute').innerHTML=ic(vm.muted?'micoff':'mic',22);$('#vmmute').classList.toggle('off',vm.muted)}
+function vmErr(m){const e=$('#vmerr');if(e)e.textContent=m||''}
+/* --- bicara (TTS) --- */
+function vmSpeak(text){if(!text||!ttsOK())return;
+ const parts=text.match(/[^.!?…]+[.!?…]*\s*/g)||[text],chunks=[];let cur='';
+ for(const p of parts){if((cur+p).length>220&&cur){chunks.push(cur);cur=p}else cur+=p}if(cur.trim())chunks.push(cur);
+ chunks.forEach(ch=>{const t=ch.trim();if(!t)return;vm.q++;const u=new SpeechSynthesisUtterance(t),vo=pickVoice();
+  try{if(vo){u.voice=vo;u.lang=vo.lang}else u.lang=vSet().lang;u.rate=vSet().rate}catch(e){}let done=false;
+  const fin=()=>{if(done)return;done=true;vm.q=Math.max(0,vm.q-1);vmAfterSpeak()};
+  u.onstart=()=>{if(!vm.on)return;vmSetState('speaking');$('#vmai').textContent=t};u.onend=fin;u.onerror=fin;
+  try{speechSynthesis.speak(u)}catch(e){fin()}});
+ vmWatch()}
+function vmWatch(){if(vm.wd)return;let idle=0;vm.wd=setInterval(()=>{if(!vm.on||vm.q===0){clearInterval(vm.wd);vm.wd=null;return}
+  const busy=ttsOK()&&(speechSynthesis.speaking||speechSynthesis.pending);idle=busy?0:idle+1;if(idle>=3){vm.q=0;clearInterval(vm.wd);vm.wd=null;vmAfterSpeak()}},700)}
+function vmAfterSpeak(){if(!vm.on||vm.q>0)return;if(vm.genDone)vmListen();else vmSetState('thinking')}
+function vmFeed(c,ai,final){if(!vm.on||vm.cid!==c.id)return;const t=ai.text||'';if(!t)return;let seg='';
+ if(final)seg=t.slice(vm.rawPos);
+ else{const open=(t.match(/```/g)||[]).length%2===1,limit=open?t.lastIndexOf('```'):t.length,raw=t.slice(vm.rawPos,limit),m=[...raw.matchAll(/[.!?…]+(?=\s)|\n/g)];if(!m.length)return;const last=m[m.length-1];seg=raw.slice(0,last.index+last[0].length)}
+ vm.rawPos+=seg.length;const clean=speechClean(seg);if(clean)vmSpeak(clean)}
+function vmEnd(c,ai,g){if(!vm.on||vm.cid!==c.id)return;vm.genDone=true;
+ if(g&&g.reason==='stop'){if(vm.q===0&&vm.state!=='listening')vmListen();return}
+ if(ai.err)vmSpeak('Maaf, ada kesalahan. Coba lagi.');else vmFeed(c,ai,true);
+ if(vm.q===0)vmAfterSpeak()}
+/* --- mendengar (STT) --- */
+function vmStopEng(){
+ if(vm.recog){try{vm.recog.onend=null;vm.recog.onresult=null;vm.recog.onerror=null;vm.recog.abort()}catch(e){}vm.recog=null}
+ if(vm.proc){try{vm.proc.onaudioprocess=null;vm.proc.disconnect()}catch(e){}vm.proc=null}
+ if(vm.zg){try{vm.zg.disconnect()}catch(e){}vm.zg=null}
+ if(vm.src){try{vm.src.disconnect()}catch(e){}}}
+function vmRelease(){vmStopEng();if(vm.stream){vm.stream.getTracks().forEach(t=>{try{t.stop()}catch(e){}});vm.stream=null}vm.src=null;if(vm.ctx){try{vm.ctx.close()}catch(e){}vm.ctx=null}}
+function vmListen(){if(!vm.on)return;vmStopEng();vmErr('');
+ if(vm.muted){vmSetState('muted');return}
+ const v=vSet();let eng=vm.eng;if(!eng)eng=(v.stt==='rec'||(v.stt==='auto'&&!SRC)||!SRC)?'rec':'sr';vm.eng=eng;
+ vm.interim='';$('#vmtx').textContent='';vmSetState('listening');
+ if(eng==='sr')vmStartSR();else vmStartRec()}
+function vmStartSR(){const r=new SRC();r.lang=vSet().lang;r.continuous=true;r.interimResults=true;let fin='',tm=null,sent=false;
+ const submit=()=>{if(sent)return;const t=(fin+' '+vm.interim).replace(/\s+/g,' ').trim();if(!t)return;sent=true;clearTimeout(tm);vmStopEng();vmUtter(t)};
+ r.onresult=e=>{vm.fails=0;let it='';for(let i=e.resultIndex;i<e.results.length;i++){const R=e.results[i];if(R&&R[0]){if(R.isFinal)fin+=' '+R[0].transcript;else it+=R[0].transcript}}
+  vm.interim=it;$('#vmtx').textContent=(fin+' '+it).trim();clearTimeout(tm);tm=setTimeout(submit,vSet().sil)};
+ r.onerror=e=>{const er=e&&e.error;if(er==='no-speech'||er==='aborted')return;vm.fails++;
+  if(/not-allowed|service-not-allowed|audio-capture|language-not-supported/.test(er||'')){
+   if(vSet().stt==='auto'&&navigator.mediaDevices&&vm.eng==='sr'){vm.eng='rec';setTimeout(()=>{vmListen();vmErr('Pengenalan suara bawaan tidak tersedia, pindah ke mode Server.')},100);return}
+   vmErr('Mikrofon atau pengenalan suara tidak bisa dipakai ('+er+').');vmSetState('error');return}
+  vmErr('Gangguan pengenalan suara: '+er)};
+ r.onend=()=>{if(!vm.on||vm.recog!==r||vm.state!=='listening'||sent)return;
+  if((fin+' '+vm.interim).trim()){submit();return}
+  if(vm.fails>=3){vmSetState('error');return}try{r.start()}catch(e){}};
+ vm.recog=r;try{r.start()}catch(e){vmErr('Gagal memulai mikrofon.');vmSetState('error')}}
+async function vmStartRec(){
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){vmErr('Mikrofon tidak didukung di aplikasi ini.');vmSetState('error');return}
+ try{if(!vm.stream)vm.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,channelCount:1}})}
+ catch(e){vmErr(e&&e.name==='NotAllowedError'?'Izin mikrofon ditolak. Aktifkan izin mikrofon untuk aplikasi ini.':'Mikrofon tidak bisa dibuka.');vmSetState('error');return}
+ if(!vm.on||vm.state!=='listening')return;
+ const AC=window.AudioContext||window.webkitAudioContext;if(!vm.ctx)vm.ctx=new AC();const ctx=vm.ctx;if(ctx.state==='suspended'){try{await ctx.resume()}catch(e){}}
+ if(!vm.src)vm.src=ctx.createMediaStreamSource(vm.stream);
+ const proc=ctx.createScriptProcessor(4096,1,1),zg=ctx.createGain();zg.gain.value=0;
+ let pre=[],buf=[],speaking=false,floor=.004,hi=0,silMs=0,dur=0;
+ proc.onaudioprocess=e=>{if(vm.state!=='listening')return;const d=new Float32Array(e.inputBuffer.getChannelData(0));let sq=0;for(let i=0;i<d.length;i++)sq+=d[i]*d[i];
+  const rms=Math.sqrt(sq/d.length),ms=d.length/ctx.sampleRate*1000,thr=Math.max(.015,floor*3.2);
+  const o=$('#vmorb');if(o)o.style.setProperty('--lv',Math.min(1,rms*10).toFixed(2));
+  if(!speaking){floor=floor*.96+rms*.04;pre.push(d);if(pre.length>3)pre.shift();
+   if(rms>thr){hi++;if(hi>=2){speaking=true;buf=pre.slice();pre=[];silMs=0;dur=0;$('#vmtx').textContent='…'}}else hi=0}
+  else{buf.push(d);dur+=ms;if(rms>thr)silMs=0;else silMs+=ms;
+   if(silMs>=vSet().sil||dur>45000){speaking=false;const chunks=buf;buf=[];hi=0;vmStopEng();vmTranscribe(chunks,ctx.sampleRate,dur-silMs)}}};
+ vm.src.connect(proc);proc.connect(zg);zg.connect(ctx.destination);vm.proc=proc;vm.zg=zg}
+function pcmToWav(chunks,rate){let n=0;chunks.forEach(c=>n+=c.length);const all=new Float32Array(n);let o=0;chunks.forEach(c=>{all.set(c,o);o+=c.length});
+ const tr=16000,ratio=rate/tr,len=Math.floor(all.length/ratio),out=new Int16Array(len);
+ for(let i=0;i<len;i++){const a=Math.floor(i*ratio),b=Math.min(all.length,Math.floor((i+1)*ratio));let sm=0,k=0;for(let j=a;j<b;j++){sm+=all[j];k++}const v=Math.max(-1,Math.min(1,k?sm/k:0));out[i]=v<0?v*32768:v*32767}
+ const buf=new ArrayBuffer(44+out.length*2),dv=new DataView(buf),w=(p,t)=>{for(let i=0;i<t.length;i++)dv.setUint8(p+i,t.charCodeAt(i))};
+ w(0,'RIFF');dv.setUint32(4,36+out.length*2,true);w(8,'WAVE');w(12,'fmt ');dv.setUint32(16,16,true);dv.setUint16(20,1,true);dv.setUint16(22,1,true);dv.setUint32(24,tr,true);dv.setUint32(28,tr*2,true);dv.setUint16(32,2,true);dv.setUint16(34,16,true);w(36,'data');dv.setUint32(40,out.length*2,true);
+ new Int16Array(buf,44).set(out);return new Blob([buf],{type:'audio/wav'})}
+async function vmTranscribe(chunks,rate,ms){if(ms<350){vmListen();return}vmSetState('thinking');$('#vmst').textContent='Mengenali suara…';
+ try{const fd=new FormData(),v=vSet();fd.append('file',pcmToWav(chunks,rate),'voice.wav');fd.append('model',v.model);fd.append('language',v.lang.slice(0,2));fd.append('response_format','json');
+  const r=await dfetch('audio/transcriptions',{method:'POST',body:fd});if(!r.ok)throw await errText(r);
+  const j=await r.json(),t=String(j.text||'').trim();if(!vm.on)return;if(!t){vmListen();return}vmUtter(t)}
+ catch(e){if(!vm.on)return;vmErr('Transkripsi gagal: '+String(e&&e.message||e).slice(0,160)+' (cek dattio.js dan model transkripsi)');vmSetState('error')}}
+/* --- giliran bicara --- */
+function vmUtter(t){if(!vm.on)return;vmStopEng();vm.rawPos=0;vm.q=0;vm.genDone=false;vmSetState('thinking');$('#vmtx').textContent=t;$('#vmai').textContent='';
+ const c0=cur();if(c0)vm.cid=c0.id;$('#inp').value=t;send();
+ const c=cur();if(c)vm.cid=c.id;
+ if(!c||!isGen(c)){vm.genDone=true;vmErr('Pesan belum bisa dikirim. Pastikan kamu sudah masuk.');vmSetState('error')}}
+function vmSkip(){if(!vm.on)return;try{if(ttsOK())speechSynthesis.cancel()}catch(e){}vm.q=0;
+ const c=S.chats.find(x=>x.id===vm.cid);if(c&&isGen(c)){vm.genDone=true;stopGen(c,'stop')}vm.genDone=true;vmListen()}
+function openVoice(){if(!user){openAuth();return}if(vm.on)return;
+ vm.on=true;vm.muted=false;vm.eng=null;vm.fails=0;vm.q=0;vm.genDone=true;const c=cur();vm.cid=c?c.id:null;
+ $('#vmode').hidden=false;$('#vmtitle').textContent=c?c.title:'Mode suara';$('#vmtx').textContent='';$('#vmai').textContent='';vmErr('');vmSetState('ready');
+ try{history.pushState({vm:1},'')}catch(e){}
+ try{if(navigator.wakeLock)navigator.wakeLock.request('screen').then(w=>{if(vm.on)vm.wake=w;else w.release()}).catch(()=>{})}catch(e){}
+ if(ttsOK()){try{speechSynthesis.cancel()}catch(e){}vm.genDone=true;vmSpeak('Silakan bicara.');if(vm.q===0)vmListen()}else vmListen()}
+function closeVoice(fromPop){if(!vm.on)return;vm.on=false;try{if(ttsOK())speechSynthesis.cancel()}catch(e){}vm.q=0;vmRelease();
+ if(vm.wake){try{vm.wake.release()}catch(e){}vm.wake=null}
+ $('#vmode').hidden=true;if(!fromPop&&history.state&&history.state.vm){try{history.back()}catch(e){}}}
+$('#vbtn').onclick=openVoice;$('#vmx').onclick=()=>closeVoice();
+$('#vmmute').onclick=()=>{if(!vm.on)return;vm.muted=!vm.muted;if(vm.muted){vmStopEng();vmSetState('muted')}else if(vm.state==='muted'||vm.state==='ready'||vm.state==='error')vmListen()};
+$('#vmskip').onclick=vmSkip;
+$('#vmorb').onclick=()=>{if(!vm.on)return;if(vm.state==='speaking')vmSkip();else if(vm.state==='error'||vm.state==='muted'&&!vm.muted){vm.fails=0;vmListen()}};
+addEventListener('popstate',()=>{if(vm.on)closeVoice(true)});
+document.addEventListener('visibilitychange',()=>{if(!vm.on)return;if(document.hidden){if(vm.state==='listening')vmStopEng()}else if(vm.state==='listening')vmListen()});
 /* ---------- Penampil gambar (ketuk gambar lampiran) ---------- */
 let ivList=[],ivIdx=0,ivOpen=false,ivZoom=false;
 function ivShow(){const a=ivList[ivIdx];if(!a)return;const full=!!a.data;
@@ -957,7 +1090,7 @@ async function gen(c){if(isGen(c))return;if(!user){openAuth();return}
  for(const m of c.msgs)try{await shrinkAtt(m)}catch(e){}
  let mem=buildMem(c,mbud(),true);
  const viewMsg=()=>S.cur===c.id?document.querySelector('#wrap .msg:last-child'):null;
- const draw=()=>{const m=viewMsg(),body=m&&m.querySelector('.body');if(!body)return;if(g.sbase!=null)store.length=g.sbase;
+ const draw=()=>{vmFeed(c,ai,false);const m=viewMsg(),body=m&&m.querySelector('.body');if(!body)return;if(g.sbase!=null)store.length=g.sbase;
   body.innerHTML=thinkHtml(ai,!ai.text)+(md(ai.text)||(ai.think?'':spin()));scrollEnd()};
  draw.g=g;
  const tick=()=>{const m=viewMsg(),lv=m&&m.querySelector('.live');if(!lv)return;const idle=Math.round((Date.now()-g.last)/1000);
@@ -980,6 +1113,7 @@ async function gen(c){if(isGen(c))return;if(!user){openAuth();return}
  S.use.req++;S.use.inp+=uin;S.use.out+=uout;
  gens.delete(c.id);save();renderSide();if(S.cur===c.id)renderChat();else syncSend();
  if(!ai.err)memUpdate(c).catch(()=>{});
+ vmEnd(c,ai,g);
  if(!ai.err&&g.reason!=='stop')notifyDone(c)}
 $('#send').onclick=send;
 const grow=()=>{const t=$('#inp');t.style.height='auto';t.style.height=Math.min(t.scrollHeight,200)+'px'};
@@ -1012,6 +1146,17 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
   <div class="sh">Notifikasi</div>
   <label class="row2"><span>Beri tahu saat AI selesai membalas<small style="display:block;color:var(--mut);font-size:12px">Muncul kalau kamu keluar dari aplikasi. Ketuk notifikasinya untuk langsung membuka chat itu.</small></span><input type="checkbox" id="snot" ${S.set.notif!==false?'checked':''}></label>
   <p class="note" id="snst">Status izin: ${notifState()}</p><button class="btn" id="sntest" style="margin-top:8px">Tes notifikasi</button>
+  <div class="sh">Suara</div>
+  <label style="margin-top:0">Pengenalan suara (ucapanmu)</label>
+  <div class="seg" id="vstt">${[['auto','Otomatis'],['sr','Perangkat'],['rec','Server']].map(x=>`<button data-v="${x[0]}" class="${(S.set.vstt||'auto')===x[0]?'on':''}">${x[1]}</button>`).join('')}</div>
+  <p class="note">Otomatis memakai pengenalan bawaan perangkat. Kalau tidak ada (umum di APK berbasis WebView), pindah ke Server: suaramu direkam lalu dikirim ke server untuk diubah jadi teks.</p>
+  <label>Bahasa bicara</label>
+  <div class="seg" id="vlang">${[['id-ID','Indonesia'],['en-US','English']].map(x=>`<button data-v="${x[0]}" class="${(S.set.vlang||'id-ID')===x[0]?'on':''}">${x[1]}</button>`).join('')}</div>
+  <label>Suara AI</label><select id="vvoice"></select>
+  <label>Kecepatan bicara: <span id="vrv">${(+S.set.vrate||1).toFixed(2)}</span>×</label><input type="range" id="vrate" min="0.7" max="1.6" step="0.05" value="${+S.set.vrate||1}" style="width:100%">
+  <label>Jeda diam sebelum ucapanmu dikirim: <span id="vsv">${((+S.set.vsil||1200)/1000).toFixed(1)}</span> detik</label><input type="range" id="vsil" min="600" max="2500" step="100" value="${+S.set.vsil||1200}" style="width:100%">
+  <label>Model transkripsi (mode Server)</label><input type="text" id="vmodel" value="${esc(S.set.vmodel||'whisper-1')}" placeholder="whisper-1" autocomplete="off" autocapitalize="off" spellcheck="false">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn" id="vtts">Tes suara</button><button class="btn" id="vmic">Tes mikrofon</button></div><p class="note" id="vdiag"></p>
   <div class="sh">Koneksi</div><div class="mi"><span>DattioAI<small>https://bandelbanget.xyz/v1 · API key dibaca server dari environment variable DattioAI</small></span></div>
   <div class="sh">Chat</div><label style="margin-top:0">Model bawaan chat baru</label><button class="sel" id="smod" data-v="${esc(S.set.model)}"><span>${esc(mname(S.set.model)||'Pilih model')}</span>${ic('chev',16)}</button>
   <label>Kreativitas (temperature): <span id="tv">${S.set.temp}</span></label><input type="range" id="stemp" min="0" max="2" step="0.1" value="${S.set.temp}" style="width:100%"><p class="note">Baru dikirim setelah kamu menggeser slider ini. Model yang menolak parameter ini otomatis dilewati.</p>
@@ -1021,7 +1166,25 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
   <div class="sh">Bagikan chat</div><label style="margin-top:0">Alamat web MultiAI (untuk link bagikan chat)</label><input type="text" id="sbase" value="${esc(S.set.shareBase||'')}" placeholder="Kosongkan = otomatis">`;
     $('#sucfx').onchange=e=>{S.set.ucfx=e.target.checked;save();renderModel()};
   $('#snot').onchange=async e=>{S.set.notif=e.target.checked;save();if(e.target.checked){await reqNotif();$('#snst').textContent='Status izin: '+notifState()}};
-  $('#sntest').onclick=async()=>{await reqNotif();$('#snst').textContent='Status izin: '+notifState();const ok=await showNote('MultiAI','AI telah Merespon di chat Contoh. Lihat sekarang!',null,'tes');if(!ok)note('Notifikasi belum bisa tampil. Pastikan izin notifikasi untuk aplikasi ini sudah diberikan.')};$('#stemp').oninput=e=>$('#tv').textContent=e.target.value;$('#sctx').oninput=e=>$('#cv').textContent=e.target.value;$('#stimeout').oninput=e=>$('#tov').textContent=e.target.value;
+  $('#sntest').onclick=async()=>{await reqNotif();$('#snst').textContent='Status izin: '+notifState();const ok=await showNote('MultiAI','AI telah Merespon di chat Contoh. Lihat sekarang!',null,'tes');if(!ok)note('Notifikasi belum bisa tampil. Pastikan izin notifikasi untuk aplikasi ini sudah diberikan.')};
+  const segBind=(id,key)=>{$('#'+id).onclick=e=>{const b=e.target.closest('button');if(!b)return;S.set[key]=b.dataset.v;save();document.querySelectorAll('#'+id+' button').forEach(x=>x.classList.toggle('on',x===b));if(id==='vlang')fillVoices()}};
+  const fillVoices=()=>{const sel=$('#vvoice');if(!sel)return;const all=ttsOK()?speechSynthesis.getVoices():[],pre=(S.set.vlang||'id-ID').slice(0,2).toLowerCase();let list=all.filter(x=>x.lang&&x.lang.toLowerCase().startsWith(pre));if(!list.length)list=all;
+   sel.innerHTML='<option value="">Otomatis</option>'+list.map(x=>`<option value="${esc(x.voiceURI||x.name)}">${esc(x.name)} (${esc(x.lang)})</option>`).join('');sel.value=S.set.vvoice||''};
+  segBind('vstt','vstt');segBind('vlang','vlang');fillVoices();if(ttsOK())speechSynthesis.onvoiceschanged=fillVoices;
+  $('#vvoice').onchange=e=>{S.set.vvoice=e.target.value;save()};
+  $('#vrate').oninput=e=>{S.set.vrate=+e.target.value;$('#vrv').textContent=(+e.target.value).toFixed(2);save()};
+  $('#vsil').oninput=e=>{S.set.vsil=+e.target.value;$('#vsv').textContent=(+e.target.value/1000).toFixed(1);save()};
+  $('#vmodel').onchange=e=>{S.set.vmodel=e.target.value.trim();save()};
+  $('#vtts').onclick=()=>{const d=$('#vdiag');if(!ttsOK()){d.textContent='Suara bawaan tidak tersedia di aplikasi ini.';return}
+   try{speechSynthesis.cancel()}catch(e){}const u=new SpeechSynthesisUtterance('Halo, ini suara AI. Apakah terdengar jelas?'),vo=pickVoice();try{if(vo){u.voice=vo;u.lang=vo.lang}else u.lang=vSet().lang;u.rate=vSet().rate}catch(e){}speechSynthesis.speak(u);d.textContent='Suara: '+(vo?vo.name+' ('+vo.lang+')':'bawaan perangkat')};
+  $('#vmic').onclick=async()=>{const d=$('#vdiag');d.textContent='Memeriksa mikrofon… bicaralah selama 2 detik.';
+   const info='Pengenalan bawaan: '+(SRC?'ada':'tidak ada')+' · Suara AI: '+(ttsOK()?speechSynthesis.getVoices().length+' suara':'tidak ada');
+   try{const st=await navigator.mediaDevices.getUserMedia({audio:true}),AC=window.AudioContext||window.webkitAudioContext,ctx=new AC(),src=ctx.createMediaStreamSource(st),an=ctx.createAnalyser();an.fftSize=1024;src.connect(an);
+    const buf=new Float32Array(an.fftSize);let mx=0;const t0=Date.now();
+    await new Promise(r=>{const iv=setInterval(()=>{an.getFloatTimeDomainData(buf);let sq=0;for(let i=0;i<buf.length;i++)sq+=buf[i]*buf[i];mx=Math.max(mx,Math.sqrt(sq/buf.length));if(Date.now()-t0>2200){clearInterval(iv);r()}},80)});
+    st.getTracks().forEach(t=>t.stop());try{ctx.close()}catch(e){}
+    d.textContent='Mikrofon OK (puncak level '+Math.round(mx*100)+'%'+(mx<.02?', terlalu pelan: coba bicara saat tes':'')+'). '+info}
+   catch(e){d.textContent='Mikrofon gagal: '+(e&&e.name==='NotAllowedError'?'izin ditolak, aktifkan izin mikrofon untuk aplikasi ini.':(e&&e.message)||e)+' · '+info}};$('#stemp').oninput=e=>$('#tv').textContent=e.target.value;$('#sctx').oninput=e=>$('#cv').textContent=e.target.value;$('#stimeout').oninput=e=>$('#tov').textContent=e.target.value;
   $('#smod').onclick=async()=>{const b=$('#smod'),v=await pick({title:'Model bawaan chat baru',value:b.dataset.v,groups:modelGroups().map(g=>({g:g.g,o:g.m.map(id=>({v:id,l:id}))}))});if(v!=null){b.dataset.v=v;b.firstChild.textContent=mname(v)}}}
  else if(tab==='mdl'){const nm=ML().length,nc=(S.set.cus||[]).length,nh=(S.set.hid||[]).length;
   c.innerHTML=`<div class="sh" style="margin-top:0">Daftar model</div><p class="note" style="margin:0 0 10px">${nm} model aktif${nh?' · '+nh+' disembunyikan':''}${nc?' · '+nc+' ditambah manual':''}.${mLoad?' Memuat…':''}${mErr?' <span style="color:var(--err)">'+esc(mErr)+'</span>':''}</p>
@@ -1152,7 +1315,7 @@ $('#artl').addEventListener('click',e=>{const b=e.target.closest('button[data-ar
  else if(k==='dl')dlFile(a.f);
  else if(k==='chat'){S.cur=a.c.id;save();renderAll();$('#artm').classList.remove('on')}
  else{$('#artm').classList.remove('on');openFile(a.f,k==='run'?'p':'c')}});
-const IC={compose:'<path d="M12 3.5H6.5A2.5 2.5 0 0 0 4 6v12a2.5 2.5 0 0 0 2.5 2.5h10a2 2 0 0 0 2-2V14"/><path d="M4 18a2.5 2.5 0 0 1 2.5-2.5H10"/><path d="M7.5 7.5h3M7.5 10.5h2"/><path d="M20.3 3.9a1.7 1.7 0 0 1 0 2.4L12.6 14l-3.2.8.8-3.2 7.7-7.7a1.7 1.7 0 0 1 2.4 0z"/>',files:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>',menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',plus:'<path d="M12 5v14M5 12h14"/>',arrow:'<path d="M12 19V5M5 12l7-7 7 7"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/>',globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3"/>',chev:'<path d="M6 9l6 6 6-6"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',settings:'<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',bolt:'<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/>',expand:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',shrink:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>',check:'<path d="M5 12l5 5 9-10"/>',edit:'<path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"/>',dots:'<circle cx="5" cy="12" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><circle cx="19" cy="12" r="1.7" fill="currentColor"/>',pin:'<path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6zM12 15v6"/>'};
+const IC={mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',micoff:'<path d="M9 9v2a3 3 0 0 0 5.1 2.1M15 10V6a3 3 0 0 0-5.7-1.3M5 11a7 7 0 0 0 11.2 5.6M19 11a7 7 0 0 1-.7 3M12 18v3M3 3l18 18"/>',wave:'<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/>',skip:'<path d="M5 5l9 7-9 7zM18 5v14"/>',compose:'<path d="M12 3.5H6.5A2.5 2.5 0 0 0 4 6v12a2.5 2.5 0 0 0 2.5 2.5h10a2 2 0 0 0 2-2V14"/><path d="M4 18a2.5 2.5 0 0 1 2.5-2.5H10"/><path d="M7.5 7.5h3M7.5 10.5h2"/><path d="M20.3 3.9a1.7 1.7 0 0 1 0 2.4L12.6 14l-3.2.8.8-3.2 7.7-7.7a1.7 1.7 0 0 1 2.4 0z"/>',files:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>',menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',plus:'<path d="M12 5v14M5 12h14"/>',arrow:'<path d="M12 19V5M5 12l7-7 7 7"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/>',globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3"/>',chev:'<path d="M6 9l6 6 6-6"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',settings:'<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',bolt:'<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/>',expand:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',shrink:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>',check:'<path d="M5 12l5 5 9-10"/>',edit:'<path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"/>',dots:'<circle cx="5" cy="12" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><circle cx="19" cy="12" r="1.7" fill="currentColor"/>',pin:'<path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6zM12 15v6"/>'};
 const ic=(n,z=18)=>`<svg class="ic" width="${z}" height="${z}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${IC[n]||''}</svg>`;
 const spin=()=>'<span class="spin" role="status" aria-label="Memuat" style="animation-delay:-'+(Date.now()%1600)+'ms">'+LOGO+'</span>';
 function pick(o){return new Promise(res=>{let h='<div class="sh-t">'+esc(o.title||'')+'</div><div class="sh-l">';
@@ -1291,6 +1454,7 @@ const swipeOpen=(open,dx,dt,W)=>{const pos=Math.max(-W,Math.min(0,(open?0:-W)+dx
 const wb=$('#webb'),syncWeb=()=>wb.classList.toggle('on',!!S.set.web);
 wb.onclick=()=>{S.set.web=!S.set.web;save();syncWeb()};syncWeb();
 $('#msave').addEventListener('click',()=>renderAll());
+$('#vmx').innerHTML=ic('x',22);$('#vmskip').innerHTML=ic('skip',22);vmSetState('ready');
 $('#ivx').innerHTML=ic('x',22);$('#ivp').innerHTML=ic('left',26);$('#ivn').innerHTML=ic('right',26);
 renderAll();tryPending();
 loadModels(true);
