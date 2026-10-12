@@ -349,7 +349,7 @@ const EFF=[['low','Low','Cepat'],['medium','Medium','Seimbang'],['high','High','
 const mname=id=>String(id||'').replace(/^.*\|/,'');
 let S={chats:[],cur:null,set:{key:'',model:'gemini-2.5-flash',temp:0.7,ctx:20,mem:''},use:{req:0,inp:0,out:0,by:{}}};
 try{const r=JSON.parse(localStorage.getItem('chatbotai')||'null');if(r)S=Object.assign(S,r)}catch(e){}
-S.set=Object.assign({alias:{},web:true,persona:true,effort:'medium',hid:[],cus:[],mbud:96},S.set);if(!S.set.webv){S.set.web=true;S.set.webv=1}
+S.set=Object.assign({alias:{},web:true,persona:true,effort:'medium',hid:[],cus:[],mbud:96,notif:true},S.set);if(!S.set.webv){S.set.web=true;S.set.webv=1}
 S.mems=S.mems||[];
 ['key','keys','bases','eps','cmods','cat','map','reals','real','usages','slots'].forEach(k=>{delete S.set[k]});
 if(!S.set.model||/\|/.test(S.set.model))S.set.model='';
@@ -880,8 +880,25 @@ async function memUpdate(c){
 function toParts(m){const p=[];let t=m.text;
  (m.att||[]).forEach(a=>{if(a.kind==='text')t+=`\n\n[File: ${a.name}]\n${a.data}`;else if(a.data)p.push({inlineData:{mimeType:a.mime,data:a.data}})});
  p.unshift({text:t});return p}
+/* ---------- Notifikasi: AI selesai membalas saat aplikasi ditinggalkan ---------- */
+let swReg=null,pendingC=new URLSearchParams(location.search).get('c');
+if('serviceWorker' in navigator){
+ try{navigator.serviceWorker.register('sw.js').then(r=>{swReg=r}).catch(()=>{})}catch(e){}
+ navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.type==='open-chat')openChatById(e.data.id)})}
+const notifOK=()=>typeof Notification!=='undefined';
+function notifState(){if(!notifOK())return 'Tidak didukung di aplikasi ini';return Notification.permission==='granted'?'Diizinkan':Notification.permission==='denied'?'Ditolak (ubah di pengaturan notifikasi aplikasi)':'Belum diizinkan'}
+async function reqNotif(){if(!notifOK()||Notification.permission!=='default')return;try{await Notification.requestPermission()}catch(e){}}
+async function showNote(title,body,id,tag){
+ if(!notifOK()||Notification.permission!=='granted')return false;
+ try{const reg=swReg||(navigator.serviceWorker&&await Promise.race([navigator.serviceWorker.ready,sleep(1500)]));
+  if(reg&&reg.showNotification){await reg.showNotification(title,{body,tag:tag||'multiai',renotify:true,data:{chat:id}});return true}}catch(e){}
+ try{const n=new Notification(title,{body,tag:tag||'multiai'});n.onclick=()=>{try{window.focus()}catch(_){}if(id)openChatById(id);n.close()};return true}catch(e){return false}}
+function notifyDone(c){if(S.set.notif===false||document.visibilityState==='visible')return;showNote('MultiAI','AI telah Merespon di chat '+c.title+'. Lihat sekarang!',c.id,'chat-'+c.id)}
+function openChatById(id){const c=S.chats.find(x=>x.id===id);if(!c)return false;S.cur=id;save();renderAll();$('#side').classList.remove('on');return true}
+function tryPending(){if(pendingC&&S.chats.some(x=>x.id===pendingC)){const id=pendingC;pendingC=null;openChatById(id);try{history.replaceState(null,'',location.pathname+location.hash)}catch(e){}}}
 async function send(){const c0=cur();if(c0&&isGen(c0)){stopGen(c0,'stop');return}
  const txt=$('#inp').value.trim();if(!txt&&!pending.length)return;
+ if(S.set.notif!==false)reqNotif();
  if(!user){openAuth();return}if(needKey())return;
  let c=cur();if(!c){c={id:uid(),title:(txt||pending[0].name).slice(0,40),t:Date.now(),model:S.set.model,msgs:[]};S.chats.push(c);S.cur=c.id}
  c.msgs.push({role:'user',text:txt||'(file terlampir)',att:pending});pending=[];renderPF();$('#inp').value='';grow();
@@ -915,7 +932,8 @@ async function gen(c){if(isGen(c))return;if(!user){openAuth();return}
  let uin=0,uout=0;if(!ai.err){uin=ai.uIn||0;uout=ai.uOut||0}else{delete ai.uIn;delete ai.uOut}
  S.use.req++;S.use.inp+=uin;S.use.out+=uout;
  gens.delete(c.id);save();renderSide();if(S.cur===c.id)renderChat();else syncSend();
- if(!ai.err)memUpdate(c).catch(()=>{})}
+ if(!ai.err)memUpdate(c).catch(()=>{});
+ if(!ai.err&&g.reason!=='stop')notifyDone(c)}
 $('#send').onclick=send;
 const grow=()=>{const t=$('#inp');t.style.height='auto';t.style.height=Math.min(t.scrollHeight,200)+'px'};
 $('#inp').addEventListener('input',grow);
@@ -944,6 +962,9 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
   <label>Penyimpanan lokal: ${(sz/1024).toFixed(1)} KB dari sekitar 5.000 KB · ${tot} pesan</label><div class="bar"><i style="width:${Math.min(100,sz/5120)}%"></i></div>`;
   quotaLoad($('#qbox'));$('#qre').onclick=()=>quotaLoad($('#qbox'))}
  else if(tab==='gen'){c.innerHTML=`<div class="sh" style="margin-top:0">Tampilan</div><label class="row2"><span>Efek visual saat mode Ultracode<small style="display:block;color:var(--mut);font-size:12px">Bingkai berputar, garis bercahaya, dan kilatan saat masuk atau keluar mode. Matikan kalau terasa berat.</small></span><input type="checkbox" id="sucfx" ${S.set.ucfx!==false?'checked':''}></label>
+  <div class="sh">Notifikasi</div>
+  <label class="row2"><span>Beri tahu saat AI selesai membalas<small style="display:block;color:var(--mut);font-size:12px">Muncul kalau kamu keluar dari aplikasi. Ketuk notifikasinya untuk langsung membuka chat itu.</small></span><input type="checkbox" id="snot" ${S.set.notif!==false?'checked':''}></label>
+  <p class="note" id="snst">Status izin: ${notifState()}</p><button class="btn" id="sntest" style="margin-top:8px">Tes notifikasi</button>
   <div class="sh">Koneksi</div><div class="mi"><span>DattioAI<small>https://bandelbanget.xyz/v1 · API key dibaca server dari environment variable DattioAI</small></span></div>
   <div class="sh">Chat</div><label style="margin-top:0">Model bawaan chat baru</label><button class="sel" id="smod" data-v="${esc(S.set.model)}"><span>${esc(mname(S.set.model)||'Pilih model')}</span>${ic('chev',16)}</button>
   <label>Kreativitas (temperature): <span id="tv">${S.set.temp}</span></label><input type="range" id="stemp" min="0" max="2" step="0.1" value="${S.set.temp}" style="width:100%"><p class="note">Baru dikirim setelah kamu menggeser slider ini. Model yang menolak parameter ini otomatis dilewati.</p>
@@ -951,7 +972,9 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
   <label>Batas waktu tanpa respons: <span id="tov">${S.set.timeout||300}</span> detik</label><input type="range" id="stimeout" min="30" max="600" step="10" value="${S.set.timeout||300}" style="width:100%"><p class="note">Kalau server tidak mengirim data sama sekali selama itu, permintaan diulang otomatis (maksimal 2 kali) lalu dihentikan.</p>
   <label class="row2" style="margin-top:16px"><span>AI memperkenalkan diri sesuai nama model yang dipilih</span><input type="checkbox" id="spers" ${S.set.persona?'checked':''}></label>
   <div class="sh">Bagikan chat</div><label style="margin-top:0">Alamat web MultiAI (untuk link bagikan chat)</label><input type="text" id="sbase" value="${esc(S.set.shareBase||'')}" placeholder="Kosongkan = otomatis">`;
-    $('#sucfx').onchange=e=>{S.set.ucfx=e.target.checked;save();renderModel()};$('#stemp').oninput=e=>$('#tv').textContent=e.target.value;$('#sctx').oninput=e=>$('#cv').textContent=e.target.value;$('#stimeout').oninput=e=>$('#tov').textContent=e.target.value;
+    $('#sucfx').onchange=e=>{S.set.ucfx=e.target.checked;save();renderModel()};
+  $('#snot').onchange=async e=>{S.set.notif=e.target.checked;save();if(e.target.checked){await reqNotif();$('#snst').textContent='Status izin: '+notifState()}};
+  $('#sntest').onclick=async()=>{await reqNotif();$('#snst').textContent='Status izin: '+notifState();const ok=await showNote('MultiAI','AI telah Merespon di chat Contoh. Lihat sekarang!',null,'tes');if(!ok)note('Notifikasi belum bisa tampil. Pastikan izin notifikasi untuk aplikasi ini sudah diberikan.')};$('#stemp').oninput=e=>$('#tv').textContent=e.target.value;$('#sctx').oninput=e=>$('#cv').textContent=e.target.value;$('#stimeout').oninput=e=>$('#tov').textContent=e.target.value;
   $('#smod').onclick=async()=>{const b=$('#smod'),v=await pick({title:'Model bawaan chat baru',value:b.dataset.v,groups:modelGroups().map(g=>({g:g.g,o:g.m.map(id=>({v:id,l:id}))}))});if(v!=null){b.dataset.v=v;b.firstChild.textContent=mname(v)}}}
  else if(tab==='mdl'){const nm=ML().length,nc=(S.set.cus||[]).length,nh=(S.set.hid||[]).length;
   c.innerHTML=`<div class="sh" style="margin-top:0">Daftar model</div><p class="note" style="margin:0 0 10px">${nm} model aktif${nh?' · '+nh+' disembunyikan':''}${nc?' · '+nc+' ditambah manual':''}.${mLoad?' Memuat…':''}${mErr?' <span style="color:var(--err)">'+esc(mErr)+'</span>':''}</p>
@@ -1162,7 +1185,7 @@ async function pullSync(merge){if(!sb||!user||(syncT&&!merge)||gens.size)return;
  try{const r=await sb.from('user_state').select('data,version').eq('user_id',user.id).maybeSingle();if(r.error)return;
   if(!r.data){sv=0;await pushSync();return}
   const first=!!merge||S.syncUid!==user.id;if(!first&&r.data.version===sv)return;
-  applyRemote(r.data.data||{},first);sv=r.data.version;S.sv=sv;S.syncUid=user.id;persist();renderAll();
+  applyRemote(r.data.data||{},first);sv=r.data.version;S.sv=sv;S.syncUid=user.id;persist();renderAll();tryPending();
   if(first)queuePush()}catch(e){}}
 async function logout(){if(!await confirmD('Keluar dari akun?'))return;
  try{await pushNow()}catch(_){}try{await sb.auth.signOut()}catch(_){}try{localStorage.removeItem('chatbotai')}catch(_){}location.href='/chat/'}
@@ -1221,7 +1244,7 @@ const swipeOpen=(open,dx,dt,W)=>{const pos=Math.max(-W,Math.min(0,(open?0:-W)+dx
 const wb=$('#webb'),syncWeb=()=>wb.classList.toggle('on',!!S.set.web);
 wb.onclick=()=>{S.set.web=!S.set.web;save();syncWeb()};syncWeb();
 $('#msave').addEventListener('click',()=>renderAll());
-renderAll();
+renderAll();tryPending();
 loadModels(true);
 if(/share=/.test(location.hash))handleShare(location.hash);
 else if(/^\/s\/[A-Za-z0-9_-]{4,16}$/.test(location.pathname))handleShare(location.pathname);
