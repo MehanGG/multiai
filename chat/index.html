@@ -242,6 +242,19 @@ html :where(.qc,.cm,.kb,.us,details.grp){background:var(--panel);border:1px soli
 html .grid{border-radius:12px;border-color:var(--line)}
 html .logo svg{stroke:var(--al)}
 header{position:relative;z-index:20}
+/* penampil gambar */
+.att{display:flex;flex-wrap:wrap;gap:6px}
+.ath{padding:0;border:0;border-radius:10px;overflow:hidden;width:76px;height:76px;background:var(--panel2);cursor:zoom-in;flex-shrink:0}.ath img{width:100%;height:100%;object-fit:cover;display:block}.ath:hover{filter:brightness(1.1)}.ath:active{opacity:.8}
+.pth{width:22px;height:22px;border-radius:4px;object-fit:cover;margin-right:6px;vertical-align:middle}#pf .at{display:inline-flex;align-items:center}
+#ivw{position:fixed;inset:0;z-index:95;background:rgba(3,4,8,.94);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}#ivw[hidden]{display:none}
+.iv-top{position:absolute;top:0;left:0;right:0;z-index:2;display:flex;align-items:center;gap:12px;padding:12px 14px;padding-top:max(12px,env(safe-area-inset-top));color:#e8eaf2;font-size:14px;background:linear-gradient(rgba(0,0,0,.55),transparent)}
+#ivc{font-variant-numeric:tabular-nums;color:#b6bbd0;flex-shrink:0}#ivt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#ivdl,#ivx{height:38px;padding:0 14px;border-radius:99px;background:rgba(255,255,255,.12);color:#fff;justify-content:center;flex-shrink:0}#ivx{width:38px;padding:0}#ivdl:hover,#ivx:hover{background:rgba(255,255,255,.2)}
+#ivs{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:auto;padding:64px 8px 56px;cursor:zoom-in}
+#ivimg{max-width:100%;max-height:100%;object-fit:contain;border-radius:4px;user-select:none;-webkit-user-drag:none}
+#ivs.z{cursor:zoom-out;align-items:flex-start;justify-content:flex-start;touch-action:pan-x pan-y pinch-zoom}#ivs.z #ivimg{max-width:none;max-height:none;width:240%;height:auto}
+.iv-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;justify-content:center}.iv-nav:hover{background:rgba(255,255,255,.22)}#ivp{left:10px}#ivn{right:10px}
+#ivnote{position:absolute;left:0;right:0;bottom:0;z-index:2;text-align:center;font-size:12px;color:#b6bbd0;padding:10px 14px;padding-bottom:max(10px,env(safe-area-inset-bottom));pointer-events:none}
 /* ===== Ultracode: mode berpikir terdalam ===== */
 @property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
 :root{--uc1:#7c5cff;--uc2:#19d3ff;--uc3:#ff4fd8}
@@ -323,6 +336,7 @@ header{padding:8px 12px;gap:6px}#mbtn{max-width:52vw;overflow:hidden}
   <div class="cbody" id="cb"></div>
   <div class="mf"><button class="btn" id="mclose">Tutup</button><button class="btn p" id="msave">Simpan</button></div>
 </div></div>
+<div id="ivw" hidden><div class="iv-top"><span id="ivc"></span><span id="ivt"></span><button id="ivdl">Unduh</button><button id="ivx" aria-label="Tutup"></button></div><div id="ivs"><img id="ivimg" alt=""></div><button class="iv-nav" id="ivp" aria-label="Sebelumnya"></button><button class="iv-nav" id="ivn" aria-label="Berikutnya"></button><div id="ivnote"></div></div>
 <div class="modal" id="artm"><div class="card">
   <h2>Artifact</h2>
   <div class="cbody" id="artbody"><input type="text" id="artq" placeholder="Cari file atau chat…" autocomplete="off"><div id="artl"></div></div>
@@ -355,7 +369,7 @@ S.mems=S.mems||[];
 if(!S.set.model||/\|/.test(S.set.model))S.set.model='';
 if(!S.set.tv2){S.set.timeout=300;S.set.tv2=1}
 S.models=Array.isArray(S.models)?S.models:[];S.mt=S.mt||0;
-const persist=()=>{try{localStorage.setItem('chatbotai',JSON.stringify(S,(k,v)=>k==='data'&&typeof v==='string'&&v.length>2e5?undefined:v))}catch(e){}};
+const persist=()=>{try{localStorage.setItem('chatbotai',JSON.stringify(S,(k,v)=>k==='data'&&typeof v==='string'&&v.length>2e5?undefined:v))}catch(e){try{localStorage.setItem('chatbotai',JSON.stringify(S,(k,v)=>(k==='data'||k==='th')&&typeof v==='string'&&v.length>2e4?undefined:v))}catch(e2){}}};
 const save=()=>{persist();queuePush()};
 const uid=()=>Math.random().toString(36).slice(2,10);
 const cur=()=>S.chats.find(c=>c.id===S.cur);
@@ -454,7 +468,7 @@ function acts(m,i){const c=cur();if(editing===i||(!m.text&&!m.err)||isGenMsg(m))
  const b=(k,t)=>`<button data-act="${k}" data-mi="${i}">${t}</button>`;
  return '<div class="act">'+(m.role==='user'?b('cpu','Salin prompt')+b('edit','Edit')+b('rs','Kirim ulang'):(m.err?'':b('cpa','Salin jawaban'))+(m.cut&&c&&i===c.msgs.length-1?b('ct','Lanjutkan'):'')+b('rg','Ulangi'))+'</div>'}
 function msgHtml(m,i){const a=m.role==='model',gm=a&&isGenMsg(m);
- const at=(m.att||[]).length?`<div class="att">${m.att.map(x=>`<span class="at">${esc(x.name)}</span>`).join('')}</div>`:'';
+ const at=(m.att||[]).length?`<div class="att">${m.att.map((x,k)=>isImgAtt(x)?`<button class="ath" data-vi="${i}" data-vk="${k}" aria-label="Lihat gambar ${esc(x.name)}"><img src="${imgSrc(x,true)}" alt="${esc(x.name)}"></button>`:`<span class="at">${esc(x.name)}</span>`).join('')}</div>`:'';
  return `<div class="msg ${a?'ai':'user'}"><div class="av">${a?'C':'K'}</div><div class="bd"><div class="who">${a?'MultiAI · '+esc(mname(m.model||mdl())):'Kamu'}</div>${at}${gm?'<div class="live"></div>':''}<div class="body">${(!a&&editing===i)?`<textarea class="ed">${esc(m.text)}</textarea><div class="act"><button data-act="save" data-mi="${i}">Simpan &amp; kirim</button><button data-act="cancel" data-mi="${i}">Batal</button></div>`:m.err?`<p class="err">${esc(m.text)}</p>`:thinkHtml(m,gm?!m.text:false)+(md(m.text)||(gm&&!m.think?spin():''))}</div>${m.src&&m.src.length?'<div class="att" style="margin-top:8px">'+m.src.map(s=>`<a class="at" href="${esc(s.u)}" target="_blank" rel="noopener">${esc(s.t)}</a>`).join('')+'</div>':''}${metaHtml(m)}${acts(m,i)}</div></div>`}
 function renderChat(){store=[];const c=cur(),w=$('#wrap');
  if(!c||!c.msgs.length){w.innerHTML=`<div class="empty"><span class="logo big">${LOGO}</span><h1>Halo, ada yang bisa dibantu?</h1><p>Tanya apa saja, atau minta dibuatkan kode yang bisa langsung dijalankan.</p><div class="chips"><button>Buatkan game ular dalam satu file HTML</button><button>Buat landing page kopi yang responsif</button><button>Jelaskan cara kerja closure di JavaScript</button></div></div>`;
@@ -640,11 +654,20 @@ $('#px').onclick=()=>{togFull(false);$('#panel').classList.remove('on');$('#pb')
 
 /* ---------- files ---------- */
 const TXT=/\.(js|ts|jsx|tsx|py|html|css|json|md|txt|csv|java|c|cpp|h|go|rs|php|rb|sh|sql|xml|yml|yaml|kt|swift|ini|log|svg)$/i;
+/* gambar dikecilkan: foto kamera bisa 4-6 MB dan membuat permintaan ditolak hosting (batas ~4,5 MB) */
+const IMGC=/^image\/(jpeg|jpg|png|webp|bmp)$/i;
+function recompress(b64,mime,maxSide,q){return new Promise(res=>{const im=new Image();im.onload=()=>{try{const k=Math.min(1,maxSide/Math.max(im.naturalWidth,im.naturalHeight)),w=Math.max(1,Math.round(im.naturalWidth*k)),h=Math.max(1,Math.round(im.naturalHeight*k)),cv=document.createElement('canvas');cv.width=w;cv.height=h;const x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,h);x.drawImage(im,0,0,w,h);res(cv.toDataURL('image/jpeg',q).split(',')[1])}catch(e){res(null)}};im.onerror=()=>res(null);im.src='data:'+mime+';base64,'+b64})}
+async function shrinkImg(a){if(a.kind!=='bin'||!a.data||!IMGC.test(a.mime||'')||a.data.length<350000)return;
+ for(const [side,q] of [[1600,.8],[1280,.7],[1024,.6]]){const out=await recompress(a.data,a.mime,side,q);if(!out)return;if(out.length<a.data.length){a.data=out;a.mime='image/jpeg'}if(a.data.length<=450000)return}}
+async function thumbImg(a){if(a.kind!=='bin'||!a.data||a.th||!IMGC.test(a.mime||''))return;const out=await recompress(a.data,a.mime,300,.55);if(out)a.th='data:image/jpeg;base64,'+out}
+async function shrinkAtt(m){for(const a of (m.att||[])){await shrinkImg(a);await thumbImg(a)}}
+const isImgAtt=x=>x&&x.kind==='bin'&&/^image\//.test(x.mime||'')&&!!(x.data||x.th);
+const imgSrc=(x,thumb)=>thumb?(x.th||(x.data?'data:'+x.mime+';base64,'+x.data:'')):(x.data?'data:'+x.mime+';base64,'+x.data:(x.th||''));
 function readFile(f){return new Promise(res=>{const r=new FileReader();
  if(f.type.startsWith('text/')||TXT.test(f.name)){r.onload=()=>res({name:f.name,kind:'text',data:r.result});r.readAsText(f)}
- else{r.onload=()=>res({name:f.name,kind:'bin',mime:f.type||'application/octet-stream',data:r.result.split(',')[1]});r.readAsDataURL(f)}})}
+ else{r.onload=async()=>{const a={name:f.name,kind:'bin',mime:f.type||'application/octet-stream',data:r.result.split(',')[1]};try{await shrinkImg(a);await thumbImg(a)}catch(e){}res(a)};r.readAsDataURL(f)}})}
 async function addFiles(fs){for(const f of fs)pending.push(await readFile(f));renderPF()}
-function renderPF(){const p=$('#pf');p.innerHTML='';pending.forEach((a,i)=>{const s=document.createElement('span');s.className='at';s.textContent=a.name;const b=document.createElement('button');b.innerHTML=ic('x',12);b.onclick=()=>{pending.splice(i,1);renderPF()};s.appendChild(b);p.appendChild(s)})}
+function renderPF(){const p=$('#pf');p.innerHTML='';pending.forEach((a,i)=>{const s=document.createElement('span');s.className='at';if(isImgAtt(a)){s.style.cursor='pointer';const im=document.createElement('img');im.className='pth';im.src=imgSrc(a,true);s.appendChild(im);s.onclick=e=>{if(!e.target.closest('button'))openViewer(pending,i)}}s.appendChild(document.createTextNode(a.name));const b=document.createElement('button');b.innerHTML=ic('x',12);b.onclick=()=>{pending.splice(i,1);renderPF()};s.appendChild(b);p.appendChild(s)})}
 $('#attb').onclick=()=>$('#fi').click();$('#fi').onchange=e=>{addFiles([...e.target.files]);e.target.value=''};
 let dc=0;addEventListener('dragenter',e=>{e.preventDefault();dc++;$('#drop').style.display='grid'});
 addEventListener('dragleave',()=>{if(--dc<=0){dc=0;$('#drop').style.display='none'}});
@@ -776,8 +799,11 @@ async function callDattio(model,c,ai,mem,draw){if(Array.isArray(mem))mem={hist:m
    if(ai.text.length>before)fails=0;
    if(g.retry){g.retry=false;g.ac=new AbortController();g.last=Date.now();if(ai.text)seg++;continue}
    if(g.reason||g.dead)throw e;
+   if(c&&e.status===413){
+    if((mem.imgs||0)>100000&&(mem.imgCap||3200000)>100000){const sh=mem.shrunk||0;mem=buildMem(c,mem.bud,true,Math.round((mem.imgCap||3200000)*.5));mem.shrunk=sh;msgs=mk();continue}
+    if(mem.bud>8&&(mem.shrunk||0)<5){const sh=(mem.shrunk||0)+1,ic=mem.imgCap;mem=buildMem(c,Math.round(mem.bud*.55),true,ic);mem.shrunk=sh;msgs=mk();continue}}
    if(c&&mem.bud>8&&(mem.shrunk||0)<5&&(e.status===400||e.status===413||e.status===422)&&/context length|context window|maximum context|context_length|too long|prompt.{0,40}(exceed|too)|exceeds? the|reduce the length|input.{0,20}too/i.test(String(e.message))&&!/max_tokens.{0,30}too large/i.test(String(e.message))){
-    const sh=(mem.shrunk||0)+1;mem=buildMem(c,Math.round(mem.bud*.55),true);mem.shrunk=sh;msgs=mk();continue}
+    const sh=(mem.shrunk||0)+1;mem=buildMem(c,Math.round(mem.bud*.55),true,mem.imgCap);mem.shrunk=sh;msgs=mk();continue}
    if(e.status===400){const msg=String(e.message);
     if(/max_completion_tokens/.test(msg)&&mtName==='max_tokens'){mtName='max_completion_tokens';continue}
     if(/max_tokens|max_completion|too large|context|output/i.test(msg)&&mti<MT.length-1){mti++;continue}
@@ -831,7 +857,7 @@ function memLine(m,lim){let t=m.text||'';
  if(m.role==='model'&&(t.indexOf('```')>=0||/<!doctype html/i.test(t)))t=fences(t).map(sg=>{if(sg.t==='x')return sg.s;const f=fileInfo(sg);return f?'[berkas '+f.name+', '+sg.code.split('\n').length+' baris]':sg.code.slice(0,300)}).join('\n');
  (m.att||[]).forEach(a=>{t+='\n[lampiran: '+a.name+']'});return (m.role==='user'?'[Pengguna] ':'[AI] ')+t.slice(0,lim||3500)}
 /* withPh=true: pesan terakhir di c.msgs adalah placeholder jawaban AI yang sedang dibuat */
-function buildMem(c,bud,withPh=true){
+function buildMem(c,bud,withPh=true,imgCap=3200000){
  bud=Math.max(8,+bud||96);const all=(withPh?c.msgs.slice(0,-1):c.msgs.slice()).filter(m=>!m.err&&(m.text||(m.att&&m.att.length)));
  const latest=new Map();
  all.forEach((m,i)=>{if(m.role==='model'&&m.text)fences(m.text).forEach(sg=>{if(sg.t==='c'){const f=fileInfo(sg);if(f)latest.set(f.name.toLowerCase(),i)}});(m.att||[]).forEach(a=>{if(a.kind==='text'&&a.data)latest.set(String(a.name).toLowerCase(),i)})});
@@ -842,6 +868,8 @@ function buildMem(c,bud,withPh=true){
  const keep=all.slice(start),dropped=all.slice(0,start);
  const hist=keep.map((m,k)=>({role:m.role,parts:toParts(Object.assign({},m,{text:view[start+k]}))}));
  const mb=S.mems.filter(m=>m.on&&m.t==='file'&&m.b64);if(mb.length&&hist.length)hist[0].parts=[{text:'Berkas memori (selalu jadikan konteks):'}].concat(mb.map(m=>({inlineData:{mimeType:m.mime,data:m.b64}})),hist[0].parts);
+ let imgUsed=mb.reduce((n,m)=>n+(m.b64||'').length,0);
+ for(let i=hist.length-1;i>=0;i--){hist[i].parts=hist[i].parts.map(q=>{if(!q.inlineData||!/^image\//.test(q.inlineData.mimeType))return q;const n=q.inlineData.data.length;if(imgUsed+n<=imgCap){imgUsed+=n;return q}return{text:'[gambar tidak dikirim: melewati batas ukuran permintaan]'}})}
  const sys=[];let cutoff=0;
  if(start>0&&keep.length){
   cutoff=c.msgs.indexOf(keep[0]);const sN=c.sumN||0;
@@ -856,7 +884,7 @@ function buildMem(c,bud,withPh=true){
    if(!body)continue;if(body.length>50000)body=body.slice(0,50000)+'\n…(dipotong)';
    if(body.length>room)break;room-=body.length;txt.push('<<<BERKAS '+name+' ('+who+')>>>\n'+body+'\n<<<AKHIR BERKAS>>>')}
   if(txt.length)sys.push('BERKAS DARI BAGIAN PERCAKAPAN YANG SUDAH TIDAK ADA DI RIWAYAT (versi terbaru; rujuk atau ubah dari sini, jangan menulis ulang dari nol):\n'+txt.join('\n\n'))}
- return{hist,sys:sys.join('\n\n'),bud,cutoff,dropped:dropped.length}}
+ return{hist,sys:sys.join('\n\n'),bud,cutoff,dropped:dropped.length,imgs:imgUsed,imgCap}}
 async function summarizeChunk(c,part){
  const model=modelOf(c)||S.set.model;
  const prompt='RINGKASAN SEBELUMNYA:\n'+(c.sum||'(belum ada)')+'\n\nPESAN BARU YANG HARUS DIGABUNG:\n'+part+'\n\nTugas: perbarui ringkasan dengan menggabungkan ringkasan sebelumnya dan pesan baru. Pertahankan secara akurat: tujuan dan permintaan pengguna, keputusan, fakta/angka/nama penting, preferensi (bahasa, gaya, format), nama berkas beserta apa yang sudah dibuat atau diubah di tiap berkas, masalah yang sudah dan belum beres, dan tugas yang belum selesai. Tulis padat dalam poin-poin Bahasa Indonesia, maksimal sekitar 700 kata. Jangan menambah hal yang tidak ada. Keluarkan hanya ringkasannya.';
@@ -880,6 +908,24 @@ async function memUpdate(c){
 function toParts(m){const p=[];let t=m.text;
  (m.att||[]).forEach(a=>{if(a.kind==='text')t+=`\n\n[File: ${a.name}]\n${a.data}`;else if(a.data)p.push({inlineData:{mimeType:a.mime,data:a.data}})});
  p.unshift({text:t});return p}
+/* ---------- Penampil gambar (ketuk gambar lampiran) ---------- */
+let ivList=[],ivIdx=0,ivOpen=false,ivZoom=false;
+function ivShow(){const a=ivList[ivIdx];if(!a)return;const full=!!a.data;
+ $('#ivimg').src=imgSrc(a,false);$('#ivt').textContent=a.name;$('#ivc').textContent=ivList.length>1?(ivIdx+1)+' / '+ivList.length:'';
+ $('#ivp').style.display=$('#ivn').style.display=ivList.length>1?'':'none';
+ $('#ivnote').textContent=full?'':'Versi kecil: gambar asli hanya disimpan selama aplikasi terbuka.';
+ ivZoom=false;$('#ivs').classList.remove('z')}
+function openViewer(list,i){ivList=list.filter(isImgAtt);ivIdx=Math.max(0,ivList.indexOf(list[i]));if(!ivList.length)return;ivOpen=true;$('#ivw').hidden=false;ivShow();try{history.pushState({iv:1},'')}catch(e){}}
+function closeViewer(fromPop){if(!ivOpen)return;ivOpen=false;$('#ivw').hidden=true;$('#ivimg').removeAttribute('src');if(!fromPop&&history.state&&history.state.iv){try{history.back()}catch(e){}}}
+function ivMove(d){if(ivList.length<2)return;ivIdx=(ivIdx+d+ivList.length)%ivList.length;ivShow()}
+$('#ivx').onclick=()=>closeViewer();$('#ivp').onclick=()=>ivMove(-1);$('#ivn').onclick=()=>ivMove(1);
+$('#ivs').onclick=e=>{if(e.target.id==='ivs'){closeViewer();return}ivZoom=!ivZoom;$('#ivs').classList.toggle('z',ivZoom)};
+$('#ivdl').onclick=async()=>{const a=ivList[ivIdx];if(!a)return;try{const b=await (await fetch(imgSrc(a,false))).blob();saveBlob(b,a.name)}catch(e){note('Gagal menyimpan gambar.')}};
+let ivX=null;$('#ivs').addEventListener('touchstart',e=>{ivX=e.touches.length===1?e.touches[0].clientX:null},{passive:true});
+$('#ivs').addEventListener('touchend',e=>{if(ivX==null||ivZoom)return;const dx=e.changedTouches[0].clientX-ivX;ivX=null;if(Math.abs(dx)>60)ivMove(dx<0?1:-1)},{passive:true});
+addEventListener('keydown',e=>{if(!ivOpen)return;if(e.key==='Escape')closeViewer();else if(e.key==='ArrowLeft')ivMove(-1);else if(e.key==='ArrowRight')ivMove(1)});
+addEventListener('popstate',()=>{if(ivOpen)closeViewer(true)});
+$('#wrap').addEventListener('click',e=>{const b=e.target.closest('button.ath');if(!b)return;const c=cur();const m=c&&c.msgs[+b.dataset.vi];if(m&&m.att)openViewer(m.att,+b.dataset.vk)});
 /* ---------- Notifikasi: AI selesai membalas saat aplikasi ditinggalkan ---------- */
 let swReg=null,pendingC=new URLSearchParams(location.search).get('c');
 if('serviceWorker' in navigator){
@@ -908,6 +954,7 @@ async function gen(c){if(isGen(c))return;if(!user){openAuth();return}
  const ai={role:'model',text:'',model:model,t0:Date.now()};c.msgs.push(ai);c.t=Date.now();
  const g={ai,ac:new AbortController(),last:Date.now(),reason:'',rd:null,dead:false,sbase:null,kill:null,retry:false,tries:0};gens.set(c.id,g);
  renderSide();if(S.cur===c.id)renderChat();else syncSend();
+ for(const m of c.msgs)try{await shrinkAtt(m)}catch(e){}
  let mem=buildMem(c,mbud(),true);
  const viewMsg=()=>S.cur===c.id?document.querySelector('#wrap .msg:last-child'):null;
  const draw=()=>{const m=viewMsg(),body=m&&m.querySelector('.body');if(!body)return;if(g.sbase!=null)store.length=g.sbase;
@@ -1244,6 +1291,7 @@ const swipeOpen=(open,dx,dt,W)=>{const pos=Math.max(-W,Math.min(0,(open?0:-W)+dx
 const wb=$('#webb'),syncWeb=()=>wb.classList.toggle('on',!!S.set.web);
 wb.onclick=()=>{S.set.web=!S.set.web;save();syncWeb()};syncWeb();
 $('#msave').addEventListener('click',()=>renderAll());
+$('#ivx').innerHTML=ic('x',22);$('#ivp').innerHTML=ic('left',26);$('#ivn').innerHTML=ic('right',26);
 renderAll();tryPending();
 loadModels(true);
 if(/share=/.test(location.hash))handleShare(location.hash);
