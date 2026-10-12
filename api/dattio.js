@@ -4,7 +4,8 @@
 export const config = { runtime: 'edge' };
 
 const BASE = 'https://bandelbanget.xyz/v1';
-const ALLOWED = new Set(['chat/completions', 'models', 'quota', 'images/generations']);
+// 'audio/transcriptions' dipakai mode suara (mengubah rekaman jadi teks) saat pengenalan suara perangkat tidak ada.
+const ALLOWED = new Set(['chat/completions', 'models', 'quota', 'images/generations', 'audio/transcriptions']);
 const enc = new TextEncoder();
 
 const json = (obj, status = 200) =>
@@ -31,13 +32,21 @@ export default async function handler(req) {
   };
   let wantsStream = false;
   if (isPost) {
-    const body = await req.text();
-    init.headers['Content-Type'] = 'application/json';
-    init.body = body;
-    try { wantsStream = JSON.parse(body).stream === true; } catch (_) {}
+    const ct = req.headers.get('content-type') || '';
+    if (ct.startsWith('multipart/form-data')) {
+      // Unggahan audio: teruskan apa adanya beserta boundary-nya.
+      init.headers['Content-Type'] = ct;
+      init.headers.Accept = 'application/json';
+      init.body = await req.arrayBuffer();
+    } else {
+      const body = await req.text();
+      init.headers['Content-Type'] = 'application/json';
+      init.body = body;
+      try { wantsStream = JSON.parse(body).stream === true; } catch (_) {}
+    }
   }
 
-  // Non-streaming (models, quota, gambar): teruskan apa adanya.
+  // Non-streaming (models, quota, gambar, transkripsi): teruskan apa adanya.
   if (!wantsStream) {
     try {
       const up = await fetch(BASE + '/' + path, init);
