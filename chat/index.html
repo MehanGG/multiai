@@ -1157,6 +1157,12 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
   <label>Jeda diam sebelum ucapanmu dikirim: <span id="vsv">${((+S.set.vsil||1200)/1000).toFixed(1)}</span> detik</label><input type="range" id="vsil" min="600" max="2500" step="100" value="${+S.set.vsil||1200}" style="width:100%">
   <label>Model transkripsi (mode Server)</label><input type="text" id="vmodel" value="${esc(S.set.vmodel||'whisper-1')}" placeholder="whisper-1" autocomplete="off" autocapitalize="off" spellcheck="false">
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn" id="vtts">Tes suara</button><button class="btn" id="vmic">Tes mikrofon</button></div><p class="note" id="vdiag"></p>
+  <div class="sh">Suara server (uji coba)</div>
+  <p class="note" style="margin-top:0">Mengecek apakah server bisa mengubah teks jadi suara lewat jalur audio/speech. Kalau berhasil, suara ini bisa dipakai di mode suara nanti.</p>
+  <label>Model suara server</label><input type="text" id="vtmodel" value="${esc(S.set.vtmodel||'tts-1')}" placeholder="tts-1" autocomplete="off" autocapitalize="off" spellcheck="false">
+  <label>Nama suara</label><input type="text" id="vtvoice" value="${esc(S.set.vtvoice||'alloy')}" placeholder="alloy" autocomplete="off" autocapitalize="off" spellcheck="false">
+  <button class="btn p" id="vsrv" style="margin-top:14px;width:100%">Tes suara server</button>
+  <p class="note" id="vsdiag"></p><audio id="vsaud" controls style="width:100%;margin-top:6px;display:none"></audio>
   <div class="sh">Koneksi</div><div class="mi"><span>DattioAI<small>https://bandelbanget.xyz/v1 · API key dibaca server dari environment variable DattioAI</small></span></div>
   <div class="sh">Chat</div><label style="margin-top:0">Model bawaan chat baru</label><button class="sel" id="smod" data-v="${esc(S.set.model)}"><span>${esc(mname(S.set.model)||'Pilih model')}</span>${ic('chev',16)}</button>
   <label>Kreativitas (temperature): <span id="tv">${S.set.temp}</span></label><input type="range" id="stemp" min="0" max="2" step="0.1" value="${S.set.temp}" style="width:100%"><p class="note">Baru dikirim setelah kamu menggeser slider ini. Model yang menolak parameter ini otomatis dilewati.</p>
@@ -1184,7 +1190,34 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
     await new Promise(r=>{const iv=setInterval(()=>{an.getFloatTimeDomainData(buf);let sq=0;for(let i=0;i<buf.length;i++)sq+=buf[i]*buf[i];mx=Math.max(mx,Math.sqrt(sq/buf.length));if(Date.now()-t0>2200){clearInterval(iv);r()}},80)});
     st.getTracks().forEach(t=>t.stop());try{ctx.close()}catch(e){}
     d.textContent='Mikrofon OK (puncak level '+Math.round(mx*100)+'%'+(mx<.02?', terlalu pelan: coba bicara saat tes':'')+'). '+info}
-   catch(e){d.textContent='Mikrofon gagal: '+(e&&e.name==='NotAllowedError'?'izin ditolak, aktifkan izin mikrofon untuk aplikasi ini.':(e&&e.message)||e)+' · '+info}};$('#stemp').oninput=e=>$('#tv').textContent=e.target.value;$('#sctx').oninput=e=>$('#cv').textContent=e.target.value;$('#stimeout').oninput=e=>$('#tov').textContent=e.target.value;
+   catch(e){d.textContent='Mikrofon gagal: '+(e&&e.name==='NotAllowedError'?'izin ditolak, aktifkan izin mikrofon untuk aplikasi ini.':(e&&e.message)||e)+' · '+info}};
+  $('#vtmodel').onchange=e=>{S.set.vtmodel=e.target.value.trim();save()};$('#vtvoice').onchange=e=>{S.set.vtvoice=e.target.value.trim();save()};
+  $('#vsrv').onclick=async()=>{
+   const d=$('#vsdiag'),au=$('#vsaud'),btn=$('#vsrv'),model=($('#vtmodel').value.trim()||'tts-1'),voice=($('#vtvoice').value.trim()||'alloy');
+   S.set.vtmodel=model;S.set.vtvoice=voice;save();au.style.display='none';try{au.pause()}catch(e){}
+   const cand=S.models.map(m=>m.id).filter(id=>/tts|speech|audio|voice|suara/i.test(id));
+   const hint=cand.length?' Model di server yang mirip suara: '+cand.slice(0,8).join(', ')+'.':'';
+   d.style.color='';d.textContent='Mengirim permintaan ke server…';btn.disabled=true;const t0=Date.now();
+   try{
+    const r=await dfetch('audio/speech',{method:'POST',headers:{'Content-Type':'application/json',Accept:'audio/*,*/*'},body:JSON.stringify({model,voice,input:'Halo, ini tes suara dari server. Apakah terdengar jelas?',response_format:'mp3'})});
+    const ct=(r.headers.get('content-type')||'').toLowerCase();
+    if(!r.ok){let m='';try{m=(await r.text()).slice(0,200)}catch(e){}
+     let why='Server membalas dengan error '+r.status+'.';
+     if(/path tidak diizinkan/i.test(m))why='Jalur audio/speech belum diizinkan di server aplikasimu. Ganti dattio.js dengan versi terbaru.';
+     else if(r.status===404)why='Server tidak punya jalur audio/speech, atau model "'+model+'" tidak ditemukan.';
+     else if(r.status===401||r.status===403)why='Server menolak akses ke suara (API key tidak punya izin).';
+     else if(r.status===400)why='Server menolak permintaannya (model atau nama suara mungkin salah).';
+     else if(r.status>=500)why='Server sedang bermasalah ('+r.status+').';
+     d.style.color='var(--err)';d.textContent='Gagal: '+why+(m?' ('+m.replace(/\s+/g,' ').slice(0,140)+')':'')+hint;return}
+    const buf=await r.blob();
+    if(!/^audio\//.test(ct)&&!/octet-stream/.test(ct)){let m='';try{m=(await buf.text()).slice(0,160)}catch(e){}
+     d.style.color='var(--err)';d.textContent='Server membalas, tapi isinya bukan audio ('+(ct||'tipe tidak diketahui')+'): '+m.replace(/\s+/g,' ')+hint;return}
+    if(buf.size<200){d.style.color='var(--err)';d.textContent='Server membalas audio yang kosong ('+buf.size+' byte).'+hint;return}
+    d.textContent='Berhasil: server mengirim audio '+(ct.split(';')[0]||'audio')+' sebesar '+Math.round(buf.size/1024)+' KB dalam '+((Date.now()-t0)/1000).toFixed(1)+' detik. Memutar…';
+    au.src=URL.createObjectURL(buf);au.style.display='block';
+    try{await au.play();d.textContent+=' Kalau terdengar jelas, suara server bisa dipakai.'}catch(e){d.textContent='Berhasil: audio '+Math.round(buf.size/1024)+' KB diterima. Tekan tombol putar di bawah untuk mendengarnya.'}
+   }catch(e){d.style.color='var(--err)';d.textContent='Gagal menghubungi server: '+String(e&&e.message||e).slice(0,160)}
+   finally{btn.disabled=false}};$('#stemp').oninput=e=>$('#tv').textContent=e.target.value;$('#sctx').oninput=e=>$('#cv').textContent=e.target.value;$('#stimeout').oninput=e=>$('#tov').textContent=e.target.value;
   $('#smod').onclick=async()=>{const b=$('#smod'),v=await pick({title:'Model bawaan chat baru',value:b.dataset.v,groups:modelGroups().map(g=>({g:g.g,o:g.m.map(id=>({v:id,l:id}))}))});if(v!=null){b.dataset.v=v;b.firstChild.textContent=mname(v)}}}
  else if(tab==='mdl'){const nm=ML().length,nc=(S.set.cus||[]).length,nh=(S.set.hid||[]).length;
   c.innerHTML=`<div class="sh" style="margin-top:0">Daftar model</div><p class="note" style="margin:0 0 10px">${nm} model aktif${nh?' · '+nh+' disembunyikan':''}${nc?' · '+nc+' ditambah manual':''}.${mLoad?' Memuat…':''}${mErr?' <span style="color:var(--err)">'+esc(mErr)+'</span>':''}</p>
