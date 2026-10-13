@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>MultiAI</title>
+<script>if(/^\/artifact\//.test(location.pathname)||/artifact=/.test(location.hash))document.documentElement.classList.add('artmode')</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%201024%201024%22%3E%3Crect%20width%3D%221024%22%20height%3D%221024%22%20rx%3D%22220%22%20fill%3D%22%23000%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2256%22%3E%3Cg%20transform%3D%22translate%28512%20512%29%20scale%28.8%29%22%3E%3Cellipse%20rx%3D%22490%22%20ry%3D%2268%22/%3E%3Cellipse%20rx%3D%22435%22%20ry%3D%2262%22%20transform%3D%22rotate%2890%29%22/%3E%3Cellipse%20rx%3D%22445%22%20ry%3D%2262%22%20transform%3D%22rotate%28-46%29%22/%3E%3Cellipse%20rx%3D%22375%22%20ry%3D%2262%22%20transform%3D%22rotate%2852%29%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E">
 <style>
 /* MultiAI — Modern Dark. Efek Ultracode ada di blok bawah. */
@@ -274,6 +275,11 @@ select{width:100%;background:var(--bg);color:var(--tx);border:1px solid var(--li
 @keyframes vmring{0%{transform:scale(.8);opacity:.7}100%{transform:scale(1.55);opacity:0}}@keyframes vmspeak{from{transform:scale(.94)}to{transform:scale(1.12)}}@keyframes vmspin{to{transform:rotate(360deg)}}
 #vmst{font-size:18px;font-weight:600}#vmtx{font-size:17px;line-height:1.45;min-height:26px;max-width:520px;max-height:30vh;overflow:auto}#vmai{font-size:15px;color:var(--mut);line-height:1.45;max-width:520px;max-height:22vh;overflow:auto}#vmerr{font-size:13px;color:var(--err);max-width:420px}
 .vm-bot{display:flex;justify-content:center;gap:22px;padding:16px;padding-bottom:max(28px,env(safe-area-inset-bottom))}
+/* halaman artifact yang dibagikan */
+#artft{display:none;position:fixed;right:12px;bottom:12px;z-index:160;padding:7px 12px;border-radius:99px;background:rgba(14,16,21,.82);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid var(--line);color:var(--mut);font-size:12.5px;text-decoration:none}#artft:hover{color:var(--tx)}
+html.artmode #side,html.artmode #main,html.artmode .modal,html.artmode .ov,html.artmode #vmode,html.artmode #ivw{display:none!important}
+html.artmode #panel{position:fixed;inset:0;width:100%!important;z-index:150;border:0}
+html.artmode :is(#px,#pfull,#pshare){display:none!important}html.artmode #artft{display:block}
 /* ===== Ultracode: mode berpikir terdalam ===== */
 @property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
 :root{--uc1:#7c5cff;--uc2:#19d3ff;--uc3:#ff4fd8}
@@ -345,9 +351,10 @@ header{padding:8px 12px;gap:6px}#mbtn{max-width:52vw;overflow:hidden}
   </div>
 </div>
 <aside id="panel">
-  <div class="ph"><b id="pt">File</b><button id="tp">Preview</button><button id="tc">Kode</button><button id="pcopy">Salin</button><button id="ppng">PNG</button><button id="pdl">Unduh</button><button id="ptab">Tab baru</button><button id="pfull" title="Layar penuh" aria-label="Layar penuh"><span class="i" data-ic="expand" data-s="16"></span></button><button id="px" aria-label="Tutup"><span class="i" data-ic="x" data-s="16"></span></button></div>
+  <div class="ph"><b id="pt">File</b><button id="tp">Preview</button><button id="tc">Kode</button><button id="pcopy">Salin</button><button id="ppng">PNG</button><button id="pdl">Unduh</button><button id="ptab">Tab baru</button><button id="pfull" title="Layar penuh" aria-label="Layar penuh"><span class="i" data-ic="expand" data-s="16"></span></button><button id="pshare">Bagikan</button><button id="px" aria-label="Tutup"><span class="i" data-ic="x" data-s="16"></span></button></div>
   <div id="pb"></div>
 </aside>
+<a id="artft" href="/chat/">Dibuat dengan MultiAI</a>
 <input type="file" id="fi" multiple hidden>
 <div id="drop">Lepas file di sini</div>
 <div class="modal" id="modal"><div class="card">
@@ -459,7 +466,7 @@ function md(t){let o='';fences(t).forEach(sg=>{
   const unclosed=!sg.closed;const idx=store.push({lang,code,name,open:unclosed})-1;
   if(head[1]||DOCK.includes(lang)||lang==='html'||lang==='svg'||code.split('\n').length>12){
    const k=KL[lang]||['Kode',(lang||'txt').toUpperCase(),'#6b7194'];const ext=(name.split('.').pop()||'').toUpperCase().slice(0,4);
-   o+=`<div class="fc" data-i="${idx}"><div class="fi" style="background:${k[2]}">${DOCK.includes(lang)||lang==='csv'?ext:'&lt;/&gt;'}</div><div style="min-width:0;flex:1"><div class="fn">${esc(name)}</div><div class="fs">${k[0]} · ${k[1]}${unclosed?' · menulis…':''}</div>${unclosed?'':`<div class="fa">${PV.includes(lang)?`<button data-a="run" data-i="${idx}">Preview</button>`:''}<button data-a="open" data-i="${idx}">Kode</button><button data-a="copy" data-i="${idx}">Salin</button><button data-a="dl" data-i="${idx}">Unduh</button></div>`}</div></div>`}
+   o+=`<div class="fc" data-i="${idx}"><div class="fi" style="background:${k[2]}">${DOCK.includes(lang)||lang==='csv'?ext:'&lt;/&gt;'}</div><div style="min-width:0;flex:1"><div class="fn">${esc(name)}</div><div class="fs">${k[0]} · ${k[1]}${unclosed?' · menulis…':''}</div>${unclosed?'':`<div class="fa">${PV.includes(lang)?`<button data-a="run" data-i="${idx}">Preview</button>`:''}<button data-a="open" data-i="${idx}">Kode</button><button data-a="copy" data-i="${idx}">Salin</button><button data-a="dl" data-i="${idx}">Unduh</button>${IMGK.includes(lang)?'':`<button data-a="share" data-i="${idx}">Bagikan</button>`}</div>`}</div></div>`}
   else o+=`<div class="cb"><div class="ch"><b>${esc(lang)}</b><button data-a="copy" data-i="${idx}">Salin</button><button data-a="dl" data-i="${idx}">Unduh</button></div><pre>${esc(code)}</pre></div>`}
  else o+=blocks(sg.s)});return o}
 /* ---------- render ---------- */
@@ -669,10 +676,11 @@ function drawPanel(){const web=PV.includes(pf.lang),html=pf.lang==='html'||pf.la
  else{pb.innerHTML='<pre></pre>';pb.firstChild.textContent=pf.code}}
 $('#wrap').addEventListener('click',e=>{const b=e.target.closest('button[data-a]');if(!b)return;const i=+b.dataset.i,c=store[i],a=b.dataset.a;
  if(a==='run')openPanel(i,'p');else if(a==='open')openPanel(i,'c');
- else if(a==='copy'){copy(c.code);b.textContent='Tersalin';setTimeout(()=>b.textContent='Salin',1200)}else if(a==='dl')dlFile(c)});
+ else if(a==='copy'){copy(c.code);b.textContent='Tersalin';setTimeout(()=>b.textContent='Salin',1200)}else if(a==='dl')dlFile(c);else if(a==='share')shareArtifact(c)});
 $('#tp').onclick=()=>{pmode='p';drawPanel()};$('#tc').onclick=()=>{pmode='c';drawPanel()};
 $('#pcopy').onclick=e=>{copy(pf.code);e.target.textContent='Tersalin';setTimeout(()=>e.target.textContent='Salin',1200)};
 $('#pdl').onclick=()=>dlFile(pf);
+$('#pshare').onclick=()=>{if(pf)shareArtifact(pf)};
 $('#ppng').onclick=()=>dlFile({lang:'png',code:pf.code,name:pf.name.replace(/\.\w+$/,'')+'.png'});
 $('#ptab').onclick=()=>{const u=URL.createObjectURL(new Blob([pf.code],{type:'text/html'}));window.open(u,'_blank')};
 $('#px').onclick=()=>{togFull(false);$('#panel').classList.remove('on');$('#pb').innerHTML=''};
@@ -1062,7 +1070,7 @@ $('#wrap').addEventListener('click',e=>{const b=e.target.closest('button.ath');i
 /* ---------- Notifikasi: AI selesai membalas saat aplikasi ditinggalkan ---------- */
 let swReg=null,pendingC=new URLSearchParams(location.search).get('c');
 if('serviceWorker' in navigator){
- try{navigator.serviceWorker.register('sw.js').then(r=>{swReg=r}).catch(()=>{})}catch(e){}
+ try{if(!document.documentElement.classList.contains('artmode'))navigator.serviceWorker.register('sw.js').then(r=>{swReg=r}).catch(()=>{})}catch(e){}
  navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.type==='open-chat')openChatById(e.data.id)})}
 const notifOK=()=>typeof Notification!=='undefined';
 function notifState(){if(!notifOK())return 'Tidak didukung di aplikasi ini';return Notification.permission==='granted'?'Diizinkan':Notification.permission==='denied'?'Ditolak (ubah di pengaturan notifikasi aplikasi)':'Belum diizinkan'}
@@ -1157,12 +1165,6 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
   <label>Jeda diam sebelum ucapanmu dikirim: <span id="vsv">${((+S.set.vsil||1200)/1000).toFixed(1)}</span> detik</label><input type="range" id="vsil" min="600" max="2500" step="100" value="${+S.set.vsil||1200}" style="width:100%">
   <label>Model transkripsi (mode Server)</label><input type="text" id="vmodel" value="${esc(S.set.vmodel||'whisper-1')}" placeholder="whisper-1" autocomplete="off" autocapitalize="off" spellcheck="false">
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn" id="vtts">Tes suara</button><button class="btn" id="vmic">Tes mikrofon</button></div><p class="note" id="vdiag"></p>
-  <div class="sh">Suara server (uji coba)</div>
-  <p class="note" style="margin-top:0">Mengecek apakah server bisa mengubah teks jadi suara lewat jalur audio/speech. Kalau berhasil, suara ini bisa dipakai di mode suara nanti.</p>
-  <label>Model suara server</label><input type="text" id="vtmodel" value="${esc(S.set.vtmodel||'tts-1')}" placeholder="tts-1" autocomplete="off" autocapitalize="off" spellcheck="false">
-  <label>Nama suara</label><input type="text" id="vtvoice" value="${esc(S.set.vtvoice||'alloy')}" placeholder="alloy" autocomplete="off" autocapitalize="off" spellcheck="false">
-  <button class="btn p" id="vsrv" style="margin-top:14px;width:100%">Tes suara server</button>
-  <p class="note" id="vsdiag"></p><audio id="vsaud" controls style="width:100%;margin-top:6px;display:none"></audio>
   <div class="sh">Koneksi</div><div class="mi"><span>DattioAI<small>https://bandelbanget.xyz/v1 · API key dibaca server dari environment variable DattioAI</small></span></div>
   <div class="sh">Chat</div><label style="margin-top:0">Model bawaan chat baru</label><button class="sel" id="smod" data-v="${esc(S.set.model)}"><span>${esc(mname(S.set.model)||'Pilih model')}</span>${ic('chev',16)}</button>
   <label>Kreativitas (temperature): <span id="tv">${S.set.temp}</span></label><input type="range" id="stemp" min="0" max="2" step="0.1" value="${S.set.temp}" style="width:100%"><p class="note">Baru dikirim setelah kamu menggeser slider ini. Model yang menolak parameter ini otomatis dilewati.</p>
@@ -1190,34 +1192,7 @@ function drawTab(){document.querySelectorAll('.tabs button').forEach(b=>b.classL
     await new Promise(r=>{const iv=setInterval(()=>{an.getFloatTimeDomainData(buf);let sq=0;for(let i=0;i<buf.length;i++)sq+=buf[i]*buf[i];mx=Math.max(mx,Math.sqrt(sq/buf.length));if(Date.now()-t0>2200){clearInterval(iv);r()}},80)});
     st.getTracks().forEach(t=>t.stop());try{ctx.close()}catch(e){}
     d.textContent='Mikrofon OK (puncak level '+Math.round(mx*100)+'%'+(mx<.02?', terlalu pelan: coba bicara saat tes':'')+'). '+info}
-   catch(e){d.textContent='Mikrofon gagal: '+(e&&e.name==='NotAllowedError'?'izin ditolak, aktifkan izin mikrofon untuk aplikasi ini.':(e&&e.message)||e)+' · '+info}};
-  $('#vtmodel').onchange=e=>{S.set.vtmodel=e.target.value.trim();save()};$('#vtvoice').onchange=e=>{S.set.vtvoice=e.target.value.trim();save()};
-  $('#vsrv').onclick=async()=>{
-   const d=$('#vsdiag'),au=$('#vsaud'),btn=$('#vsrv'),model=($('#vtmodel').value.trim()||'tts-1'),voice=($('#vtvoice').value.trim()||'alloy');
-   S.set.vtmodel=model;S.set.vtvoice=voice;save();au.style.display='none';try{au.pause()}catch(e){}
-   const cand=S.models.map(m=>m.id).filter(id=>/tts|speech|audio|voice|suara/i.test(id));
-   const hint=cand.length?' Model di server yang mirip suara: '+cand.slice(0,8).join(', ')+'.':'';
-   d.style.color='';d.textContent='Mengirim permintaan ke server…';btn.disabled=true;const t0=Date.now();
-   try{
-    const r=await dfetch('audio/speech',{method:'POST',headers:{'Content-Type':'application/json',Accept:'audio/*,*/*'},body:JSON.stringify({model,voice,input:'Halo, ini tes suara dari server. Apakah terdengar jelas?',response_format:'mp3'})});
-    const ct=(r.headers.get('content-type')||'').toLowerCase();
-    if(!r.ok){let m='';try{m=(await r.text()).slice(0,200)}catch(e){}
-     let why='Server membalas dengan error '+r.status+'.';
-     if(/path tidak diizinkan/i.test(m))why='Jalur audio/speech belum diizinkan di server aplikasimu. Ganti dattio.js dengan versi terbaru.';
-     else if(r.status===404)why='Server tidak punya jalur audio/speech, atau model "'+model+'" tidak ditemukan.';
-     else if(r.status===401||r.status===403)why='Server menolak akses ke suara (API key tidak punya izin).';
-     else if(r.status===400)why='Server menolak permintaannya (model atau nama suara mungkin salah).';
-     else if(r.status>=500)why='Server sedang bermasalah ('+r.status+').';
-     d.style.color='var(--err)';d.textContent='Gagal: '+why+(m?' ('+m.replace(/\s+/g,' ').slice(0,140)+')':'')+hint;return}
-    const buf=await r.blob();
-    if(!/^audio\//.test(ct)&&!/octet-stream/.test(ct)){let m='';try{m=(await buf.text()).slice(0,160)}catch(e){}
-     d.style.color='var(--err)';d.textContent='Server membalas, tapi isinya bukan audio ('+(ct||'tipe tidak diketahui')+'): '+m.replace(/\s+/g,' ')+hint;return}
-    if(buf.size<200){d.style.color='var(--err)';d.textContent='Server membalas audio yang kosong ('+buf.size+' byte).'+hint;return}
-    d.textContent='Berhasil: server mengirim audio '+(ct.split(';')[0]||'audio')+' sebesar '+Math.round(buf.size/1024)+' KB dalam '+((Date.now()-t0)/1000).toFixed(1)+' detik. Memutar…';
-    au.src=URL.createObjectURL(buf);au.style.display='block';
-    try{await au.play();d.textContent+=' Kalau terdengar jelas, suara server bisa dipakai.'}catch(e){d.textContent='Berhasil: audio '+Math.round(buf.size/1024)+' KB diterima. Tekan tombol putar di bawah untuk mendengarnya.'}
-   }catch(e){d.style.color='var(--err)';d.textContent='Gagal menghubungi server: '+String(e&&e.message||e).slice(0,160)}
-   finally{btn.disabled=false}};$('#stemp').oninput=e=>$('#tv').textContent=e.target.value;$('#sctx').oninput=e=>$('#cv').textContent=e.target.value;$('#stimeout').oninput=e=>$('#tov').textContent=e.target.value;
+   catch(e){d.textContent='Mikrofon gagal: '+(e&&e.name==='NotAllowedError'?'izin ditolak, aktifkan izin mikrofon untuk aplikasi ini.':(e&&e.message)||e)+' · '+info}};$('#stemp').oninput=e=>$('#tv').textContent=e.target.value;$('#sctx').oninput=e=>$('#cv').textContent=e.target.value;$('#stimeout').oninput=e=>$('#tov').textContent=e.target.value;
   $('#smod').onclick=async()=>{const b=$('#smod'),v=await pick({title:'Model bawaan chat baru',value:b.dataset.v,groups:modelGroups().map(g=>({g:g.g,o:g.m.map(id=>({v:id,l:id}))}))});if(v!=null){b.dataset.v=v;b.firstChild.textContent=mname(v)}}}
  else if(tab==='mdl'){const nm=ML().length,nc=(S.set.cus||[]).length,nh=(S.set.hid||[]).length;
   c.innerHTML=`<div class="sh" style="margin-top:0">Daftar model</div><p class="note" style="margin:0 0 10px">${nm} model aktif${nh?' · '+nh+' disembunyikan':''}${nc?' · '+nc+' ditambah manual':''}.${mLoad?' Memuat…':''}${mErr?' <span style="color:var(--err)">'+esc(mErr)+'</span>':''}</p>
@@ -1338,7 +1313,7 @@ let artItems=[];
 function artDraw(){const q=($('#artq').value||'').trim().toLowerCase();
  artItems=allArts().filter(a=>!q||(a.f.name+' '+a.c.title+' '+a.f.lang).toLowerCase().includes(q));
  $('#artl').innerHTML=artItems.length?artItems.map((a,k)=>{const f=a.f,kk=KL[f.lang]||['Kode',(f.lang||'txt').toUpperCase(),'#6b7194'],ext=(f.name.split('.').pop()||'').toUpperCase().slice(0,4),d=new Date(a.t).toLocaleDateString('id-ID',{day:'numeric',month:'short'});
-  return `<div class="ar"><div class="fi" style="background:${kk[2]}">${DOCK.includes(f.lang)||f.lang==='csv'?ext:'&lt;/&gt;'}</div><div class="am"><div class="fn">${esc(f.name)}</div><div class="fs">${kk[0]} · ${kk[1]} · ${esc(a.c.title)} · ${d}</div><div class="fa">${PV.includes(f.lang)?`<button data-ar="run" data-k="${k}">Preview</button>`:''}<button data-ar="open" data-k="${k}">Kode</button><button data-ar="copy" data-k="${k}">Salin</button><button data-ar="dl" data-k="${k}">Unduh</button><button data-ar="chat" data-k="${k}">Buka chat</button></div></div></div>`}).join('')
+  return `<div class="ar"><div class="fi" style="background:${kk[2]}">${DOCK.includes(f.lang)||f.lang==='csv'?ext:'&lt;/&gt;'}</div><div class="am"><div class="fn">${esc(f.name)}</div><div class="fs">${kk[0]} · ${kk[1]} · ${esc(a.c.title)} · ${d}</div><div class="fa">${PV.includes(f.lang)?`<button data-ar="run" data-k="${k}">Preview</button>`:''}<button data-ar="open" data-k="${k}">Kode</button><button data-ar="copy" data-k="${k}">Salin</button><button data-ar="dl" data-k="${k}">Unduh</button>${IMGK.includes(f.lang)?'':`<button data-ar="share" data-k="${k}">Bagikan</button>`}<button data-ar="chat" data-k="${k}">Buka chat</button></div></div></div>`}).join('')
   :`<p class="note" style="padding:18px 0">${q?'Tidak ada file yang cocok.':'Belum ada file. File yang dibuat AI akan muncul di sini.'}</p>`}
 function openArt(){$('#side').classList.remove('on');$('#artq').value='';artDraw();$('#artm').classList.add('on')}
 $('#artb').onclick=openArt;$('#artx').onclick=()=>$('#artm').classList.remove('on');
@@ -1346,6 +1321,7 @@ $('#artm').onclick=e=>{if(e.target.id==='artm')$('#artm').classList.remove('on')
 $('#artl').addEventListener('click',e=>{const b=e.target.closest('button[data-ar]');if(!b)return;const a=artItems[+b.dataset.k];if(!a)return;const k=b.dataset.ar;
  if(k==='copy'){copy(a.f.code);b.textContent='Tersalin';setTimeout(()=>b.textContent='Salin',1200)}
  else if(k==='dl')dlFile(a.f);
+ else if(k==='share')shareArtifact(a.f);
  else if(k==='chat'){S.cur=a.c.id;save();renderAll();$('#artm').classList.remove('on')}
  else{$('#artm').classList.remove('on');openFile(a.f,k==='run'?'p':'c')}});
 const IC={mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',micoff:'<path d="M9 9v2a3 3 0 0 0 5.1 2.1M15 10V6a3 3 0 0 0-5.7-1.3M5 11a7 7 0 0 0 11.2 5.6M19 11a7 7 0 0 1-.7 3M12 18v3M3 3l18 18"/>',wave:'<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/>',skip:'<path d="M5 5l9 7-9 7zM18 5v14"/>',compose:'<path d="M12 3.5H6.5A2.5 2.5 0 0 0 4 6v12a2.5 2.5 0 0 0 2.5 2.5h10a2 2 0 0 0 2-2V14"/><path d="M4 18a2.5 2.5 0 0 1 2.5-2.5H10"/><path d="M7.5 7.5h3M7.5 10.5h2"/><path d="M20.3 3.9a1.7 1.7 0 0 1 0 2.4L12.6 14l-3.2.8.8-3.2 7.7-7.7a1.7 1.7 0 0 1 2.4 0z"/>',files:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>',menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',plus:'<path d="M12 5v14M5 12h14"/>',arrow:'<path d="M12 19V5M5 12l7-7 7 7"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/>',globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3"/>',chev:'<path d="M6 9l6 6 6-6"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',settings:'<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',bolt:'<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/>',expand:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',shrink:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>',check:'<path d="M5 12l5 5 9-10"/>',edit:'<path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"/>',dots:'<circle cx="5" cy="12" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><circle cx="19" cy="12" r="1.7" fill="currentColor"/>',pin:'<path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6zM12 15v6"/>'};
@@ -1397,8 +1373,31 @@ async function shareChat(c){if(!c.msgs.length){note('Chat ini masih kosong.');re
   else if(navigator.share){try{await navigator.share({title:c.title,text:'Chat "'+c.title+'" dari MultiAI',url:link})}catch(_){}}
   else{await copy(link);b.textContent='Tersalin';setTimeout(()=>b.textContent='Bagikan',1200)}};
  $('#dlgw').onclick=e=>{if(e.target.id==='dlgw')$('#dlgw').classList.remove('on')}}
+/* ---------- bagikan artifact (hanya filenya, bukan chat) ---------- */
+const AM=(location.pathname.match(/^\/artifact\/([A-Za-z0-9_-]{4,40})\/?$/)||[])[1]||null,AH=(location.hash.match(/artifact=([A-Za-z0-9_.\-]+)/)||[])[1]||null;
+async function shareArtifact(f){
+ if(!f||!f.code||IMGK.includes(f.lang)){note('File jenis ini belum bisa dibagikan.');return}
+ $('#dlg').innerHTML='<div class="dm">'+spin()+'</div>';$('#dlgw').classList.add('on');
+ const pl=await pack({v:1,a:1,n:f.name,l:f.lang,c:f.code});let link='',short=false,err='';
+ try{const r=await fetch(shareOrigin()+'/api/share',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({d:pl})});
+  if(r.ok){const j=await r.json();if(j.id){link=shareOrigin()+'/artifact/'+j.id;short=true}}else err='server menolak ('+r.status+')'}catch(e){err='tidak bisa menghubungi server'}
+ if(!link)link=shareBase()+'#artifact='+pl;
+ $('#dlg').innerHTML=`<div class="dm"><b>Bagikan artifact</b><div class="note" style="margin-top:2px">${esc(f.name)}</div></div><textarea class="lk" readonly rows="3">${link}</textarea><p class="note">${short?'Link ini hanya menampilkan file ini, bukan chat-nya. Tersimpan di server dan berlaku 30 hari. ':'Server belum bisa menyimpan'+(err?' ('+esc(err)+')':'')+', jadi link-nya panjang ('+link.length+' karakter) dan berisi seluruh file; bisa terpotong di aplikasi chat tertentu. '}Siapa pun yang punya link bisa melihat dan menyalin file ini.</p><div class="dbt"><button class="btn" data-k="c">Salin</button><button class="btn p" data-k="s">Bagikan</button></div>`;
+ $('#dlgw').classList.add('on');
+ $('#dlg').onclick=async e=>{const b=e.target.closest('button[data-k]');if(!b)return;
+  if(b.dataset.k==='c'){await copy(link);b.textContent='Tersalin';setTimeout(()=>b.textContent='Salin',1200)}
+  else if(window.Android&&window.Android.share)window.Android.share('File "'+f.name+'" dari MultiAI\n'+link);
+  else if(navigator.share){try{await navigator.share({title:f.name,text:'File "'+f.name+'" dari MultiAI',url:link})}catch(_){}}
+  else{await copy(link);b.textContent='Tersalin';setTimeout(()=>b.textContent='Bagikan',1200)}};
+ $('#dlgw').onclick=e=>{if(e.target.id==='dlgw')$('#dlgw').classList.remove('on')}}
+async function openArtifactPage(id,hash){
+ const p=$('#panel');p.classList.add('on','full');$('#pt').textContent='Memuat…';$('#pb').innerHTML='<div class="pl">'+spin()+'</div>';
+ try{let pl=hash;if(!pl){const r=await fetch('/api/share?id='+encodeURIComponent(id));if(!r.ok)throw 0;pl=(await r.json()).d}
+  const o=await unpack(pl);if(!o||o.a!==1||typeof o.c!=='string')throw 0;
+  const f={lang:String(o.l||'text'),code:o.c,name:String(o.n||'file')};document.title=f.name+' · MultiAI';openFile(f,PV.includes(f.lang)?'p':'c')}
+ catch(e){$('#pt').textContent='Artifact tidak ditemukan';$('#pb').innerHTML='<div class="pl" style="flex-direction:column;gap:12px;text-align:center;padding:24px"><b>Artifact tidak ditemukan</b><span class="note">Link-nya salah atau sudah kedaluwarsa.</span><a class="btn" href="/chat/">Buka MultiAI</a></div>'}}
 async function handleShare(x){let pl;try{pl=await resolveShare(x)}catch(_){note('Link chat tidak ditemukan atau sudah kedaluwarsa.');return}try{history.replaceState(null,'',/^\/s\//.test(location.pathname)?'/chat/':location.pathname)}catch(_){}
- try{const o=await unpack(pl);if(!o||!Array.isArray(o.m))throw 0;
+ try{const o=await unpack(pl);if(o&&o.a===1&&typeof o.c==='string'){const f={lang:String(o.l||'text'),code:o.c,name:String(o.n||'file')};openFile(f,PV.includes(f.lang)?'p':'c');return}if(!o||!Array.isArray(o.m))throw 0;
   const pv=o.m.slice(0,3).map(m=>`<p><b>${m[0]==='u'?'Kamu':'AI'}:</b> ${esc(String(m[1]).slice(0,140))}</p>`).join('');
   $('#dlg').innerHTML=`<div class="dm"><b>${esc(o.t||'Chat dibagikan')}</b><div class="note" style="margin-top:2px">${o.m.length} pesan dibagikan kepadamu</div></div><div class="pvw">${pv}</div><div class="dbt"><button class="btn" data-k="n">Batal</button><button class="btn p" data-k="y">Buka chat</button></div>`;
   $('#dlgw').classList.add('on');
@@ -1491,7 +1490,8 @@ $('#vmx').innerHTML=ic('x',22);$('#vmskip').innerHTML=ic('skip',22);vmSetState('
 $('#ivx').innerHTML=ic('x',22);$('#ivp').innerHTML=ic('left',26);$('#ivn').innerHTML=ic('right',26);
 renderAll();tryPending();
 loadModels(true);
-if(/share=/.test(location.hash))handleShare(location.hash);
+if(AM||AH)openArtifactPage(AM,AH);
+else if(/share=/.test(location.hash))handleShare(location.hash);
 else if(/^\/s\/[A-Za-z0-9_-]{4,16}$/.test(location.pathname))handleShare(location.pathname);
 addEventListener('hashchange',()=>{if(/share=/.test(location.hash))handleShare(location.hash)});
 </script>
