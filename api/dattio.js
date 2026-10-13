@@ -4,8 +4,8 @@
 export const config = { runtime: 'edge' };
 
 const BASE = 'https://bandelbanget.xyz/v1';
-// 'audio/transcriptions' dipakai mode suara (mengubah rekaman jadi teks) saat pengenalan suara perangkat tidak ada.
-const ALLOWED = new Set(['chat/completions', 'models', 'quota', 'images/generations', 'audio/transcriptions']);
+// 'audio/transcriptions' (rekaman jadi teks) dan 'audio/speech' (teks jadi suara) dipakai mode suara.
+const ALLOWED = new Set(['chat/completions', 'models', 'quota', 'images/generations', 'audio/transcriptions', 'audio/speech']);
 const enc = new TextEncoder();
 
 const json = (obj, status = 200) =>
@@ -27,7 +27,7 @@ export default async function handler(req) {
   const isPost = req.method === 'POST';
   const init = {
     method: isPost ? 'POST' : 'GET',
-    headers: { Authorization: 'Bearer ' + key, Accept: isPost ? 'text/event-stream, application/json' : 'application/json' },
+    headers: { Authorization: 'Bearer ' + key, Accept: path === 'audio/speech' ? 'audio/*, */*' : isPost ? 'text/event-stream, application/json' : 'application/json' },
     signal: req.signal,
   };
   let wantsStream = false;
