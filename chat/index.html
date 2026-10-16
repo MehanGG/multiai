@@ -424,11 +424,11 @@ function inl(s){const L=[],ph=(h)=>'\u0001'+(L.push(h)-1)+'\u0001';
   .replace(/(^|[\s(])(https?:\/\/[^\s<)]+[^\s<).,;!?])/g,(_,p,u)=>p+ph(lnk(u,u.replace(/^https?:\/\//,'').slice(0,60))));
  t=t.replace(/`([^`]+)`/g,'<code class="i">$1</code>').replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>').replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<i>$2</i>');
  return t.replace(/\u0001(\d+)\u0001/g,(_,i)=>L[+i])}
-function blocks(t){let o='',list=null,para=[];
- const fp=()=>{if(para.length){o+='<p>'+para.join('<br>')+'</p>';para=[]}},fl=()=>{if(list){o+=`<${list.t}>${list.i.join('')}</${list.t}>`;list=null}};
+function blocks(t){let o='',list=null,para=[],ord=0;
+ const fp=()=>{if(para.length){o+='<p>'+para.join('<br>')+'</p>';para=[]}},fl=()=>{if(list){o+=list.t==='ol'&&list.s>1?`<ol start="${list.s}">${list.i.join('')}</ol>`:`<${list.t}>${list.i.join('')}</${list.t}>`;list=null}};
  for(const ln of t.split('\n')){let m;
-  if(m=ln.match(/^(#{1,4})\s+(.*)/)){fp();fl();o+=`<h${m[1].length<3?3:4}>${inl(m[2])}</h${m[1].length<3?3:4}>`}
-  else if(m=ln.match(/^\s*([-*]|\d+\.)\s+(.*)/)){fp();const t=/\d/.test(m[1])?'ol':'ul';if(list&&list.t!==t)fl();list=list||{t,i:[]};list.i.push('<li>'+inl(m[2])+'</li>')}
+  if(m=ln.match(/^(#{1,4})\s+(.*)/)){fp();fl();ord=0;o+=`<h${m[1].length<3?3:4}>${inl(m[2])}</h${m[1].length<3?3:4}>`}
+  else if(m=ln.match(/^\s*([-*]|\d+\.)\s+(.*)/)){fp();const t=/\d/.test(m[1])?'ol':'ul';if(list&&list.t!==t)fl();if(!list){list={t,i:[],s:1};if(t==='ol'){const n=parseInt(m[1]);list.s=(n===1&&ord>0)?ord+1:n}else ord=0}list.i.push('<li>'+inl(m[2])+'</li>');if(t==='ol')ord=list.s+list.i.length-1}
   else if(!ln.trim()){fp();fl()}else{fl();para.push(inl(ln))}}
  fp();fl();return o}
 const WF_V=/\b(buat|bikin|tulis|susun|generate|create|make|build|ciptakan|rancang|ekspor|export|koding|coding|programkan)\w*/i,
