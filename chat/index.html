@@ -63,7 +63,7 @@ header{display:flex;align-items:center;gap:8px;padding:10px 18px;padding-top:max
 .msg.user .bd a{color:#fff}.msg.user .at{background:rgba(255,255,255,.16);border-color:transparent;color:#fff}
 .who{font-size:12.5px;color:var(--mut);margin-bottom:5px;font-weight:600}.msg.user .who{display:none}
 .msg.ai .bd{padding-left:14px;border-left:2px solid var(--line)}
-.bd p{margin:0 0 11px;overflow-wrap:anywhere}.bd h3,.bd h4{margin:18px 0 6px;font-family:Geist,system-ui,sans-serif;letter-spacing:-.01em}.bd ul,.bd ol{margin:0 0 11px 22px}.bd li{margin-bottom:3px}.bd a{color:var(--al)}
+.bd p{margin:0 0 11px;overflow-wrap:anywhere}.bd h3,.bd h4{margin:18px 0 6px;font-family:Geist,system-ui,sans-serif;letter-spacing:-.01em}.bd ul,.bd ol{margin:0 0 11px 22px}.bd .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;margin:4px 0 14px;border:1px solid var(--line);border-radius:10px}.bd .tw table{border-collapse:collapse;width:max-content;min-width:100%;font-size:14px}.bd .tw th,.bd .tw td{padding:9px 12px;text-align:left;vertical-align:top;min-width:130px;max-width:300px;border-bottom:1px solid var(--line);border-right:1px solid var(--line)}.bd .tw th:last-child,.bd .tw td:last-child{border-right:0}.bd .tw tbody tr:last-child td{border-bottom:0}.bd .tw th{background:var(--panel2);font-weight:600;white-space:nowrap}.bd .tw td:first-child,.bd .tw th:first-child{min-width:48px}.bd li{margin-bottom:3px}.bd a{color:var(--al)}
 .bd code.i{background:var(--panel2);padding:1px 6px;border-radius:4px;font:12.5px ui-monospace,Menlo,Consolas,monospace}
 .cb{border:1px solid var(--line);border-radius:var(--r);background:var(--cbg);margin:12px 0;overflow:hidden}
 .ch{display:flex;align-items:center;gap:4px;padding:5px 8px 5px 12px;border-bottom:1px solid var(--line);font-size:12px;color:var(--mut)}.ch b{flex:1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -424,13 +424,19 @@ function inl(s){const L=[],ph=(h)=>'\u0001'+(L.push(h)-1)+'\u0001';
   .replace(/(^|[\s(])(https?:\/\/[^\s<)]+[^\s<).,;!?])/g,(_,p,u)=>p+ph(lnk(u,u.replace(/^https?:\/\//,'').slice(0,60))));
  t=t.replace(/`([^`]+)`/g,'<code class="i">$1</code>').replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>').replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<i>$2</i>');
  return t.replace(/\u0001(\d+)\u0001/g,(_,i)=>L[+i])}
-function blocks(t){let o='',list=null,para=[],ord=0;
+function blocks(t){let o='',list=null,para=[],ord=0,tb=[];
+ const cells=r=>r.trim().replace(/^\|/,'').replace(/\|$/,'').split(/(?<!\\)\|/).map(c=>c.trim().replace(/\\\|/g,'|')),
+ ft=()=>{if(!tb.length)return;const R=tb.map(cells);tb=[];let h=null,al=[],b=R;
+  if(R.length>1&&R[1].every(c=>/^:?-{2,}:?$/.test(c))){h=R[0];al=R[1].map(c=>/^:-+:$/.test(c)?'center':/-:$/.test(c)?'right':'');b=R.slice(2)}
+  const td=(tag,c,i)=>`<${tag}${al[i]?` style="text-align:${al[i]}"`:''}>${inl(c)}</${tag}>`;
+  o+='<div class="tw"><table>'+(h?'<thead><tr>'+h.map((c,i)=>td('th',c,i)).join('')+'</tr></thead>':'')+'<tbody>'+b.map(r=>'<tr>'+r.map((c,i)=>td('td',c,i)).join('')+'</tr>').join('')+'</tbody></table></div>'};
  const fp=()=>{if(para.length){o+='<p>'+para.join('<br>')+'</p>';para=[]}},fl=()=>{if(list){o+=list.t==='ol'&&list.s>1?`<ol start="${list.s}">${list.i.join('')}</ol>`:`<${list.t}>${list.i.join('')}</${list.t}>`;list=null}};
  for(const ln of t.split('\n')){let m;
+  if(/^\s*\|.*\|\s*$/.test(ln)){fp();fl();tb.push(ln);continue}ft();
   if(m=ln.match(/^(#{1,4})\s+(.*)/)){fp();fl();ord=0;o+=`<h${m[1].length<3?3:4}>${inl(m[2])}</h${m[1].length<3?3:4}>`}
   else if(m=ln.match(/^\s*([-*]|\d+\.)\s+(.*)/)){fp();const t=/\d/.test(m[1])?'ol':'ul';if(list&&list.t!==t)fl();if(!list){list={t,i:[],s:1};if(t==='ol'){const n=parseInt(m[1]);list.s=(n===1&&ord>0)?ord+1:n}else ord=0}list.i.push('<li>'+inl(m[2])+'</li>');if(t==='ol')ord=list.s+list.i.length-1}
   else if(!ln.trim()){fp();fl()}else{fl();para.push(inl(ln))}}
- fp();fl();return o}
+ fp();fl();ft();return o}
 const WF_V=/\b(buat|bikin|tulis|susun|generate|create|make|build|ciptakan|rancang|ekspor|export|koding|coding|programkan)\w*/i,
  WF_N=/\b(file|berkas|kode|code|script|skrip|program|aplikasi|app|game|permainan|website|web|situs|halaman|landing|html|css|javascript|python|json|csv|xlsx|excel|docx|word|pdf|pptx|ppt|powerpoint|presentasi|slide|dokumen|laporan|proposal|zip|mcpack|mcaddon|addon|svg|logo|bot|ekstensi|extension|plugin|kalkulator|dashboard|template|resume|cv|surat|makalah)\b/i;
 function wantsFile(t){t=String(t||'');if(/\b(jelaskan|apa itu|apa bedanya|bagaimana cara kerja|kenapa|mengapa|explain|what is|why)\b/i.test(t)&&!/\b(file|berkas)\b/i.test(t))return false;return /\b(file|berkas)\b/i.test(t)||/\.(html|py|js|css|json|csv|zip|pdf|docx|xlsx|pptx|svg|txt|md)\b/i.test(t)||(WF_V.test(t)&&WF_N.test(t))}
