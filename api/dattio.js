@@ -6,6 +6,8 @@ export const config = { runtime: 'edge' };
 const BASE = 'https://bandelbanget.xyz/v1';
 // 'audio/transcriptions' (rekaman jadi teks) dipakai mode suara saat pengenalan suara perangkat tidak ada.
 const ALLOWED = new Set(['chat/completions', 'models', 'quota', 'images/generations', 'audio/transcriptions']);
+// Video: 'videos' (buat + cek status) dan 'videos/<id>/content' (unduh file), atau 'video/generations'.
+const VIDEO_RE = /^(videos|video\/generations)(\/[\w.-]+(\/content)?)?$/;
 const enc = new TextEncoder();
 
 const json = (obj, status = 200) =>
@@ -22,12 +24,12 @@ export default async function handler(req) {
 
   const url = new URL(req.url);
   const path = (url.searchParams.get('p') || '').replace(/^\/+/, '');
-  if (!ALLOWED.has(path)) return json({ error: { message: 'Path tidak diizinkan.' } }, 400);
+  if (!ALLOWED.has(path) && !VIDEO_RE.test(path)) return json({ error: { message: 'Path tidak diizinkan.' } }, 400);
 
   const isPost = req.method === 'POST';
   const init = {
     method: isPost ? 'POST' : 'GET',
-    headers: { Authorization: 'Bearer ' + key, Accept: isPost ? 'text/event-stream, application/json' : 'application/json' },
+    headers: { Authorization: 'Bearer ' + key, Accept: path.endsWith('/content') ? '*/*' : isPost ? 'text/event-stream, application/json' : 'application/json' },
     signal: req.signal,
   };
   let wantsStream = false;
