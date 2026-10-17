@@ -814,7 +814,7 @@ async function streamOnce(body,ai,draw,noThink){const g=draw.g;
   if(dl){const rs=dl.reasoning_content||dl.reasoning||dl.reasoning_text||dl.thinking;if(typeof rs==='string'&&rs&&!noThink)ai.think=(ai.think||'')+rs;
    if(dl.content)feed(typeof dl.content==='string'?dl.content:(Array.isArray(dl.content)?dl.content.map(x=>x.text||'').join(''):''))}
   if(ch&&ch.finish_reason)out.finish=ch.finish_reason;
-  if(j.usage){const u=j.usage;out.in=u.prompt_tokens||u.input_tokens||out.in;out.out=u.completion_tokens||u.output_tokens||out.out}};
+  getUsage(j,ch,out)};
  const take=l=>{l=l.replace(/\r$/,'');if(l.startsWith('data:')){saw=true;onData(l.slice(5).trim())}else if(l&&!/^(:|event:|id:|retry:)/.test(l))raw+=l+'\n'};
  if(r.body&&r.body.getReader){const rd=r.body.getReader(),dec=new TextDecoder();g.rd=rd;let buf='';
   for(;;){if(g.dead)break;const {done,value}=await rd.read();if(done)break;g.last=Date.now();buf+=dec.decode(value,{stream:true});const ls=buf.split('\n');buf=ls.pop();ls.forEach(take);draw()}
@@ -822,6 +822,18 @@ async function streamOnce(body,ai,draw,noThink){const g=draw.g;
  else{const t=await r.text();g.last=Date.now();t.split('\n').forEach(take)}
  if(!saw&&raw.trim()){try{onData(raw.trim());out.done=true;if(!out.finish)out.finish='stop'}catch(e){if(e.status)throw e}}
  draw();return out}
+function getUsage(j,ch,out){
+ const n=v=>{v=+v;return isFinite(v)&&v>0?Math.round(v):0};
+ const cand=[j.usage,j.x_usage,j.usage_metadata,j.usageMetadata,j.message&&j.message.usage,j.response&&j.response.usage,j.delta&&j.delta.usage,j.x_groq&&j.x_groq.usage,ch&&ch.usage,ch&&ch.delta&&ch.delta.usage,j.meta&&j.meta.tokens,j.meta&&j.meta.billed_units,j.timings&&{prompt_tokens:j.timings.prompt_n,completion_tokens:j.timings.predicted_n}];
+ for(const u of cand){if(!u||typeof u!=='object')continue;
+  const i=n(u.prompt_tokens)||n(u.input_tokens)||n(u.promptTokenCount)||n(u.prompt_token_count)||n(u.input_token_count)||n(u.prompt_eval_count)||n(u.inputTokens)||n(u.promptTokens);
+  let o=n(u.completion_tokens)||n(u.output_tokens)||n(u.candidatesTokenCount)||n(u.candidates_token_count)||n(u.output_token_count)||n(u.eval_count)||n(u.outputTokens)||n(u.completionTokens);
+  const t=n(u.total_tokens)||n(u.totalTokenCount)||n(u.total_token_count)||n(u.totalTokens);
+  if(!o&&t&&(i||out.in)&&t>(i||out.in))o=t-(i||out.in);
+  if(i)out.in=i;if(o)out.out=o;
+  if(!i&&!o&&t){out.tot=t}}
+}
+const estMsgTok=ms=>ms.reduce((n,m)=>n+4+(typeof m.content==='string'?estTok(m.content):(Array.isArray(m.content)?m.content.reduce((k,p)=>k+(p.type==='text'?estTok(p.text):1200),0):0)),0);
 async function callDattio(model,c,ai,mem,draw){if(Array.isArray(mem))mem={hist:mem,sys:'',bud:0};const g=draw.g,eff=S.set.effort,effv={low:'low',medium:'medium',high:'high',ultra:'high',max:'high',ultracode:'high'}[eff]||'medium';
  const lastU=[...mem.hist].reverse().find(h=>h.role==='user'),wf=!!lastU&&wantsFile(lastU.parts.filter(q=>q.text!=null).map(q=>q.text).join(' '));
  const mk=()=>{const msgs=[{role:'system',content:sysPrompt()+(mem.sys?'\n\n'+mem.sys+'\n\n':'')+(wf?' PERMINTAAN TERAKHIR PENGGUNA MENYANGKUT FILE ATAU KODE: hasilnya WAJIB berupa blok file berpagar dengan format ```bahasa namafile.ext (nama file harus ditulis, isi lengkap dan siap jalan). Jangan menempelkan kode atau isi dokumen sebagai teks biasa di luar blok. Cukup satu kalimat pengantar singkat, lalu blok filenya.':'')}];
@@ -858,7 +870,7 @@ async function callDattio(model,c,ai,mem,draw){if(Array.isArray(mem))mem={hist:m
    const transient=!e.status||e.status>=500||e.status===429||e.status===408;
    if(transient&&fails<8){fails++;g.tries=Math.max(g.tries,fails);await sleep(Math.min(1200*fails,6000));if(g.reason)throw e;if(ai.text)seg++;g.last=Date.now();continue}
    throw e}
-  tin+=res.in||0;tout+=res.out||0;if(tin)ai.uIn=tin;if(tout)ai.uOut=tout;
+  tin+=res.in||0;tout+=res.out||0;if(tin)ai.uIn=tin;if(tout)ai.uOut=tout;if(tin||tout)delete ai.est;if(!tin&&!tout&&res.tot)ai.uOut=res.tot,tout=res.tot;
   if(seg>0&&/^\s*\[SELESAI/.test(ai.text.slice(base0))){ai.text=ai.text.slice(0,base0);break}
   if(seg>0){const prev=ai.text.slice(0,base0),add=ai.text.slice(base0);for(let k=Math.min(400,prev.length,add.length);k>=15;k--){if(prev.endsWith(add.slice(0,k))){ai.text=prev+add.slice(k);break}}}
   const fin=res.finish||'';let cut=/length|max_tokens/i.test(fin)||(!fin&&!res.done);
@@ -873,6 +885,7 @@ async function callDattio(model,c,ai,mem,draw){if(Array.isArray(mem))mem={hist:m
    if(MT[mti])body2[mtName]=MT[mti];const r2=await streamOnce(body2,ai,draw,true);tin+=r2.in||0;tout+=r2.out||0;
    if(!fences(ai.text).some(x=>x.t==='c'))ai.text=old}
   catch(e){ai.text=old;if(g.reason||g.dead)throw e}}
+ if(!tin&&!tout&&(ai.text||ai.think)){tin=estMsgTok(msgs);tout=estTok((ai.think||'')+(ai.text||''));ai.uIn=tin;ai.uOut=tout;ai.est=1}
  return{in:tin,out:tout}}
 /* ---------- form, usage ---------- */
 function formD(title,fs,ok){return new Promise(res=>{
