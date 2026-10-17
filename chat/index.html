@@ -393,14 +393,15 @@ header{padding:8px 12px;gap:6px}#mbtn{max-width:52vw;overflow:hidden}
 const $=s=>document.querySelector(s);
 const EFF=[['low','Low','Cepat'],['medium','Medium','Seimbang'],['high','High','Mendalam'],['ultra','Ultra','Sangat mendalam'],['max','Max','Pikir maksimal'],['ultracode','Ultracode','Rencana, tulis, lalu uji sendiri']];
 const mname=id=>String(id||'').replace(/^.*\|/,'');
-let S={chats:[],cur:null,set:{key:'',model:'gemini-2.5-flash',temp:0.7,ctx:20,mem:''},use:{req:0,inp:0,out:0,by:{}}};
+const REAL=['auto','claude-opus-5','claude-opus-5-5','deepseek-v4-flash','deepseek-v4-flash-0731','deepseek-v4-flash-vision-exp','deepseek-v4-mod','deepseek-v4-pro','deepseek-v4-pro-0813','deepseek-v4.1-flash','deepseek-v4.1-mod','gemini-4-argon','glm-5.2','glm-5.2-mod','glm-5.3','glm-5.3-flash','glm-5.3-flash-mod','glm-5.3-flashx','glm-5.3-flashx-mod','glm-5.3-mod','gpt-5.6','gpt-5.6-luna','gpt-6-astra','gpt-6-luna','gpt-6-sol','hy3','hy4','kimi-k2.5','kimi-k2.6','kimi-k2.7-code','kimi-k2.7-code-highspeed','kimi-k2.8','mimo-v2.5-pro','mimo-v2.6-flash','mimo-v2.6-pro'];
+let S={chats:[],cur:null,set:{key:'',model:'auto',temp:0.7,ctx:20,mem:''},use:{req:0,inp:0,out:0,by:{}}};
 try{const r=JSON.parse(localStorage.getItem('chatbotai')||'null');if(r)S=Object.assign(S,r)}catch(e){}
 S.set=Object.assign({alias:{},web:true,persona:false,effort:'medium',hid:[],cus:[],mbud:96,notif:true},S.set);if(!S.set.webv){S.set.web=true;S.set.webv=1}if(!S.set.pv){S.set.persona=false;S.set.pv=1}
 S.mems=S.mems||[];
 ['key','keys','bases','eps','cmods','cat','map','reals','real','usages','slots'].forEach(k=>{delete S.set[k]});
 if(!S.set.model||/\|/.test(S.set.model))S.set.model='';
 if(!S.set.tv2){S.set.timeout=300;S.set.tv2=1}
-S.models=Array.isArray(S.models)?S.models:[];S.mt=S.mt||0;
+S.models=Array.isArray(S.models)?S.models.filter(x=>x&&REAL.includes(x.id)):[];S.mt=S.mt||0;
 const persist=()=>{try{localStorage.setItem('chatbotai',JSON.stringify(S,(k,v)=>k==='data'&&typeof v==='string'&&v.length>2e5?undefined:v))}catch(e){try{localStorage.setItem('chatbotai',JSON.stringify(S,(k,v)=>(k==='data'||k==='th')&&typeof v==='string'&&v.length>2e4?undefined:v))}catch(e2){}}};
 const save=()=>{persist();queuePush()};
 const uid=()=>Math.random().toString(36).slice(2,10);
@@ -738,12 +739,12 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function httpErr(status,msg){const e=new Error('Error '+status+': '+(msg||'permintaan gagal'));e.status=status;return e}
 async function errText(r){let e='';try{const t=await r.text();try{const j=JSON.parse(t);e=(j.error&&(j.error.message||j.error))||j.message||t}catch(_){e=t.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,200)}}catch(_){}
  return httpErr(r.status,String(e||'permintaan gagal').slice(0,400))}
-const FAM=[[/^claude/i,'Claude'],[/^(gpt|o\d|chatgpt)/i,'GPT'],[/^(gemini|gemma)/i,'Gemini'],[/^deepseek/i,'DeepSeek'],[/^(kimi|moonshot)/i,'Kimi'],[/^(llama|meta)/i,'Meta'],[/^qwen/i,'Qwen'],[/^grok/i,'Grok'],[/^(mistral|mixtral|codestral)/i,'Mistral'],[/^glm/i,'GLM']];
+const FAM=[[/^auto$/i,'Otomatis'],[/^claude/i,'Claude'],[/^(gpt|o\d|chatgpt)/i,'GPT'],[/^(gemini|gemma)/i,'Gemini'],[/^deepseek/i,'DeepSeek'],[/^(kimi|moonshot)/i,'Kimi'],[/^(llama|meta)/i,'Meta'],[/^qwen/i,'Qwen'],[/^grok/i,'Grok'],[/^(mistral|mixtral|codestral)/i,'Mistral'],[/^glm/i,'GLM'],[/^hy\d/i,'Hunyuan'],[/^mimo/i,'MiMo']];
 const famOf=id=>{const x=FAM.find(f=>f[0].test(id));return x?x[1]:'Lainnya'};
 function modelGroups(list){const m={},ord=[];(list||ML()).forEach(id=>{const g=famOf(id);if(!m[g]){m[g]=[];ord.push(g)}m[g].push(id)});
  ord.sort((a,b)=>a==='Lainnya'?1:b==='Lainnya'?-1:0);return ord.map(g=>({g,m:m[g]}))}
 function modelOf(c){const m=c?c.model:S.set.model;if(m&&!/\|/.test(m)&&(!ML().length||ML().includes(m)))return m;return S.set.model||ML()[0]||''}
-const ML=()=>{const hid=new Set(S.set.hid||[]),cus=S.set.cus||[];return[...new Set(S.models.map(x=>x.id).filter(id=>!hid.has(id)).concat(cus))]};
+const ML=()=>{const hid=new Set(S.set.hid||[]),cus=S.set.cus||[];return[...new Set(REAL.filter(id=>!hid.has(id)).concat(cus))]};
 let mLoad=null,mErr='';
 async function probeModel(id){let name='max_tokens';
  for(let k=0;k<2;k++){const ac=new AbortController(),to=setTimeout(()=>ac.abort(),60000);
@@ -761,7 +762,7 @@ function loadModels(force){if(mLoad)return mLoad;if(!force&&S.models.length&&Dat
  mLoad=(async()=>{try{mErr='';const r=await dfetch('models',{headers:{Accept:'application/json'}});if(!r.ok)throw await errText(r);
    const j=await r.json(),a=(j.data||j.models||(Array.isArray(j)?j:[])).map(m=>typeof m==='string'?m:(m&&(m.id||m.name))).filter(Boolean);
    if(!a.length)throw new Error('Daftar model kosong.');
-   S.models=[...new Set(a)].map(id=>({id}));S.mt=Date.now();
+   S.models=[...new Set(a)].filter(id=>REAL.includes(id)).map(id=>({id}));S.mt=Date.now();
    if(!ML().includes(S.set.model))S.set.model=ML()[0]||'';persist()}
   catch(e){mErr=/Error 404/.test(e.message||'')?'Proxy /api/dattio belum terpasang di server.':(e.message||'Gagal memuat model')}
   finally{mLoad=null;renderModel();if($('#modal').classList.contains('on')&&tab==='mdl')drawTab()}})();return mLoad}
